@@ -3,8 +3,10 @@ import index from "./index.html";
 
 const server = serve({
   routes: {
-    // Serve index.html for all unmatched routes.
-    "/*": index,
+    // Return teapot for all unmatched routes.
+    "/*": () => new Response("I'm a teapot", { status: 418 }),
+
+    "/": index,
 
     "/api/hello": {
       async GET(req) {
