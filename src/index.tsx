@@ -3,8 +3,8 @@ import index from "./index.html";
 
 const server = serve({
   routes: {
-    // Return teapot for all unmatched routes.
-    "/*": () => new Response("I'm a teapot", { status: 418 }),
+    // Redirect to my live stream for all unmatched routes.
+    "/*": Response.redirect("https://live.nicovideo.jp/watch/user/14171889"),
 
     "/": index,
 
