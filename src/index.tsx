@@ -25,6 +25,10 @@ const server = serve({
         return new Response();
       },
       PUT: async (req, server) => {
+        if (!client) {
+          console.log('Waiting for the client IP...');
+          return Response.json(undefined, { status: 404 });
+        }
         const ip = server.requestIP(req);
         if (!ip) {
           console.log(`The request is invalid:`, JSON.stringify(req));
