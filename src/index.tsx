@@ -1,34 +1,38 @@
 import { serve } from "bun";
-import index from "./index.html";
+import index from "./index.html"
+
+let client: Omit<Bun.SocketAddress, 'port'> | undefined = undefined
 
 const server = serve({
   routes: {
-    // Redirect to my live stream for all unmatched routes.
-    "/*": Response.redirect("https://live.nicovideo.jp/watch/user/14171889"),
+    "/*": index,
 
-    "/": index,
-
-    "/api/hello": {
-      async GET(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "GET",
-        });
+    "/": {
+      POST: (req, server) => {
+        console.log(server.requestIP(req));
+        const ip = server.requestIP(req);
+        if (!ip) {
+          console.error('No IP address is available in the request.', req);
+          return Response.redirect("https://live.nicovideo.jp/watch/user/14171889", 307);
+        }
+        const { address, family } = ip;
+        client = { address, family };
+        return new Response();
       },
-      async PUT(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "PUT",
-        });
+      PUT: (req, server) => {
+        const ip = server.requestIP(req);
+        if (!ip || !client || ip.family !== client.family || ip.address !== client.address) {
+          console.error(new Date(Date.now()).toISOString(), 'got', JSON.stringify(ip, null, 0), 'want', JSON.stringify(client, null, 0));
+          return Response.redirect("https://live.nicovideo.jp/watch/user/14171889", 307);
+        }
+        return Response.json(req);
       },
     },
+  },
 
-    "/api/hello/:name": async req => {
-      const name = req.params.name;
-      return Response.json({
-        message: `Hello, ${name}!`,
-      });
-    },
+  error(error) {
+    console.error(error);
+    return Response.redirect("https://live.nicovideo.jp/watch/user/14171889", 307);
   },
 
   development: process.env.NODE_ENV !== "production" && {
