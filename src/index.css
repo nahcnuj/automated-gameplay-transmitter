@@ -2,7 +2,7 @@
 
 @layer base {
   :root {
-    @apply text-[rgba(207,207,207)] bg-[rgba(7,7,7,1)] font-sans h-full;
+    @apply text-[rgba(207,207,207)] bg-[rgba(7,7,7,0)] font-sans h-full;
   }
 
   body {
