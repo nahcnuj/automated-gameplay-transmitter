@@ -1,11 +1,10 @@
-import { APITester } from "./APITester";
+import CommentList from "./components/CommentList";
 import "./index.css";
 
 export function App() {
   return (
-    <div className="w-screen">
-      <h1 className="text-5xl font-bold leading-tight text-center">Test</h1>
-      <APITester />
+    <div className="w-screen max-w-[1280px] max-h-[720px] text-xl">
+      <CommentList />
     </div>
   );
 }

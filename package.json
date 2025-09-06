@@ -9,6 +9,7 @@
     "build": "bun run build.ts"
   },
   "dependencies": {
+    "@onecomme.com/onesdk": "^8.0.0",
     "bun-plugin-tailwind": "^0.0.15",
     "react": "^19",
     "react-dom": "^19",

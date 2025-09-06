@@ -1,7 +1,8 @@
 import { serve } from "bun";
-import index from "./index.html"
+import index from "./index.html";
 
-let client: string | undefined = undefined
+let latest = Date.now();
+let client: string | undefined
 
 const comments: unknown[] = []
 
@@ -16,6 +17,9 @@ const server = serve({
           console.log(`No IP address is available in the request:`, JSON.stringify(req));
           return Response.json(undefined, { status: 404 });
         }
+
+        latest = Date.now();
+
         const { address, family } = ip;
         client = `${family}/${address}`;
         return new Response();
@@ -33,11 +37,15 @@ const server = serve({
           return Response.json(undefined, { status: 404 });
         }
 
+        latest = Date.now();
+
         comments.push(...await req.json());
-        console.log(comments.length);
         return new Response();
       },
     },
+
+    '/api/comments': () => Response.json(comments),
+    '/api/status': () => Response.json({ latest }),
   },
 
   error(error) {
