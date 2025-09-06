@@ -3,6 +3,8 @@ import index from "./index.html"
 
 let client: string | undefined = undefined
 
+const comments: unknown[] = []
+
 const server = serve({
   routes: {
     "/*": index,
@@ -18,12 +20,7 @@ const server = serve({
         client = `${family}/${address}`;
         return new Response();
       },
-      PUT: (req, server) => {
-        if (!client) {
-          console.log(`No IP address has registered yet.`, JSON.stringify(req));
-          return Response.json(undefined, { status: 404 });
-        }
-
+      PUT: async (req, server) => {
         const ip = server.requestIP(req);
         if (!ip) {
           console.log(`The request is invalid:`, JSON.stringify(req));
@@ -36,8 +33,9 @@ const server = serve({
           return Response.json(undefined, { status: 404 });
         }
 
-        // TODO accept new comments
-        return Response.json(req);
+        comments.push(...await req.json());
+        console.log(comments.length);
+        return new Response();
       },
     },
   },
