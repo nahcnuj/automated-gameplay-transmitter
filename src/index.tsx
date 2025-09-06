@@ -1,7 +1,7 @@
 import { serve } from "bun";
 import index from "./index.html"
 
-let client: Omit<Bun.SocketAddress, 'port'> | undefined = undefined
+let client: string | undefined = undefined
 
 const server = serve({
   routes: {
@@ -9,29 +9,41 @@ const server = serve({
 
     "/": {
       POST: (req, server) => {
-        console.log(server.requestIP(req));
         const ip = server.requestIP(req);
         if (!ip) {
-          console.error('No IP address is available in the request.', req);
-          return Response.redirect("https://live.nicovideo.jp/watch/user/14171889", 307);
+          console.log(`No IP address is available in the request:`, JSON.stringify(req));
+          return Response.json(undefined, { status: 404 });
         }
         const { address, family } = ip;
-        client = { address, family };
+        client = `${family}/${address}`;
         return new Response();
       },
       PUT: (req, server) => {
-        const ip = server.requestIP(req);
-        if (!ip || !client || ip.family !== client.family || ip.address !== client.address) {
-          console.error(new Date(Date.now()).toISOString(), 'got', JSON.stringify(ip, null, 0), 'want', JSON.stringify(client, null, 0));
-          return Response.redirect("https://live.nicovideo.jp/watch/user/14171889", 307);
+        if (!client) {
+          console.log(`No IP address has registered yet.`, JSON.stringify(req));
+          return Response.json(undefined, { status: 404 });
         }
+
+        const ip = server.requestIP(req);
+        if (!ip) {
+          console.log(`The request is invalid:`, JSON.stringify(req));
+          return Response.json(undefined, { status: 404 });
+        }
+
+        const got = `${ip.family}/${ip.address}`;
+        if (got !== client) {
+          console.log(`got ${got}, want ${client}`);
+          return Response.json(undefined, { status: 404 });
+        }
+
+        // TODO accept new comments
         return Response.json(req);
       },
     },
   },
 
   error(error) {
-    console.error(error);
+    console.error(new Date(Date.now()).toISOString(), '[ERROR]', error);
     return Response.redirect("https://live.nicovideo.jp/watch/user/14171889", 307);
   },
 
