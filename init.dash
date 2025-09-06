@@ -1,6 +1,6 @@
 apt update && apt upgrade -y
 
-apt install -y git
+apt install -y git pulseaudio
 
 # Install a window manager, JWM
 apt install -y libxcb-cursor-dev xvfb xorg jwm
