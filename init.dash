@@ -1,6 +1,10 @@
 apt update && apt upgrade -y
 
-apt install -y git pulseaudio
+apt install -y \
+  git          \
+  pulseaudio   \
+  unzip
+curl -fsSL https://bun.sh/install | bash
 
 # Install a window manager, JWM
 apt install -y libxcb-cursor-dev xvfb xorg jwm
