@@ -1,8 +1,10 @@
 apt update && apt upgrade -y
 
-apt install -y \
-  git          \
-  pulseaudio   \
+apt install -y           \
+  fonts-noto-cjk         \
+  fonts-noto-color-emoji \
+  git                    \
+  pulseaudio             \
   unzip
 curl -fsSL https://bun.sh/install | bash
 

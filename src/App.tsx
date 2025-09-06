@@ -3,7 +3,7 @@ import "./index.css";
 
 export function App() {
   return (
-    <div className="w-screen max-w-[1280px] max-h-[720px] text-xl">
+    <div className="w-screen max-w-[1024px] max-h-[576px] m-2 text-xl">
       <CommentList />
     </div>
   );
