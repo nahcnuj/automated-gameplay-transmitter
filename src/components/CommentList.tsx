@@ -9,7 +9,7 @@ export function App() {
 
   useEffect(() => {
     const id = setInterval(async () => {
-      const comments = await fetch('http://85.131.251.123:7777/api/comments').then(async res => await res.json());
+      const comments = await fetch('http://localhost:7777/api/comments').then(async res => await res.json());
       setComments(comments);
     }, 1000);
 
@@ -18,7 +18,7 @@ export function App() {
 
   useEffect(() => {
     const id = setInterval(async () => {
-      const status = await fetch('http://85.131.251.123:7777/api/status').then(async res => await res.json());
+      const status = await fetch('http://localhost:7777/api/status').then(async res => await res.json());
       setLatency(Date.now() - status?.latest);
     }, 1000);
 
