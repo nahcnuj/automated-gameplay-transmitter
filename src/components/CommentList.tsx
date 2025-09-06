@@ -25,7 +25,7 @@ export function App() {
     return () => clearInterval(id);
   }, []);
 
-  const latestComment = comments.at(-1);
+  const latestComment = comments.filter(({ data }) => data.no).at(-1);
 
   return (
     <div className="w-full">
