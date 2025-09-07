@@ -25,16 +25,23 @@ export function App() {
     return () => clearInterval(id);
   }, []);
 
-  const latestComment = comments.filter(({ data }) => data.no).at(-1);
+  const displayComments = comments.filter(({ data }) => data.no && Date.now() - Date.parse(data.timestamp) < 60000).slice(-3);
+  // const latestComment = comments.filter(({ data }) => data.no).at(-1);
 
   return (
-    <div className="w-full">
-      <div className="text-5xl font-bold bg-[#1a1a1a] p-3 rounded-xl font-mono border-2 border-[#fbf0df]">
-        {latestComment ? `${latestComment.data.no} ${latestComment.data.comment}` : 'コメントを待っています'}
-      </div>
+    <div className="flex flex-col-reverse w-full h-full">
       <div className="text-sm">
         {latency <= 1000 ? '🟢Healthy' : latency <= 5000 ? '🟡Unstable' : '🔴Outage'}
       </div>
+      {displayComments.length > 0 ? displayComments.map(({ data }) => (
+        <div key={data.id} className="text-3xl font-bold bg-black/77 p-2 rounded-lg font-mono border-2 border-[#fbf0df]">
+          {data.comment}
+        </div>
+      )) :
+        <div className="text-5xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
+          コメントお待ちしています
+        </div>
+      }
     </div>
   );
 }

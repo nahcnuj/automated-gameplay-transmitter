@@ -1,28 +1,38 @@
 #!/usr/bin/env bun
 
-import { fetch } from "bun";
+import { fetch } from 'bun';
+import { parseArgs } from 'node:util';
+
+const { positionals: [ target = 'localhost:7777' ] } = parseArgs({
+  args: Bun.argv.slice(2),
+  strict: true,
+  allowPositionals: true,
+})
 
 setInterval(async () => {
-  await fetch('http://85.131.251.123:7777/', { method: 'POST' }).catch(() => {});
-  await fetch('http://localhost:7777/', { method: 'POST' }).catch(() => {});
+  await fetch(`http://${target}/`, { method: 'POST' }).catch((err) => {
+    console.warn(err);
+  });
 }, 1000);
 
-const ws = new WebSocket("ws://localhost:11180/sub?p=comments");
-ws.addEventListener("message", async (event) => {
+const ws = new WebSocket('ws://localhost:11180/sub?p=comments');
+ws.addEventListener('message', async (event) => {
   const { type, data } = JSON.parse(event.data);
-  // console.log(JSON.stringify(data,null,2));
   switch (type) {
     case 'connected':
     case 'comments':
-      // console.log(data.comments);
-      await fetch('http://85.131.251.123:7777/', { method: 'PUT', body: JSON.stringify(data.comments), headers: { "Content-Type": "application/json" } }).catch(() => {});
-      await fetch('http://localhost:7777/', { method: 'PUT', body: JSON.stringify(data.comments), headers: { "Content-Type": "application/json" } }).catch(() => {});
+      // console.log(JSON.stringify(data.comments, null, 2));
+      await fetch(`http://${target}/`, {
+        method: 'PUT',
+        body: JSON.stringify(data.comments),
+        headers: { 'Content-Type': 'application/json' },
+      }).catch((err) => {
+        console.warn(err);
+      });
       break;
     default:
-      console.error("unknown data type: ", type);
+      console.error('unknown data type: ', type);
       console.dir(data);
       break;
   }
 });
-
-// console.debug(JSON.stringify(ws, null, 2));
