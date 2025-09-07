@@ -42,7 +42,7 @@ export function App() {
     return () => clearInterval(id);
   }, []);
 
-  const displayComments = comments.toReversed().filter(({ data }) => true).slice(0, 3);
+  const displayComments = comments.toReversed().filter(({ data }) => data.no && Date.now() - Date.parse(data.timestamp) <= 60000).slice(0, 3);
   // const latestComment = comments.filter(({ data }) => data.no).at(-1);
 
   return (
