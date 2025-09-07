@@ -1,7 +1,24 @@
 'use client';
 
 import type { NicoNamaComment } from "@onecomme.com/onesdk";
-import { useEffect, useState } from "react";
+import ElizaCore from "eliza-ja-js/ElizaCore";
+import Doctor from "eliza-ja-js/doctor-ja.json";
+import { useEffect, useMemo, useState } from "react";
+
+const eliza = new ElizaCore(Doctor);
+
+const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
+  const reply = useMemo(() => eliza.transform(comment), [comment]);
+
+  return <>
+    <div className="text-lg font-mono">
+      {`${comment}`}
+    </div>
+    <div className="text-3xl font-mono font-bold">
+      {`>>${no} ${reply}`}
+    </div>
+  </>;
+};
 
 export function App() {
   const [latency, setLatency] = useState(Number.POSITIVE_INFINITY);
@@ -25,7 +42,7 @@ export function App() {
     return () => clearInterval(id);
   }, []);
 
-  const displayComments = comments.filter(({ data }) => data.no && Date.now() - Date.parse(data.timestamp) < 60000).slice(-3);
+  const displayComments = comments.toReversed().filter(({ data }) => true).slice(0, 3);
   // const latestComment = comments.filter(({ data }) => data.no).at(-1);
 
   return (
@@ -34,8 +51,8 @@ export function App() {
         {latency <= 1000 ? '🟢Healthy' : latency <= 5000 ? '🟡Unstable' : '🔴Outage'}
       </div>
       {displayComments.length > 0 ? displayComments.map(({ data }) => (
-        <div key={data.id} className="text-3xl font-bold bg-black/77 p-2 rounded-lg font-mono border-2 border-[#fbf0df]">
-          {data.comment}
+        <div key={data.id} className="bg-black/77 p-2 rounded-lg border-2 border-[#fbf0df]">
+          <Reply {...data} />
         </div>
       )) :
         <div className="text-5xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
