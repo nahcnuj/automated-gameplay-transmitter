@@ -46,6 +46,27 @@ const server = serve({
         comments.push(...await req.json());
         return new Response();
       },
+      DELETE: (req, server) => {
+        if (!client) {
+          console.log('Waiting for the client IP...');
+          return Response.json(undefined, { status: 404 });
+        }
+        const ip = server.requestIP(req);
+        if (!ip) {
+          console.log(`The request is invalid:`, JSON.stringify(req));
+          return Response.json(undefined, { status: 404 });
+        }
+
+        const got = `${ip.family}/${ip.address}`;
+        if (got !== client) {
+          console.log(`got ${got}, want ${client}`);
+          return Response.json(undefined, { status: 404 });
+        }
+
+        comments.splice(0);
+
+        return new Response();
+      }
     },
 
     '/api/comments': () => Response.json(comments),
