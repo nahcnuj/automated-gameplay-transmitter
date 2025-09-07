@@ -14,7 +14,7 @@ const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
     <div className="text-lg font-mono">
       {`${comment}`}
     </div>
-    <div className="text-3xl font-mono font-bold">
+    <div className="text-5xl font-mono font-bold">
       {`>>${no} ${reply}`}
     </div>
   </>;
@@ -55,7 +55,7 @@ export function App() {
           <Reply {...data} />
         </div>
       )) :
-        <div className="text-5xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
+        <div className="text-7xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
           コメントお待ちしています
         </div>
       }
