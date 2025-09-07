@@ -11,7 +11,7 @@ const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
   const reply = useMemo(() => eliza.transform(comment), [comment]);
 
   return <>
-    <div className="text-lg font-mono">
+    <div className="text-xl font-mono font-bold">
       {`${comment}`}
     </div>
     <div className="text-5xl font-mono font-bold">
