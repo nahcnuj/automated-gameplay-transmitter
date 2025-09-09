@@ -42,7 +42,7 @@ export function App() {
     return () => clearInterval(id);
   }, []);
 
-  const displayComments = comments.toReversed().filter(({ data }) => data.no && Date.now() - Date.parse(data.timestamp) <= 60000).slice(0, 3);
+  const displayComments = comments.toReversed().filter(({ data }) => data.no && Date.now() - Date.parse(data.timestamp) <= 5 * 60 * 1000).slice(0, 3);
   // const latestComment = comments.filter(({ data }) => data.no).at(-1);
 
   return (
@@ -54,10 +54,10 @@ export function App() {
         <div key={data.id} className="bg-black/77 p-2 rounded-lg border-2 border-[#fbf0df]">
           <Reply {...data} />
         </div>
-      )) :
-        <div className="text-7xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
-          コメントお待ちしています
-        </div>
+      )) : null
+        // <div className="text-7xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
+        //   コメントお待ちしています
+        // </div>
       }
     </div>
   );
