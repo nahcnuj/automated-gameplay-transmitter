@@ -18,3 +18,18 @@ body::before {
   opacity: 0.05;
   pointer-events: none;
 }
+
+@theme {
+  /* --animate-wiggle: wiggle ease-in-out infinite; */
+  @keyframes wiggle {
+    0% {
+      transform: translateX(-0.5ch);
+    }
+    5% {
+      transform: translateX(0.5ch);
+    }
+    10% {
+      transform: translateX(0);
+    }
+  }
+}
