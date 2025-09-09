@@ -54,10 +54,10 @@ export function App() {
         <div key={data.id} className="bg-black/77 p-2 rounded-lg border-2 border-[#fbf0df]">
           <Reply {...data} />
         </div>
-      )) : null
-        // <div className="text-7xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
-        //   コメントお待ちしています
-        // </div>
+      )) : 
+        <div className="text-7xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce hidden">
+          コメントお待ちしています
+        </div>
       }
     </div>
   );
