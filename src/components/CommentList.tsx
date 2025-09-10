@@ -16,10 +16,10 @@ const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
   }, [reply]);
 
   return <>
-    <div className="text-xl font-mono font-bold">
+    <div className="text-lg font-mono font-bold">
       {`${comment}`}
     </div>
-    <div className="text-5xl font-mono font-bold">
+    <div className="text-3xl font-mono font-bold">
       {`>>${no} ${reply}`}
     </div>
   </>;
@@ -56,25 +56,40 @@ export function App() {
     <div className="flex flex-col-reverse w-full h-full">
       <div className="text-sm">
         {
+          'speechSynthesis' in window ?
+            '✔' :
+            ''
+        }
+        {
           latency <= 1000 ?
-            '🟢Healthy' :
+            '🟢' :
             latency <= 5000 ?
-              '🟡Unstable' :
-              '🔴Outage'
+              '🟡' :
+              '🔴'
         }
       </div>
       {displayComments.length > 0 ?
         displayComments.map(({ data }) => (
           <div key={data.id} className="bg-black/77 p-2 rounded-lg border-2 border-[#fbf0df]">
-            <Reply {...data} />
+            {data.userId === 'onecomme.system' && data.name === '生放送クルーズ' ?
+              <div>
+                <div className="text-lg font-mono font-bold">
+                  {`${data.comment}`}
+                </div>
+                <div className="text-3xl font-mono font-bold animate-[wiggle_1s_ease-in-out_infinite]">
+                  右上のQRコードから是非コメントしに来てください<i>！</i>
+                </div>
+              </div> :
+              <Reply {...data} />
+            }
           </div>
         )) :
         numStartQuote > numEndQuote ?
-          <div className="text-5xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-[wiggle_1s_ease-in-out_infinite]">
-            ニコ生クルーズの皆さん、ようこそ
+          <div className="text-5xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
+            ニコ生クルーズの皆さん、ようこそ<i>！</i>
           </div>
           :
-          <div className="text-7xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce hidden">
+          <div className="text-5xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce hidden">
             コメントお待ちしています
           </div>
       }
