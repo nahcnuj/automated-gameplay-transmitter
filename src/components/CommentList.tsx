@@ -10,6 +10,11 @@ const eliza = new ElizaCore(Doctor);
 const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
   const reply = useMemo(() => eliza.transform(comment), [comment]);
 
+  useEffect(() => {
+    const uttr = new SpeechSynthesisUtterance(reply);
+    window.speechSynthesis.speak(uttr);
+  }, [reply]);
+
   return <>
     <div className="text-xl font-mono font-bold">
       {`${comment}`}
@@ -43,7 +48,6 @@ export function App() {
   }, []);
 
   const displayComments = comments.toReversed().filter(({ data }) => data.no && Date.now() - Date.parse(data.timestamp) <= 5 * 60 * 1000).slice(0, 3);
-  // const latestComment = comments.filter(({ data }) => data.no).at(-1);
   const systemMessages = comments.filter(({ data }) => data.userId === 'onecomme.system');
   const numStartQuote = systemMessages.filter(({ data }) => data.comment === '「生放送クルーズさん」が引用を開始しました').length
   const numEndQuote = systemMessages.filter(({ data }) => data.comment === '「生放送クルーズさん」が引用を終了しました').length
