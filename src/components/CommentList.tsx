@@ -15,14 +15,11 @@ const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
     window.speechSynthesis.speak(uttr);
   }, [reply]);
 
-  return <>
-    <div className="text-lg font-mono font-bold">
-      {`${comment}`}
-    </div>
+  return (
     <div className="text-3xl font-mono font-bold">
       {`>>${no} ${reply}`}
     </div>
-  </>;
+  );
 };
 
 export function App() {
@@ -47,7 +44,6 @@ export function App() {
     return () => clearInterval(id);
   }, []);
 
-  const displayComments = comments.toReversed().filter(({ data }) => data.no && Date.now() - Date.parse(data.timestamp) <= 5 * 60 * 1000).slice(0, 3);
   const systemMessages = comments.filter(({ data }) => data.userId === 'onecomme.system');
   const numStartQuote = systemMessages.filter(({ data }) => data.comment === '「生放送クルーズさん」が引用を開始しました').length
   const numEndQuote = systemMessages.filter(({ data }) => data.comment === '「生放送クルーズさん」が引用を終了しました').length
@@ -68,31 +64,44 @@ export function App() {
               '🔴'
         }
       </div>
-      {displayComments.length > 0 ?
-        displayComments.map(({ data }) => (
-          <div key={data.id} className="bg-black/77 p-2 rounded-lg border-2 border-[#fbf0df]">
-            {data.userId === 'onecomme.system' && data.name === '生放送クルーズ' ?
-              <div>
-                <div className="text-lg font-mono font-bold">
-                  {`${data.comment}`}
-                </div>
-                <div className="text-3xl font-mono font-bold animate-[wiggle_1s_ease-in-out_infinite]">
-                  右上のQRコードから是非コメントしに来てください<i>！</i>
-                </div>
-              </div> :
-              <Reply {...data} />
-            }
-          </div>
-        )) :
+      {
         numStartQuote > numEndQuote ?
           <div className="text-5xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
             ニコ生クルーズの皆さん、ようこそ<i>！</i>
-          </div>
-          :
-          <div className="text-5xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce hidden">
-            コメントお待ちしています
-          </div>
+          </div> :
+          null
       }
+      {comments.map(({ data }) => {
+        if (Date.now() - Date.parse(data.timestamp) > 5 * 60 * 1000) {
+          return null;
+        }
+
+        if (data.no) {
+          return (
+            <div key={data.id} className="bg-black/77 p-2 rounded-lg border-2 border-[#fbf0df]">
+              <div className="text-lg font-mono font-bold">
+                {`${data.comment}`}
+              </div>
+              <Reply {...data} />
+            </div>
+          );
+        }
+
+        if (data.userId === 'onecomme.system' && data.name === '生放送クルーズ') {
+          return (
+            <div key={data.id} className="bg-black/77 p-2 rounded-lg border-2 border-[#fbf0df]">
+              <div className="text-lg font-mono font-bold">
+                {`${data.comment}`}
+              </div>
+              <div className="text-3xl font-mono font-bold animate-[wiggle_1s_ease-in-out_infinite]">
+                右上のQRコードから是非コメントしに来てください<i>！</i>
+              </div>
+            </div>
+          );
+        }
+
+        return null;
+      }).filter((x) => x).slice(0, 3)}
     </div>
   );
 }
