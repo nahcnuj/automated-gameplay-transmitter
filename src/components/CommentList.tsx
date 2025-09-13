@@ -15,6 +15,9 @@ const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
   useEffect(() => {
     const uttr = new SpeechSynthesisUtterance(reply);
     uttr.addEventListener('start', () => {
+      console.log(
+        `Speaking...: ${reply}`,
+      );
       setSpeechStatus('▶️');
     });
     uttr.addEventListener('resume', () => {
@@ -24,9 +27,13 @@ const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
       setSpeechStatus('⏸️');
     });
     uttr.addEventListener('end', () => {
+      console.log(`Spoke: ${reply}`),
       setSpeechStatus(null);
     });
-    uttr.addEventListener('error', () => {
+    uttr.addEventListener('error', (event) => {
+      console.log(
+        `An error has occurred with the speech synthesis: ${event.error}`,
+      );
       setSpeechStatus('⚠️');
     });
     window.speechSynthesis.speak(uttr);
