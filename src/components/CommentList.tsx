@@ -73,9 +73,10 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    console.log(window.speechSynthesis.getVoices());
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance());
+    console.log('useEffect', window.speechSynthesis.getVoices());
     window.speechSynthesis.onvoiceschanged = function () {
-      console.log(window.speechSynthesis.getVoices());
+      console.log('onvoiceschanged', window.speechSynthesis.getVoices());
     };
   }, []);
 
