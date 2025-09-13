@@ -15,27 +15,30 @@ const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
   useEffect(() => {
     const uttr = new SpeechSynthesisUtterance(reply);
     uttr.addEventListener('start', () => {
-      console.log(
-        `Speaking...: ${reply}`,
-      );
+      console.log(`start: ${reply}`);
       setSpeechStatus('▶️');
     });
     uttr.addEventListener('resume', () => {
+      console.log(`resume: ${reply}`);
       setSpeechStatus('▶️');
     });
     uttr.addEventListener('pause', () => {
+      console.log(`pause: ${reply}`);
       setSpeechStatus('⏸️');
     });
     uttr.addEventListener('end', () => {
-      console.log(`Spoke: ${reply}`),
-      setSpeechStatus(null);
+      console.log(`end: ${reply}`),
+        setSpeechStatus(null);
     });
     uttr.addEventListener('error', (event) => {
       console.log(
+        `error: ${reply}`,
         `An error has occurred with the speech synthesis: ${event.error}`,
       );
       setSpeechStatus('⚠️');
     });
+    uttr.lang = 'ja-JP';
+    uttr.voice = window.speechSynthesis.getVoices()[0] ?? null;
     window.speechSynthesis.speak(uttr);
   }, [reply]);
 
@@ -67,6 +70,13 @@ export function App() {
     }, 1000);
 
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    console.log(window.speechSynthesis.getVoices());
+    window.speechSynthesis.onvoiceschanged = function () {
+      console.log(window.speechSynthesis.getVoices());
+    };
   }, []);
 
   const systemMessages = comments.filter(({ data }) => data.userId === 'onecomme.system');
