@@ -8,15 +8,33 @@ import { useEffect, useMemo, useState } from "react";
 const eliza = new ElizaCore(Doctor);
 
 const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
+  const [speechStatus, setSpeechStatus] = useState<string | null>(null);
+
   const reply = useMemo(() => eliza.transform(comment), [comment]);
 
   useEffect(() => {
     const uttr = new SpeechSynthesisUtterance(reply);
+    uttr.addEventListener('start', () => {
+      setSpeechStatus('▶️');
+    });
+    uttr.addEventListener('resume', () => {
+      setSpeechStatus('▶️');
+    });
+    uttr.addEventListener('pause', () => {
+      setSpeechStatus('⏸️');
+    });
+    uttr.addEventListener('end', () => {
+      setSpeechStatus(null);
+    });
+    uttr.addEventListener('error', () => {
+      setSpeechStatus('⚠️');
+    });
     window.speechSynthesis.speak(uttr);
   }, [reply]);
 
   return (
     <div className="text-3xl font-mono font-bold">
+      {speechStatus}
       {`>>${no} ${reply}`}
     </div>
   );
