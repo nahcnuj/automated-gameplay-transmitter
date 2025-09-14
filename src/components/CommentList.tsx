@@ -101,9 +101,10 @@ export function App() {
         }
       </div>
       {
-        numStartQuote > numEndQuote ?
-          <div className="text-5xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
-            ニコ生クルーズの皆さん、ようこそ<i>！</i>
+        true ?
+          <div className="text-3xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
+            ニコ生クルーズのみなさん、ようこそ！またお会いできましたね。<br />
+            え、はじめてですか？はじめまして！コメントしていってね！
           </div> :
           null
       }
