@@ -130,7 +130,7 @@ export function App() {
                 {`${data.comment}`}
               </div>
               <div className="text-3xl font-mono font-bold animate-[wiggle_1s_ease-in-out_infinite]">
-                右上のQRコードから是非コメントしに来てください<i>！</i>
+                QRコードから是非コメントしに来てください<i>！</i>
               </div>
             </div>
           );
