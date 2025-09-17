@@ -50,8 +50,8 @@ const server = serve({
         comments.push(...data);
 
         data.filter(({ data }) => data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ'))
-          .map(({ data }) => (data.comment ?? '').split(/[。]/g).map((s: string) => {
-            talk?.add(s);
+          .map(({ data }) => (data.comment ?? '').split(/[\s、。！？]/g).map((s: string) => {
+            talk?.add(s.trim());
           }));
 
         return new Response();

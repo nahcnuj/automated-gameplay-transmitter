@@ -6,27 +6,6 @@ type Model = {
   }
 };
 
-const start = ["こ"];
-const eos = ["。"];
-
-const chains: Model = {
-  "こ": {
-    "ん": 1,
-  },
-  "ん": {
-    "に": 1,
-  },
-  "に": {
-    "ち": 1,
-  },
-  "ち": {
-    "わ": 1,
-  },
-  "わ": {
-    "。": 1,
-  },
-};
-
 const pick = (cands: { [k: string]: number }) => {
   const total = Object.values(cands).reduce((s, v) => s + v, 0);
   const rnd = Math.floor(Math.random() * total);
@@ -40,8 +19,8 @@ const pick = (cands: { [k: string]: number }) => {
 };
 
 export const talk = (model: Model, bos = ['こ']) => {
-  console.log(model);
-  let s = [bos[Math.floor(Math.random() * bos.length)] ?? "。"];
+  // console.log(model);
+  let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
   while (s.at(-1) !== '。' && s.length < 50) {
     const w = pick(model[s.at(-1) ?? ''] ?? {});
     s.push(w);
@@ -55,15 +34,16 @@ export const fromFile = (path: string) => {
     return {
       gen: () => talk(model, bos),
       add: (word: string) => {
+        console.log(word);
         Array.from(`${word}。`).reduce<string>((prev, next) => {
           if (prev) {
             const v = model[prev] ??= { [next]: 0 };
             v[next] += 1;
-            console.log(model);
+            // console.log(model);
           } else {
             if (!bos.includes(next)) {
               bos.push(next);
-              console.log(bos);
+              // console.log(bos);
             }
           }
           return next;
