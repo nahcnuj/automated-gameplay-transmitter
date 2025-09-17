@@ -19,7 +19,6 @@ const pick = (cands: { [k: string]: number }) => {
 };
 
 export const talk = (model: Model, bos = ['こ']) => {
-  // console.log(model);
   let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
   while (s.at(-1) !== '。' && s.length < 50) {
     const w = pick(model[s.at(-1) ?? ''] ?? {});
@@ -37,19 +36,18 @@ export const fromFile = (path: string) => {
         console.log(word);
         Array.from(`${word}。`).reduce<string>((prev, next) => {
           if (prev) {
+            model[prev] ??= { [next]: 0 };
             const v = model[prev] ??= { [next]: 0 };
             v[next] += 1;
-            // console.log(model);
           } else {
             if (!bos.includes(next)) {
               bos.push(next);
-              // console.log(bos);
             }
           }
           return next;
         }, '');
         try {
-          writeFileSync(path, JSON.stringify({ model, bos }));
+          writeFileSync(path, JSON.stringify({ model, bos }, null, 2));
         } catch (err) {
           console.warn(err);
         }

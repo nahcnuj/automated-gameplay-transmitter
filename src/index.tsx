@@ -84,7 +84,7 @@ const server = serve({
     '/api/talk': () => {
       if (talk) {
         const text = talk.gen();
-        console.log(text);
+        console.log(`> ${text}`);
         return new Response(text);
       }
       return new Response('', { status: 500 })
