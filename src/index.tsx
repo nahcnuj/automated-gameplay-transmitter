@@ -1,10 +1,13 @@
 import { serve } from "bun";
 import index from "./index.html";
+import { fromFile } from "./lib/talk";
 
 let latest = Date.now();
-let client: string | undefined
+let client: string | undefined;
 
-const comments: unknown[] = []
+const talk = fromFile('model.json');
+
+const comments: unknown[] = [];
 
 const server = serve({
   routes: {
@@ -71,6 +74,14 @@ const server = serve({
 
     '/api/comments': () => Response.json(comments),
     '/api/status': () => Response.json({ latest }),
+    '/api/talk': () => {
+      if (talk) {
+        const text = talk.gen();
+        console.log(text);
+        return new Response(text);
+      }
+      return new Response('', { status: 500 })
+    },
   },
 
   error(error) {

@@ -4,8 +4,11 @@ apt install -y           \
   fonts-noto-cjk         \
   fonts-noto-color-emoji \
   git                    \
-  pulseaudio             \
-  unzip
+  libasound2-dev         \
+  libudev-dev            \
+  pipewire               \
+  unzip                  \
+  wireplumber
 curl -fsSL https://bun.sh/install | bash
 
 # Install a window manager, JWM
@@ -52,3 +55,13 @@ pipx install obs-cli
 
 exec $SHELL -l
 obs-cli stream status
+
+# Open JTalk
+cp /etc/apt/sources.list{,.orig}
+
+cat <EOS >>/etc/apt/sources.list
+deb http://deb.debian.org/debian bullseye main contrib non-free
+deb-src http://deb.debian.org/debian bullseye main contrib non-free
+EOS
+apt update
+apt install -y open-jtalk open-jtalk-mecab-naist-jdic hts-voice-nitech-jp-atr503-m001

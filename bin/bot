@@ -1,0 +1,14 @@
+#!/usr/bin/env dash
+set -xu
+
+while true
+do
+    curl -q 'http://localhost:7777/api/talk' | \
+        open_jtalk \
+            -m /usr/share/hts-voice/nitech-jp-atr503-m001/nitech_jp_atr503_m001.htsvoice \
+            -x /var/lib/mecab/dic/open-jtalk/naist-jdic \
+            -ow /tmp/jsay.wav
+    aplay -q /tmp/jsay.wav
+    rm -f /tmp/jsay.wav
+    sleep 1
+done
