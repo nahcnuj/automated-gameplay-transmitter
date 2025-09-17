@@ -1,5 +1,5 @@
 #!/usr/bin/env dash
-set -xu
+set -eu
 
 while true
 do
@@ -10,5 +10,5 @@ do
             -ow /tmp/jsay.wav
     aplay -q /tmp/jsay.wav
     rm -f /tmp/jsay.wav
-    sleep 1
+    sleep 10
 done

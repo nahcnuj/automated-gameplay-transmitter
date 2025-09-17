@@ -84,6 +84,11 @@ export function App() {
   const numStartQuote = systemMessages.filter(({ data }) => data.comment === '「生放送クルーズさん」が引用を開始しました').length
   const numEndQuote = systemMessages.filter(({ data }) => data.comment === '「生放送クルーズさん」が引用を終了しました').length
 
+  const userLastComment = comments.filter(({ data }) => data.userId !== 'onecomme.system').at(-1);
+  if (userLastComment && Date.now() - Date.parse(userLastComment.data.timestamp) > (23 * 60 + 30) * 60 * 1000) {
+    return null
+  }
+
   return (
     <div className="flex flex-col-reverse w-full h-full">
       <div className="text-sm">
@@ -101,12 +106,16 @@ export function App() {
         }
       </div>
       {
-        numStartQuote > numEndQuote ?
+        userLastComment && Date.now() - Date.parse(userLastComment.data.timestamp) > (23 * 60 + 30) * 60 * 1000 ?
           <div className="text-3xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
-            ニコ生クルーズのみなさん、ようこそ！またお会いできましたね。<br />
-            え、はじめてですか？はじめまして！コメントしていってね！
+            本日ここまでコメント数0！ゼロコメ継続なるか
           </div> :
-          null
+          numStartQuote > numEndQuote ?
+            <div className="text-3xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
+              ニコ生クルーズのみなさん、ようこそ！またお会いできましたね。<br />
+              え、はじめてですか？はじめまして！コメントしていってね！
+            </div> :
+            null
       }
       {comments.map(({ data }) => {
         if (Date.now() - Date.parse(data.timestamp) > 5 * 60 * 1000) {
