@@ -10,6 +10,7 @@ do
             -ow /tmp/jsay.wav || :
     aplay -q /tmp/jsay.wav || :
     rm -f /tmp/jsay.wav
+    sleep 2
     truncate /tmp/speech.txt --size 0
-    sleep 10
+    sleep 8
 done
