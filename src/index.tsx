@@ -83,7 +83,7 @@ const server = serve({
     '/api/status': () => Response.json({ latest }),
     '/api/talk': () => {
       if (talk) {
-        const text = talk.gen();
+        const text = talk.gen().slice(0, -1);
         console.log(`> ${text}`);
         return new Response(text);
       }
