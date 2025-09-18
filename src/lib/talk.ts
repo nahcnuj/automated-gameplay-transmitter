@@ -36,9 +36,9 @@ export const fromFile = (path: string) => {
         console.log(word);
         Array.from(`${word}。`).reduce<string>((prev, next) => {
           if (prev) {
-            model[prev] ??= { [next]: 0 };
-            const v = model[prev] ??= { [next]: 0 };
+            const v = model[prev] ?? { [next]: 0 };
             v[next] += 1;
+            model[prev] = v;
           } else {
             if (!bos.includes(next)) {
               bos.push(next);
