@@ -106,16 +106,12 @@ export function App() {
         }
       </div>
       {
-        userLastComment && Date.now() - Date.parse(userLastComment.data.timestamp) > (23 * 60 + 30) * 60 * 1000 ?
+        numStartQuote > numEndQuote ?
           <div className="text-3xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
-            本日ここまでコメント数0！ゼロコメ継続なるか
+            ニコ生クルーズのみなさん、ようこそ！またお会いできましたね。<br />
+            え、はじめてですか？はじめまして！コメントしていってね！
           </div> :
-          numStartQuote > numEndQuote ?
-            <div className="text-3xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
-              ニコ生クルーズのみなさん、ようこそ！またお会いできましたね。<br />
-              え、はじめてですか？はじめまして！コメントしていってね！
-            </div> :
-            null
+          null
       }
       {comments.map(({ data }) => {
         if (Date.now() - Date.parse(data.timestamp) > 5 * 60 * 1000) {
@@ -140,7 +136,7 @@ export function App() {
                 {`${data.comment}`}
               </div>
               <div className="text-3xl font-mono font-bold animate-[wiggle_1s_ease-in-out_infinite]">
-                QRコードから是非コメントしに来てください<i>！</i>
+                ぜひ下船してコメントしに来てください<i>！</i>
               </div>
             </div>
           );
