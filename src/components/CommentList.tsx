@@ -108,8 +108,7 @@ export function App() {
       {
         numStartQuote > numEndQuote ?
           <div className="text-3xl font-bold bg-black/77 p-3 rounded-lg font-mono border-2 border-[#fbf0df] leading-none animate-bounce">
-            ニコ生クルーズのみなさん、ようこそ！またお会いできましたね。<br />
-            え、はじめてですか？はじめまして！コメントしていってね！
+            ニコ生クルーズのみなさん、ようこそ！コメントしていってね！
           </div> :
           null
       }
@@ -118,26 +117,13 @@ export function App() {
           return null;
         }
 
-        if (data.no) {
+        if (data.no || data.userId === 'onecomme.system' && data.name === '生放送クルーズ') {
           return (
             <div key={data.id} className="bg-black/77 p-2 rounded-lg border-2 border-[#fbf0df]">
               <div className="text-lg font-mono font-bold">
                 {`${data.comment}`}
               </div>
               <Reply {...data} />
-            </div>
-          );
-        }
-
-        if (data.userId === 'onecomme.system' && data.name === '生放送クルーズ') {
-          return (
-            <div key={data.id} className="bg-black/77 p-2 rounded-lg border-2 border-[#fbf0df]">
-              <div className="text-lg font-mono font-bold">
-                {`${data.comment}`}
-              </div>
-              <div className="text-3xl font-mono font-bold animate-[wiggle_1s_ease-in-out_infinite]">
-                ぜひ下船してコメントしに来てください<i>！</i>
-              </div>
             </div>
           );
         }
