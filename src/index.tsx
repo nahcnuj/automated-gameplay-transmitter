@@ -1,3 +1,4 @@
+import type { NicoNamaComment } from "@onecomme.com/onesdk";
 import { serve } from "bun";
 import index from "./index.html";
 import { fromFile } from "./lib/talk";
@@ -46,7 +47,7 @@ const server = serve({
 
         latest = Date.now();
 
-        const data: any[] = await req.json();
+        const data: NicoNamaComment[] = await req.json();
         comments.push(...data);
 
         data.filter(({ data }) => data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ'))

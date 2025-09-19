@@ -14,11 +14,11 @@ const pick = (cands: { [k: string]: number }) => {
       return [w, s];
     }
     return [word, s + weight];
-  }, ["", 0]);
+  }, ['', 0]);
   return next;
 };
 
-export const talk = (model: Model, bos = ['こ']) => {
+export const talk = (model: Model, bos: string) => {
   let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
   while (s.at(-1) !== '。' && s.length < 30) {
     const w = pick(model[s.at(-1) ?? ''] ?? {});
@@ -27,6 +27,8 @@ export const talk = (model: Model, bos = ['こ']) => {
   return s.join('');
 };
 
+const split = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(text)].map(({ segment }) => segment);
+
 export const fromFile = (path: string) => {
   try {
     const { model, bos } = JSON.parse(readFileSync(path, 'utf8'));
@@ -34,7 +36,7 @@ export const fromFile = (path: string) => {
       gen: () => talk(model, bos),
       add: (word: string) => {
         console.log(word);
-        Array.from(`${word}。`).reduce<string>((prev, next) => {
+        split(`${word}。`).reduce<string>((prev, next) => {
           if (prev) {
             model[prev] = {
               [next]: 0,
@@ -42,7 +44,7 @@ export const fromFile = (path: string) => {
             };
             model[prev][next] += 1;
           } else {
-            if (!bos.includes(next)) {
+            if (!bos.includes(next) && next.match(/^[^0-9a-zA-Z０-９、。！？]/)) {
               bos.push(next);
             }
           }
