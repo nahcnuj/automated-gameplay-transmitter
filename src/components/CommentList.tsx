@@ -1,19 +1,14 @@
 'use client';
 
 import type { NicoNamaComment } from "@onecomme.com/onesdk";
-import ElizaCore from "eliza-ja-js/ElizaCore";
-import Doctor from "eliza-ja-js/doctor-ja.json";
 import { useEffect, useMemo, useState } from "react";
-
-const eliza = new ElizaCore(Doctor);
+import { reply } from "../lib/eliza";
 
 const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
-  const reply = useMemo(() => eliza.transform(comment), [comment]);
-
   return (
     <div className="text-3xl font-mono font-bold">
       {no ? `>>${no} ` : ''}
-      {`${reply}`}
+      {`${reply(comment)}`}
     </div>
   );
 };
@@ -80,7 +75,7 @@ export function App() {
           </div> :
           null
       }
-      {comments.map(({ data }) => {
+      {/* {comments.map(({ data }) => {
         if (Date.now() - Date.parse(data.timestamp) > 5 * 60 * 1000) {
           return null;
         }
@@ -97,7 +92,7 @@ export function App() {
         }
 
         return null;
-      }).filter((x) => x).slice(0, 3)}
+      }).filter((x) => x).slice(0, 3)} */}
     </div>
   );
 }

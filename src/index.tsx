@@ -2,6 +2,7 @@ import type { NicoNamaComment } from "@onecomme.com/onesdk";
 import { serve } from "bun";
 import index from "./index.html";
 import { fromFile } from "./lib/talk";
+import { reply } from "./lib/eliza";
 
 let latest = Date.now();
 let client: string | undefined;
@@ -9,6 +10,8 @@ let client: string | undefined;
 const talk = fromFile('model.json');
 
 const comments: unknown[] = [];
+
+const replyQueue: string[] = [];
 
 const server = serve({
   routes: {
@@ -51,8 +54,9 @@ const server = serve({
         comments.push(...data);
 
         data.filter(({ data }) => data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ'))
-          .map(({ data }) => (data.comment ?? '').split(/[\s、。！？]/g).map((s: string) => {
+          .map(({ data }) => data.comment.split(/[\s、。！？]/g).map((s: string) => {
             talk?.add(s.trim());
+            replyQueue.push(reply(data.comment));
           }));
 
         return new Response();
@@ -83,6 +87,9 @@ const server = serve({
     '/api/comments': () => Response.json(comments),
     '/api/status': () => Response.json({ latest }),
     '/api/talk': () => {
+      if (replyQueue.length > 0) {
+        return new Response(replyQueue.shift());
+      }
       if (talk) {
         const text = talk.gen().slice(0, -1);
         console.log(`> ${text}`);
