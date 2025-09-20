@@ -8,44 +8,12 @@ import { useEffect, useMemo, useState } from "react";
 const eliza = new ElizaCore(Doctor);
 
 const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
-  const [speechStatus, setSpeechStatus] = useState<string | null>(null);
-
   const reply = useMemo(() => eliza.transform(comment), [comment]);
-
-  useEffect(() => {
-    const uttr = new SpeechSynthesisUtterance(reply);
-    uttr.addEventListener('start', () => {
-      console.log(`start: ${reply}`);
-      setSpeechStatus('▶️');
-    });
-    uttr.addEventListener('resume', () => {
-      console.log(`resume: ${reply}`);
-      setSpeechStatus('▶️');
-    });
-    uttr.addEventListener('pause', () => {
-      console.log(`pause: ${reply}`);
-      setSpeechStatus('⏸️');
-    });
-    uttr.addEventListener('end', () => {
-      console.log(`end: ${reply}`),
-        setSpeechStatus(null);
-    });
-    uttr.addEventListener('error', (event) => {
-      console.log(
-        `error: ${reply}`,
-        `An error has occurred with the speech synthesis: ${event.error}`,
-      );
-      setSpeechStatus('⚠️');
-    });
-    uttr.lang = 'ja-JP';
-    uttr.voice = window.speechSynthesis.getVoices()[0] ?? null;
-    window.speechSynthesis.speak(uttr);
-  }, [reply]);
 
   return (
     <div className="text-3xl font-mono font-bold">
-      {speechStatus}
-      {`>>${no} ${reply}`}
+      {no ? `>>${no} ` : ''}
+      {`${reply}`}
     </div>
   );
 };
