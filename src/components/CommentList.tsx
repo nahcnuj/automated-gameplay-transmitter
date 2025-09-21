@@ -82,7 +82,7 @@ export function CommentList({ comments }: { comments: NicoNamaComment[] }) {
         }
 
         return null;
-      }).filter((x) => x).slice(0, 3)}
+      }).filter((x) => x).slice(-10)}
     </div>
   );
 }
