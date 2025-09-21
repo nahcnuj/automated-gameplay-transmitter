@@ -16,7 +16,7 @@ export const SpeechProvider = ({ children }: PropsWithChildren) => {
       await fetch('http://localhost:7777/api/speech')
         .then((res) => res.text())
         .then(setText);
-    }, 100);
+    }, 500);
 
     return () => clearInterval(id);
   }, []);
