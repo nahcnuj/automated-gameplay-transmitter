@@ -97,6 +97,8 @@ const server = serve({
       }
       return new Response('', { status: 500 })
     },
+
+    '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes()),
   },
 
   error(error) {
