@@ -1,8 +1,8 @@
 import type { NicoNamaComment } from "@onecomme.com/onesdk";
 import { serve } from "bun";
 import index from "./index.html";
-import { fromFile } from "./lib/talk";
 import { reply } from "./lib/eliza";
+import { fromFile } from "./lib/talk";
 
 let latest = Date.now();
 let client: string | undefined;
@@ -87,16 +87,27 @@ const server = serve({
     '/api/comments': () => Response.json(comments),
     '/api/status': () => Response.json({ latest }),
     '/api/talk': () => {
-      if (replyQueue.length > 0) {
-        return new Response(replyQueue.shift());
+      const text = replyQueue.shift();
+      if (text) {
+        return new Response(text);
       }
+
       if (talk) {
         const text = talk.gen().slice(0, -1);
         console.log(`> ${text}`);
         return new Response(text);
       }
+
       return new Response('', { status: 500 })
     },
+    '/api/speech': async () => new Response(
+      await Bun.file('/tmp/speech.txt')
+        .bytes()
+        .catch((err) => {
+          console.warn(err);
+          return null;
+        })
+    ),
 
     '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes()),
   },

@@ -1,9 +1,11 @@
 import { CommentList } from "./components/CommentList";
 import { useCommentContext } from "./contexts/CommentContext";
+import { useSpeechContext } from "./contexts/SpeechContext";
 import "./index.css";
 
 export function App() {
   const { comments } = useCommentContext();
+  const { text: speechText } = useSpeechContext();
 
   return (
     <div className="w-screen h-screen max-w-[1280px] max-h-[720px] m-auto overflow-hidden flex">
@@ -15,7 +17,7 @@ export function App() {
           <div className="h-fit flex-none">
             <div className="after:block after:bg-[#001100e3] after:-mb-10 after:translate-x-243 after:-translate-y-18 after:w-10 after:h-10 after:[clip-path:polygon(100%_50%,8%_0,8%_100%)]">
               <div className="w-full h-40 p-2 border-5 border-green-200 bg-[#001100e3] rounded-xl text-5xl/16 font-bold text-white [text-shadow:-2px_-2px_4px_#000,2px_2px_4px_#000]">
-                &nbsp;
+                {speechText}
               </div>
             </div>
             <div className="text-xs/6">

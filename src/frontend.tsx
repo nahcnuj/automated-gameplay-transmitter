@@ -8,13 +8,16 @@
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { CommentProvider } from "./contexts/CommentContext";
+import { SpeechProvider } from "./contexts/SpeechContext";
 
 function start() {
   const root = createRoot(document.getElementById("root")!);
   root.render(
-    <CommentProvider>
-      <App />
-    </CommentProvider>
+    <SpeechProvider>
+      <CommentProvider>
+        <App />
+      </CommentProvider>
+    </SpeechProvider>
   );
 }
 
