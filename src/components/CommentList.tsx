@@ -66,7 +66,7 @@ export function CommentList({ comments }: { comments: NicoNamaComment[] }) {
           null
       } */}
       {comments.map(({ data }) => {
-        if (Date.now() - Date.parse(data.timestamp) > 5 * 60 * 1000) {
+        if (Date.now() - Date.parse(data.timestamp) > 12 /* hour */ * 60 /* min/hour */ * 60 /* min/sec */ * 1000 /* ms/sec */) {
           return null;
         }
 
