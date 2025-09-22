@@ -27,7 +27,7 @@ export function App() {
         </div>
       </div>
       <div className="w-[300px] flex-none">
-        <div className="h-full flex flex-col-reverse gap-2">
+        <div className="h-full flex flex-col-reverse gap-5">
           <div className="h-70 flex-none">
             <img src="/img/nc433974.png" width="720" height="960" className="h-full object-cover object-top" />
           </div>
