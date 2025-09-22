@@ -1,7 +1,7 @@
 'use client';
 
 import type { NicoNamaComment } from "@onecomme.com/onesdk";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { reply } from "../lib/eliza";
 
 const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
@@ -9,6 +9,18 @@ const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
     <div className="text-3xl font-mono font-bold">
       {no ? `>>${no} ` : ''}
       {`${reply(comment)}`}
+    </div>
+  );
+};
+
+const isUser = ({ no }: NicoNamaComment['data']) => no;
+
+const Comment = (data: NicoNamaComment['data']) => {
+  return (
+    <div className={`${isUser(data) ? 'bg-[#001100f7]' : 'bg-blue-950/95'} p-1 my-1 rounded-md border-1 border-[#fbf0df] relative after:[content:'〟'] after:absolute after:bottom-1 after:-right-6 after:text-5xl after:text-blue-50/20`}>
+      <div className="text-lg/6 font-bold">
+        {`${data.comment}`}
+      </div>
     </div>
   );
 };
@@ -71,14 +83,7 @@ export function CommentList({ comments }: { comments: NicoNamaComment[] }) {
         }
 
         if (data.no || data.userId === 'onecomme.system' && data.name === '生放送クルーズ') {
-          return (
-            <div key={data.id} className="bg-black/95 p-1 my-1 rounded-md border-1 border-[#fbf0df]">
-              <div className="text-lg/6 font-bold">
-                {`${data.comment}`}
-              </div>
-              {/* <Reply {...data} /> */}
-            </div>
-          );
+          return <Comment key={data.id} {...data} />;
         }
 
         return null;
