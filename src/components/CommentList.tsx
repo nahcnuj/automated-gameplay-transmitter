@@ -17,7 +17,7 @@ const isUser = ({ no }: NicoNamaComment['data']) => no;
 
 const Comment = (data: NicoNamaComment['data']) => {
   return (
-    <div className={`${isUser(data) ? 'bg-[#001100f7]' : 'bg-blue-950/95'} p-1 my-1 rounded-md border-1 border-[#fbf0df] relative after:[content:'〟'] after:absolute after:bottom-1 after:-right-6 after:text-5xl after:text-blue-50/20`}>
+    <div className={`p-1 my-1 rounded-md border-1 border-[#fbf0df] relative ${isUser(data) ? 'bg-[#001100f7]' : "bg-blue-950/95 after:[content:'〟'] after:absolute after:bottom-1 after:-right-6 after:text-5xl after:text-blue-50/20"}`}>
       <div className="text-lg/6 font-bold">
         {`${data.comment}`}
       </div>
