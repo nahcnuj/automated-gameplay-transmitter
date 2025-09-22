@@ -72,7 +72,7 @@ export function CommentList({ comments }: { comments: NicoNamaComment[] }) {
 
         if (data.no || data.userId === 'onecomme.system' && data.name === '生放送クルーズ') {
           return (
-            <div key={data.id} className="bg-black/77 p-1 my-1 rounded-md border-1 border-[#fbf0df]">
+            <div key={data.id} className="bg-black/95 p-1 my-1 rounded-md border-1 border-[#fbf0df]">
               <div className="text-lg/6 font-bold">
                 {`${data.comment}`}
               </div>
