@@ -36,6 +36,7 @@ const formatDuration = (d: Date) => getClockEmoji(d) +
 //     hours: d.getHours(),
 //   });
 
+const formatNumber = (n: number) => new Intl.NumberFormat('ja-JP').format(n);
 
 export function App() {
   const { startTime, total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
@@ -57,29 +58,29 @@ export function App() {
                 {speechText}
               </div>
             </div>
-            <div className="text-sm/6 font-mono font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
+            <div className="text-sm/6 font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
               <div className="flex gap-5">
-                <div className="flex-none">
+                <div className="flex-none font-mono">
                   {formatDateTime(now)}
                 </div>
                 <div className="flex-auto"></div>
                 {total > 0 && (
                   <div className="flex-none">
-                    {`🙎${total}`}
+                    {`🙎${formatNumber(total)}`}
                   </div>
                 )}
                 {ad > 0 && (
                   <div className="flex-none">
-                    {`📣${ad}`}
+                    {`📣${formatNumber(ad)}`}
                   </div>
                 )}
                 {gift > 0 && (
                   <div className="flex-none">
-                    {`🎁${gift}`}
+                    {`🎁${formatNumber(gift)}`}
                   </div>
                 )}
                 {startTime &&
-                  <div className="flex-none">
+                  <div className="flex-none font-mono">
                     {formatDuration(new Date(now.getTime() - startTime + now.getTimezoneOffset() * 60 * 1000))}
                   </div>
                 }
