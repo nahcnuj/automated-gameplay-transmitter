@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, statSync, writeFileSync } from "node:fs";
 
 type Model = {
   [word: string]: {
@@ -56,8 +56,10 @@ export const fromFile = (path: string) => {
           console.warn(err);
         }
       },
+      modifiedOn: () => statSync(path).mtimeMs,
     };
   } catch (err) {
+    console.error(err);
     return;
   }
 };

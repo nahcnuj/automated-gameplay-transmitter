@@ -7,9 +7,12 @@ import { fromFile } from "./lib/talk";
 let latest = Date.now();
 let client: string | undefined;
 
-const talk = fromFile('model.json');
+const Model = fromFile('model.json');
+if (!Model) {
+  throw new Error('could not load the model');
+}
 
-const comments: unknown[] = [];
+const comments: NicoNamaComment[] = [];
 
 const replyQueue: string[] = [];
 
@@ -54,8 +57,9 @@ const server = serve({
         comments.push(...data);
 
         data.filter(({ data }) => data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ'))
-          .map(({ data }) => data.comment.split(/[\s、。！？]/g).map((s: string) => {
-            talk?.add(s.trim());
+          .filter(({ data }) => Date.parse(data.timestamp) > Model.modifiedOn())
+          .map(({ data }) => data.comment.split(/\s+/g).map((s: string) => {
+            Model.add(s.trim());
             replyQueue.push(reply(data.comment));
           }));
 
@@ -92,8 +96,8 @@ const server = serve({
         return new Response(text);
       }
 
-      if (talk) {
-        const text = talk.gen().replace(/。$/, '');
+      if (Model) {
+        const text = Model.gen().replace(/。$/, '');
         console.log(`> ${text}`);
         return new Response(text);
       }
