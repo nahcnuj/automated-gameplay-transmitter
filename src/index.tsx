@@ -2,7 +2,9 @@ import type { NicoNamaComment, ServiceMeta } from "@onecomme.com/onesdk";
 import { serve } from "bun";
 import index from "./index.html";
 import { reply } from "./lib/eliza";
-import { fromFile } from "./lib/talk";
+import { fromFile } from "./lib/TalkModel";
+
+const splitInSentences = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'sentence' }).segment(text)].map(({ segment }) => segment);
 
 let latest = Date.now();
 let serviceMeta: ServiceMeta;
@@ -15,7 +17,9 @@ if (!Model) {
 
 const comments: NicoNamaComment[] = [];
 
-const replyQueue: string[] = [];
+const talkQueue: string[] = [];
+const giftQueue: string[] = [];
+const adQueue: string[] = [];
 
 const server = serve({
   routes: {
@@ -57,12 +61,41 @@ const server = serve({
         const data: NicoNamaComment[] = await req.json();
         comments.push(...data);
 
-        data.filter(({ data }) => data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ'))
-          .filter(({ data }) => Date.parse(data.timestamp) > Model.modifiedOn())
-          .map(({ data }) => data.comment.split(/\s+/g).map((s: string) => {
-            Model.add(s.trim());
-            replyQueue.push(reply(data.comment));
-          }));
+        data.filter(({ data }) => Date.parse(data.timestamp) > Model.modifiedOn())
+          .forEach(({ data }) => {
+            if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
+              splitInSentences(data.comment)
+                .forEach((s: string) => {
+                  Model.learn(s.trim());
+                });
+              talkQueue.push(reply(data.comment));
+            }
+
+            if (data.userId === 'onecomme.system') {
+              if (data.comment === 'まもなく生放送クルーズが到着します') {
+                talkQueue.push(
+                  '生放送クルーズのみなさん、いらっしゃいませ。',
+                  '人工知能Vチューバーの馬可無序です。',
+                  'みなさんのコメントを学習しておしゃべりしています。',
+                  'もしよかったら上のリンクをクリックしていってくださいね。',
+                );
+              }
+
+              if (data.comment.endsWith('広告しました')) {
+                const name = data.comment.slice(0, data.comment.lastIndexOf('さんが'));
+                if (!adQueue.includes(name)) {
+                  adQueue.push(name);
+                }
+              }
+            }
+
+            if (data.hasGift) {
+              const name = (data.origin as any)?.message?.gift?.advertiserName;
+              if (name && !giftQueue.includes(name)) {
+                giftQueue.push(name);
+              }
+            }
+          });
 
         return new Response();
       },
@@ -92,7 +125,17 @@ const server = serve({
     '/api/comments': () => Response.json(comments),
     '/api/status': () => Response.json({ latest }),
     '/api/talk': () => {
-      const text = replyQueue.shift();
+      const ad = adQueue.shift();
+      if (ad) {
+        return new Response(`${ad}さん、広告ありがとうございます！`);
+      }
+
+      const gift = giftQueue.shift();
+      if (gift) {
+        return new Response(`${gift}さん、ギフトありがとうございます！`);
+      }
+
+      const text = talkQueue.shift();
       if (text) {
         return new Response(text);
       }

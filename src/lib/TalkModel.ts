@@ -34,7 +34,7 @@ export const fromFile = (path: string) => {
     const { model, bos } = JSON.parse(readFileSync(path, 'utf8'));
     return {
       gen: () => talk(model, bos),
-      add: (word: string) => {
+      learn: (word: string) => {
         console.log(word);
         split(`${word}。`).reduce<string>((prev, next) => {
           if (prev) {
