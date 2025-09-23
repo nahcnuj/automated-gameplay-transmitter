@@ -7,7 +7,7 @@ import "./index.css";
 
 const getClockEmoji = (d: Date) =>
   [...'🕛🕧🕐🕜🕑🕝🕒🕞🕓🕟🕔🕠🕕🕡🕖🕢🕗🕣🕘🕤🕙🕥🕚🕦']
-    .at(2 * d.getHours() % 12 + Math.floor(d.getMinutes() / 30));
+    .at(2 * (d.getHours() % 12) + Math.floor(d.getMinutes() / 30));
 
 const formatDateTime = (d: Date) => getClockEmoji(d) +
   new Intl.DateTimeFormat('ja-JP', {

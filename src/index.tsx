@@ -56,12 +56,10 @@ const server = serve({
           return Response.json(undefined, { status: 404 });
         }
 
-        latest = Date.now();
-
         const data: NicoNamaComment[] = await req.json();
         comments.push(...data);
 
-        data.filter(({ data }) => Date.parse(data.timestamp) > Model.modifiedOn())
+        data.filter(({ data }) => Date.parse(data.timestamp) > latest)
           .forEach(({ data }) => {
             if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
               splitInSentences(data.comment)
@@ -96,6 +94,8 @@ const server = serve({
               }
             }
           });
+
+        latest = Date.now();
 
         return new Response();
       },
