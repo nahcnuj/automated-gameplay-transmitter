@@ -1,10 +1,11 @@
-import type { NicoNamaComment } from "@onecomme.com/onesdk";
+import type { NicoNamaComment, ServiceMeta } from "@onecomme.com/onesdk";
 import { serve } from "bun";
 import index from "./index.html";
 import { reply } from "./lib/eliza";
 import { fromFile } from "./lib/talk";
 
 let latest = Date.now();
+let serviceMeta: ServiceMeta;
 let client: string | undefined;
 
 const Model = fromFile('model.json');
@@ -112,6 +113,13 @@ const server = serve({
           return null;
         })
     ),
+    '/api/meta': {
+      GET: () => Response.json(serviceMeta),
+      POST: async (req) => {
+        serviceMeta = await req.json();
+        return new Response();
+      },
+    },
 
     '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes()),
   },

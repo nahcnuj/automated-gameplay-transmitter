@@ -9,15 +9,18 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { CommentProvider } from "./contexts/CommentContext";
 import { SpeechProvider } from "./contexts/SpeechContext";
+import { ServiceMetaProvider } from "./contexts/ServiceMetaContext";
 
 function start() {
   const root = createRoot(document.getElementById("root")!);
   root.render(
-    <SpeechProvider>
-      <CommentProvider>
-        <App />
-      </CommentProvider>
-    </SpeechProvider>
+    <ServiceMetaProvider>
+      <SpeechProvider>
+        <CommentProvider>
+          <App />
+        </CommentProvider>
+      </SpeechProvider>
+    </ServiceMetaProvider>
   );
 }
 

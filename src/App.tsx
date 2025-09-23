@@ -1,9 +1,11 @@
 import { CommentList } from "./components/CommentList";
 import { useCommentContext } from "./contexts/CommentContext";
+import { useServiceMetaContext } from "./contexts/ServiceMetaContext";
 import { useSpeechContext } from "./contexts/SpeechContext";
 import "./index.css";
 
 export function App() {
+  const { total = 0, points = { ad: 0, gift: 0 } } = useServiceMetaContext();
   const { comments } = useCommentContext();
   const { text: speechText } = useSpeechContext();
 
@@ -20,8 +22,18 @@ export function App() {
                 {speechText}
               </div>
             </div>
-            <div className="text-xs/6">
-              &nbsp;
+            <div className="text-sm/6 font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
+              <div className="flex gap-5">
+                <div className="flex-none">
+                  {`💬${total}`}
+                </div>
+                <div className="flex-none">
+                  {`📣${points.ad}`}
+                </div>
+                <div className="flex-none">
+                  {`🎁${points.gift}`}
+                </div>
+              </div>
             </div>
           </div>
         </div>

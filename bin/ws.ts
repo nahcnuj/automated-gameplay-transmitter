@@ -17,7 +17,7 @@ setInterval(async () => {
   });
 }, 1000);
 
-const ws = new WebSocket('ws://localhost:11180/sub?p=comments');
+const ws = new WebSocket('ws://localhost:11180/sub?p=comments,meta');
 ws.addEventListener('message', async (event) => {
   const { type, data } = JSON.parse(event.data);
   switch (type) {
@@ -31,6 +31,16 @@ ws.addEventListener('message', async (event) => {
       }).catch((err) => {
         console.warn(err);
       });
+      break;
+    case 'meta':
+      await fetch(`http://${target}/api/meta`, {
+        method: 'POST',
+        body: JSON.stringify(data.data),
+        headers: { 'Content-Type': 'application/json' },
+      }).catch((err) => {
+        console.warn(err);
+      });
+      console.log(data);
       break;
     default:
       console.error('unknown data type: ', type);
