@@ -67,7 +67,7 @@ export function App() {
                 <div className="flex-auto"></div>
                 {total > 0 && (
                   <div className="flex-none">
-                    <HighlightOnChange timeout={1_000} classNameOnChanged="text-yellow-300">
+                    <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
                       {`🙎${formatNumber(total)}`}
                     </HighlightOnChange>
                   </div>
