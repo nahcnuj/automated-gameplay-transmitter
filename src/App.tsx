@@ -21,23 +21,24 @@ const formatDateTime = (d: Date) => getClockEmoji(d) +
     .format(d);
 
 const formatDuration = (d: Date) => getClockEmoji(d) +
-  // `Intl.DurationFormat` missing from library definitions https://github.com/microsoft/TypeScript/issues/60608
-  new (Intl as any).DurationFormat('ja-JP', {
-    style: 'digital',
-    seconds: '2-digit',
-    minutes: '2-digit',
-    hours: '2-digit',
-    timeZone: 'Asia/Tokyo',
-  })
-    .format({
-      seconds: d.getSeconds(),
-      minutes: d.getMinutes(),
-      hours: d.getHours(),
-    });
+  `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+// // `Intl.DurationFormat` missing from library definitions https://github.com/microsoft/TypeScript/issues/60608
+// new (Intl as any).DurationFormat('ja-JP', {
+//   style: 'digital',
+//   seconds: '2-digit',
+//   minutes: '2-digit',
+//   hours: '2-digit',
+//   timeZone: 'Asia/Tokyo',
+// })
+//   .format({
+//     seconds: d.getSeconds(),
+//     minutes: d.getMinutes(),
+//     hours: d.getHours(),
+//   });
 
 
 export function App() {
-  const { startTime, total = 0, points = { ad: 0, gift: 0 } } = useServiceMetaContext();
+  const { startTime, total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
   const { comments } = useCommentContext();
   const { text: speechText } = useSpeechContext();
 
@@ -62,15 +63,21 @@ export function App() {
                   {formatDateTime(now)}
                 </div>
                 <div className="flex-auto"></div>
-                <div className="flex-none">
-                  {`🙎${total}`}
-                </div>
-                <div className="flex-none">
-                  {`📣${points.ad}`}
-                </div>
-                <div className="flex-none">
-                  {`🎁${points.gift}`}
-                </div>
+                {total > 0 && (
+                  <div className="flex-none">
+                    {`🙎${total}`}
+                  </div>
+                )}
+                {ad > 0 && (
+                  <div className="flex-none">
+                    {`📣${ad}`}
+                  </div>
+                )}
+                {gift > 0 && (
+                  <div className="flex-none">
+                    {`🎁${gift}`}
+                  </div>
+                )}
                 {startTime &&
                   <div className="flex-none">
                     {formatDuration(new Date(now.getTime() - startTime + now.getTimezoneOffset() * 60 * 1000))}
