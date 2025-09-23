@@ -57,7 +57,7 @@ export function App() {
                 {speechText}
               </div>
             </div>
-            <div className="text-sm/6 font-mono [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
+            <div className="text-sm/6 font-mono font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
               <div className="flex gap-5">
                 <div className="flex-none">
                   {formatDateTime(now)}
