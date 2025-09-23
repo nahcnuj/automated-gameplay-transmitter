@@ -125,19 +125,28 @@ const server = serve({
     '/api/comments': () => Response.json(comments),
     '/api/status': () => Response.json({ latest }),
     '/api/talk': () => {
-      const ad = adQueue.shift();
-      if (ad) {
-        return new Response(`${ad}さん、広告ありがとうございます！`);
+      {
+        const ad = adQueue.shift();
+        if (ad) {
+          console.log(`[AD] ${ad}`);
+          return new Response(`${ad}さん、広告ありがとうございます！`);
+        }
       }
 
-      const gift = giftQueue.shift();
-      if (gift) {
-        return new Response(`${gift}さん、ギフトありがとうございます！`);
+      {
+        const gift = giftQueue.shift();
+        if (gift) {
+          console.log(`[GIFT] ${gift}`);
+          return new Response(`${gift}さん、ギフトありがとうございます！`);
+        }
       }
 
-      const text = talkQueue.shift();
-      if (text) {
-        return new Response(text);
+      {
+        const text = talkQueue.shift();
+        if (text) {
+          console.log(`[REPLY] ${text}`);
+          return new Response(text);
+        }
       }
 
       if (Model) {
