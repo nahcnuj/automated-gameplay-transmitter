@@ -1,4 +1,5 @@
 import { CommentList } from "./components/CommentList";
+import { HighlightOnChange } from "./components/HighlightOnChange";
 import { useCommentContext } from "./contexts/CommentContext";
 import { useServiceMetaContext } from "./contexts/ServiceMetaContext";
 import { useSpeechContext } from "./contexts/SpeechContext";
@@ -58,7 +59,7 @@ export function App() {
                 {speechText}
               </div>
             </div>
-            <div className="text-sm/6 font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
+            <div className="text-md font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
               <div className="flex gap-5">
                 <div className="flex-none font-mono">
                   {formatDateTime(now)}
@@ -66,17 +67,23 @@ export function App() {
                 <div className="flex-auto"></div>
                 {total > 0 && (
                   <div className="flex-none">
-                    {`🙎${formatNumber(total)}`}
+                    <HighlightOnChange timeout={500} classNameOnChanged="text-yellow-300">
+                      {`🙎${formatNumber(total)}`}
+                    </HighlightOnChange>
                   </div>
                 )}
                 {ad > 0 && (
                   <div className="flex-none">
-                    {`📣${formatNumber(ad)}`}
+                    <HighlightOnChange timeout={3000} classNameOnChanged="text-yellow-300">
+                      {`📣${formatNumber(ad)}`}
+                    </HighlightOnChange>
                   </div>
                 )}
                 {gift > 0 && (
                   <div className="flex-none">
-                    {`🎁${formatNumber(gift)}`}
+                    <HighlightOnChange timeout={3000} classNameOnChanged="text-yellow-300">
+                      {`🎁${formatNumber(gift)}`}
+                    </HighlightOnChange>
                   </div>
                 )}
                 {startTime &&
