@@ -93,7 +93,7 @@ const server = serve({
       }
 
       if (talk) {
-        const text = talk.gen().slice(0, -1);
+        const text = talk.gen().replace(/。$/, '');
         console.log(`> ${text}`);
         return new Response(text);
       }
