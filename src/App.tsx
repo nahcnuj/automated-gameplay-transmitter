@@ -4,10 +4,44 @@ import { useServiceMetaContext } from "./contexts/ServiceMetaContext";
 import { useSpeechContext } from "./contexts/SpeechContext";
 import "./index.css";
 
+const getClockEmoji = (d: Date) =>
+  [...'🕛🕧🕐🕜🕑🕝🕒🕞🕓🕟🕔🕠🕕🕡🕖🕢🕗🕣🕘🕤🕙🕥🕚🕦']
+    .at(2 * d.getHours() % 12 + Math.floor(d.getMinutes() / 30));
+
+const formatDateTime = (d: Date) => getClockEmoji(d) +
+  new Intl.DateTimeFormat('ja-JP', {
+    second: '2-digit',
+    minute: '2-digit',
+    hour: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Tokyo',
+  })
+    .format(d);
+
+const formatDuration = (d: Date) => getClockEmoji(d) +
+  // `Intl.DurationFormat` missing from library definitions https://github.com/microsoft/TypeScript/issues/60608
+  new (Intl as any).DurationFormat('ja-JP', {
+    style: 'digital',
+    seconds: '2-digit',
+    minutes: '2-digit',
+    hours: '2-digit',
+    timeZone: 'Asia/Tokyo',
+  })
+    .format({
+      seconds: d.getSeconds(),
+      minutes: d.getMinutes(),
+      hours: d.getHours(),
+    });
+
+
 export function App() {
-  const { total = 0, points = { ad: 0, gift: 0 } } = useServiceMetaContext();
+  const { startTime, total = 0, points = { ad: 0, gift: 0 } } = useServiceMetaContext();
   const { comments } = useCommentContext();
   const { text: speechText } = useSpeechContext();
+
+  const now = new Date();
 
   return (
     <div className="w-screen h-screen max-w-[1280px] max-h-[720px] m-auto overflow-hidden flex">
@@ -22,8 +56,12 @@ export function App() {
                 {speechText}
               </div>
             </div>
-            <div className="text-sm/6 font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
+            <div className="text-sm/6 font-mono [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
               <div className="flex gap-5">
+                <div className="flex-none">
+                  {formatDateTime(now)}
+                </div>
+                <div className="flex-auto"></div>
                 <div className="flex-none">
                   {`🙎${total}`}
                 </div>
@@ -33,6 +71,11 @@ export function App() {
                 <div className="flex-none">
                   {`🎁${points.gift}`}
                 </div>
+                {startTime &&
+                  <div className="flex-none">
+                    {formatDuration(new Date(now.getTime() - startTime + now.getTimezoneOffset() * 60 * 1000))}
+                  </div>
+                }
               </div>
             </div>
           </div>
