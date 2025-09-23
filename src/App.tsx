@@ -67,21 +67,21 @@ export function App() {
                 <div className="flex-auto"></div>
                 {total > 0 && (
                   <div className="flex-none">
-                    <HighlightOnChange timeout={500} classNameOnChanged="text-yellow-300">
+                    <HighlightOnChange timeout={1_000} classNameOnChanged="text-yellow-300">
                       {`🙎${formatNumber(total)}`}
                     </HighlightOnChange>
                   </div>
                 )}
                 {ad > 0 && (
                   <div className="flex-none">
-                    <HighlightOnChange timeout={3000} classNameOnChanged="text-yellow-300">
+                    <HighlightOnChange timeout={60_000} classNameOnChanged="text-yellow-300">
                       {`📣${formatNumber(ad)}`}
                     </HighlightOnChange>
                   </div>
                 )}
                 {gift > 0 && (
                   <div className="flex-none">
-                    <HighlightOnChange timeout={3000} classNameOnChanged="text-yellow-300">
+                    <HighlightOnChange timeout={30_000} classNameOnChanged="text-yellow-300">
                       {`🎁${formatNumber(gift)}`}
                     </HighlightOnChange>
                   </div>
