@@ -25,7 +25,7 @@ export function App() {
             <div className="text-sm/6 font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
               <div className="flex gap-5">
                 <div className="flex-none">
-                  {`💬${total}`}
+                  {`🙎${total}`}
                 </div>
                 <div className="flex-none">
                   {`📣${points.ad}`}
