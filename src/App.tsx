@@ -40,11 +40,14 @@ const formatDuration = (d: Date) => getClockEmoji(d) +
 const formatNumber = (n: number) => new Intl.NumberFormat('ja-JP').format(n);
 
 export function App() {
-  const { startTime, total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
+  const { startTime, url, total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
   const { comments } = useCommentContext();
   const { text: speechText } = useSpeechContext();
 
   const now = new Date();
+
+  const liveId = url?.split('/').at(-1)?.slice(2);
+  const numUserComments = comments.filter(({ data: { no, origin } }) => (origin as any)?.meta?.origin?.chat?.liveId === liveId && no).length;
 
   return (
     <div className="w-screen h-screen max-w-[1280px] max-h-[720px] m-auto overflow-hidden flex">
@@ -64,11 +67,21 @@ export function App() {
                 <div className="flex-none font-mono">
                   {formatDateTime(now)}
                 </div>
+                <div className="flex-none">
+                  &#x1D54F; @makamujo
+                </div>
                 <div className="flex-auto"></div>
                 {total > 0 && (
                   <div className="flex-none">
                     <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
                       {`🙎${formatNumber(total)}`}
+                    </HighlightOnChange>
+                  </div>
+                )}
+                {numUserComments > 0 && (
+                  <div className="flex-none">
+                    <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
+                      {`💬${formatNumber(numUserComments)}`}
                     </HighlightOnChange>
                   </div>
                 )}
