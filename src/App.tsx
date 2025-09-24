@@ -67,7 +67,7 @@ export function App() {
                 <div className="flex-none font-mono">
                   {formatDateTime(now)}
                 </div>
-                <div className="flex-none">
+                <div className="flex-none px-2 bg-black/90 rounded-sm">
                   &#x1D54F; @makamujo
                 </div>
                 <div className="flex-auto"></div>
