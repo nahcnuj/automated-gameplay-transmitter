@@ -72,10 +72,10 @@ const server = serve({
             if (data.userId === 'onecomme.system') {
               if (data.comment === 'まもなく生放送クルーズが到着します') {
                 talkQueue.push(
-                  '生放送クルーズのみなさん、いらっしゃいませ。',
+                  '生放送クルーズのみなさん、こんにちは。',
                   '人工知能Vチューバーの馬可無序です。',
-                  'みなさんのコメントを学習しておしゃべりしています。',
-                  'もしよかったら上のリンクをクリックしていってくださいね。',
+                  'コメントを学習してお話ししています。',
+                  'ぜひ上のリンクから遊びに来てね。',
                 );
               }
 
@@ -129,7 +129,7 @@ const server = serve({
         const ad = adQueue.shift();
         if (ad) {
           console.log(`[AD] ${ad}`);
-          return new Response(`${ad}さん、広告ありがとうございます！`);
+          return new Response(`${ad}さん、広告ありがとうございます！\n`);
         }
       }
 
@@ -137,7 +137,7 @@ const server = serve({
         const gift = giftQueue.shift();
         if (gift) {
           console.log(`[GIFT] ${gift}`);
-          return new Response(`${gift}さん、ギフトありがとうございます！`);
+          return new Response(`${gift}さん、ギフトありがとうございます\n`);
         }
       }
 
@@ -145,14 +145,14 @@ const server = serve({
         const text = talkQueue.shift();
         if (text) {
           console.log(`[REPLY] ${text}`);
-          return new Response(text);
+          return new Response(`${text}\n`);
         }
       }
 
       if (Model) {
         const text = Model.gen().replace(/。$/, '');
         console.log(`> ${text}`);
-        return new Response(text);
+        return new Response(`${text}\n`);
       }
 
       return new Response('', { status: 500 })
