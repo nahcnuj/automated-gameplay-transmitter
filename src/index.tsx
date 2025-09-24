@@ -73,14 +73,14 @@ const server = serve({
               if (data.comment === 'まもなく生放送クルーズが到着します') {
                 talkQueue.push(
                   '生放送クルーズのみなさん、こんにちは。',
-                  '人工知能Vチューバーの馬可無序です。',
+                  'AI Vチューバーの馬可無序（まか・むじょ）です。',
                   'コメントを学習してお話ししています。',
                   'ぜひ上のリンクから遊びに来てね。',
                 );
               }
 
               if (data.comment.endsWith('広告しました')) {
-                const name = data.comment.slice(0, data.comment.lastIndexOf('さんが'));
+                const name = data.comment.slice('【ニコニ広告】'.length, data.comment.lastIndexOf('さんが'));
                 if (!adQueue.includes(name)) {
                   adQueue.push(name);
                 }
