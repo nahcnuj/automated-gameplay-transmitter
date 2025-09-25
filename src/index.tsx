@@ -80,7 +80,7 @@ const server = serve({
               }
 
               if (data.comment.endsWith('広告しました')) {
-                const name = data.comment.slice('【ニコニ広告】'.length, data.comment.lastIndexOf('さんが'));
+                const name = data.comment.slice(data.comment.indexOf('】') + '】'.length, data.comment.lastIndexOf('さんが'));
                 if (!adQueue.includes(name)) {
                   adQueue.push(name);
                 }
