@@ -39,10 +39,11 @@ export const fromFile = (path: string) => {
         const cands = words.reduce<string[]>((prev, s) => {
           const a = [...s].length;
           const b = [...prev[0] ?? ''].length;
+          console.debug(s, a, b, [s], [...prev, s]);
           return a > b ? [s] : a === b ? [...prev, s] : prev;
         }, ['']);
         const topic = cands.at(Math.floor(Math.random() * cands.length));
-        // console.log(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
+        console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
         return topic ? talk(model, topic) : '';
       },
       learn: (word: string) => {
