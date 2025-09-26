@@ -1,7 +1,6 @@
 import type { NicoNamaComment, ServiceMeta } from "@onecomme.com/onesdk";
 import { serve } from "bun";
 import index from "./index.html";
-import { reply } from "./lib/eliza";
 import { fromFile } from "./lib/TalkModel";
 
 const splitInSentences = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'sentence' }).segment(text)].map(({ segment }) => segment);
@@ -66,7 +65,12 @@ const server = serve({
                 .forEach((s: string) => {
                   Model.learn(s.trim());
                 });
-              talkQueue.push(reply(data.comment));
+              {
+                const reply = Model.reply(data.comment);
+                if (reply) {
+                  talkQueue.push(reply);
+                }
+              }
             }
 
             if (data.userId === 'onecomme.system') {
@@ -137,7 +141,7 @@ const server = serve({
         const gift = giftQueue.shift();
         if (gift) {
           console.log(`[GIFT] ${gift}`);
-          return new Response(`${gift}さん、ギフトありがとうございます\n`);
+          return new Response(`${gift}さん、ギフトありがとうございます！\n`);
         }
       }
 

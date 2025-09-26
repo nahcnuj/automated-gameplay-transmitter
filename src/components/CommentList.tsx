@@ -2,16 +2,6 @@
 
 import type { NicoNamaComment } from "@onecomme.com/onesdk";
 import { useEffect, useState } from "react";
-import { reply } from "../lib/eliza";
-
-const Reply = ({ comment, no = 0 }: NicoNamaComment['data']) => {
-  return (
-    <div className="text-3xl font-mono font-bold">
-      {no ? `>>${no} ` : ''}
-      {`${reply(comment)}`}
-    </div>
-  );
-};
 
 const isUser = ({ no }: NicoNamaComment['data']) => no;
 
