@@ -23,6 +23,9 @@ const talk = (model: Model, bos: string) => {
   while (s.at(-1) !== '。' && [...s.join('')].length < 16) {
     console.debug(`constructing...: ${s}`);
     const w = pick(model[s.at(-1) ?? ''] ?? {});
+    if (w.length <= 0) {
+      break;
+    }
     s.push(w);
   }
   return s.join('');
