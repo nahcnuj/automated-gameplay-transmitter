@@ -58,7 +58,7 @@ const server = serve({
         const data: NicoNamaComment[] = await req.json();
         comments.push(...data);
 
-        data.filter(({ data }) => Date.parse(data.timestamp) > latest)
+        data //.filter(({ data }) => Date.parse(data.timestamp) > latest)
           .forEach(({ data }) => {
             if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
               splitInSentences(data.comment)
@@ -67,6 +67,7 @@ const server = serve({
                 });
               {
                 const reply = Model.reply(data.comment);
+                console.log(`reply: ${reply}`);
                 if (reply) {
                   talkQueue.push(reply);
                 }

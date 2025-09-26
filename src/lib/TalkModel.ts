@@ -34,7 +34,17 @@ export const fromFile = (path: string) => {
     const { model, bos } = JSON.parse(readFileSync(path, 'utf8'));
     return {
       gen: () => talk(model, bos),
-      reply: (s: string) => talk(model, s) ?? '',
+      reply: (comment: string) => {
+        const words = [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(comment)].map(({ segment }) => segment);
+        const cands = words.reduce<string[]>((prev, s) => {
+          const a = [...s].length;
+          const b = [...prev[0] ?? ''].length;
+          return a > b ? [s] : a === b ? [...prev, s] : prev;
+        }, ['']);
+        const topic = cands.at(Math.floor(Math.random() * cands.length));
+        // console.log(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
+        return topic ? talk(model, topic) : '';
+      },
       learn: (word: string) => {
         console.log(word);
         split(`${word}。`).reduce<string>((prev, next) => {
