@@ -32,10 +32,17 @@ console.debug(userDataDir);
   // console.debug(`150`);
   // const ctx = await browser.newContext();
 
-  const ctx = await chromium.launchPersistentContext(userDataDir, {
-    executablePath,
-    headless: false,
-  });
+  const browser = await chromium.connectOverCDP('http://localhost:9222/');
+  console.debug('150');
+  const ctx = browser.contexts()[0]
+  if (!ctx) {
+    throw new Error('could not get a context of the browser');
+  }
+  // const ctx = await chromium.launchPersistentContext(userDataDir, {
+  //   executablePath,
+  //   args: ['--no-sandbox'],
+  //   headless: false,
+  // });
   console.debug(`200`);
 
   const page = await ctx.newPage();
