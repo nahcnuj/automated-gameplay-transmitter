@@ -23,6 +23,8 @@ if (!userDataDir || !statSync(userDataDir).isDirectory()) {
 }
 console.debug(userDataDir);
 
+const url = await fetch('http://localhost:9222/json/version').then((res) => res.json()).then(({ webSocketDebuggerUrl }) => webSocketDebuggerUrl);
+
 (async () => {
   console.debug('100');
   // const browser = await chromium.launch({
@@ -32,9 +34,9 @@ console.debug(userDataDir);
   // console.debug(`150`);
   // const ctx = await browser.newContext();
 
-  const browser = await chromium.connectOverCDP('http://localhost:9222/');
+  const browser = await chromium.connectOverCDP(url);//'http://localhost:9222/');
   console.debug('150');
-  const ctx = browser.contexts()[0]
+  const ctx = browser.contexts()[0];
   if (!ctx) {
     throw new Error('could not get a context of the browser');
   }
