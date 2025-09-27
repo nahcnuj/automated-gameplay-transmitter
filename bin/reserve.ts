@@ -34,7 +34,7 @@ const url = await fetch('http://localhost:9222/json/version').then((res) => res.
   // console.debug(`150`);
   // const ctx = await browser.newContext();
 
-  const browser = await chromium.connectOverCDP(url);//'http://localhost:9222/');
+  const browser = await chromium.connectOverCDP('http://localhost:9222/', { timeout: 0 });
   console.debug('150');
   const ctx = browser.contexts()[0];
   if (!ctx) {
