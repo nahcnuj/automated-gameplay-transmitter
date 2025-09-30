@@ -67,7 +67,7 @@ export const fromFile = (path: string) => {
           return next;
         }, '');
         try {
-          writeFileSync(path, JSON.stringify({ model, bos }, null, 2));
+          writeFileSync(path, JSON.stringify({ model, bos }, null, 0));
         } catch (err) {
           console.warn(err);
         }
