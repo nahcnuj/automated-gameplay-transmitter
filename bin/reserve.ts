@@ -49,10 +49,14 @@ if (!userDataDir || !statSync(userDataDir).isDirectory()) {
   {
     const btn = page.getByRole('button', { name: '閉じる' });
     await btn.waitFor({ state: 'visible', timeout: 1_000 })
-      .catch(() => {
-        console.log('A close button did not appear.');
+      .then(async () => {
+        await btn.click({ timeout: 100 }).catch((err) => {
+          console.log('could not the close button', err);
+        });
+      })
+      .catch((err) => {
+        console.log('A close button did not appear or failed to click.', err);
       });
-    await btn.click();
   }
 
   {
