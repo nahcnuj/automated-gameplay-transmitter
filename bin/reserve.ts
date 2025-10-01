@@ -84,9 +84,10 @@ if (!userDataDir || !statSync(userDataDir).isDirectory()) {
     console.debug(`621`);
 
     const children = page.getByText(/20\d\d\/1?\d\/1?\d\([月火水木金土日]\)/);
+    console.debug(`624 ${await children.allTextContents()}`);
     const reserveDate = page.getByRole('listbox').filter({ has: children });
-    console.debug(`625 ${reserveDate}`);
-    const selected = await reserveDate.selectOption({ index: 3 });
+    console.debug(`625 ${await reserveDate.allTextContents()}`);
+    const selected = await reserveDate.selectOption(await children.nth(3).textContent());
     console.debug(`626 ${selected}`);
   }
 
