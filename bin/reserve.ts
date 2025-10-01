@@ -83,7 +83,8 @@ if (!userDataDir || !statSync(userDataDir).isDirectory()) {
     await reserveCheckbox.click();
     console.debug(`621`);
 
-    const reserveDate = page.getByPlaceholder(/20\d\d\/1?\d\/1?\d\([月火水木金土日]\)/);
+    const children = page.getByText(/20\d\d\/1?\d\/1?\d\([月火水木金土日]\)/);
+    const reserveDate = page.getByRole('listbox').filter({ has: children });
     console.debug(`625 ${reserveDate}`);
     const selected = await reserveDate.selectOption({ index: 3 });
     console.debug(`626 ${selected}`);
