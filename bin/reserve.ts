@@ -47,22 +47,48 @@ if (!userDataDir || !statSync(userDataDir).isDirectory()) {
   console.debug(`400`);
 
   {
-    const btn = page.locator('button', { hasText: '詳細設定を開く' });
-    console.debug(`500`);
-
-    await btn.waitFor({ state: 'visible', timeout: 600_000 });
-    console.debug(`510`);
-
+    const btn = page.getByRole('button', { name: '閉じる' });
+    await btn.waitFor({ state: 'visible', timeout: 1_000 })
+      .catch(() => {
+        console.log('A close button did not appear.');
+      });
     await btn.click();
+  }
+
+  {
+    const detailButton = page.getByRole('button', { name: '詳細設定を開く' });
+    console.debug(`500`);
+    await detailButton.waitFor({ state: 'visible', timeout: 600_000 });
+    console.debug(`510`);
+    await detailButton.click();
     console.debug(`599`);
   }
 
   {
-    const btn = page.locator('button', { hasText: '番組を作成する' });
+    const titleInput = page.getByLabel('番組タイトル', { exact: true });
     console.debug(`600`);
+    await titleInput.fill('【人工知能実況】Cookie Clicker【AIVTuber】');
+    console.debug(`601`);
+  }
+
+  {
+    const reserveCheckbox = page.getByRole('checkbox', { name: '予約放送を利用する' });
+    console.debug(`620`);
+    await reserveCheckbox.check();
+    console.debug(`621`);
+
+    const reserveDate = page.getByPlaceholder(/20\d\d\/1?\d\/1?\d\([月火水木金土日]\)/);
+    console.debug(`625 ${reserveDate}`);
+    const selected = await reserveDate.selectOption({ index: 3 });
+    console.debug(`626 ${selected}`);
+  }
+
+  {
+    const btn = page.locator('button', { hasText: '番組を作成する' });
+    console.debug(`800`);
 
     await btn.waitFor({ state: 'detached', timeout: 600_000 });
-    console.debug(`699`);
+    console.debug(`899`);
   }
 
   await ctx.close();
