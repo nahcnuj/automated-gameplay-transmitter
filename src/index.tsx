@@ -60,17 +60,18 @@ const server = serve({
 
         data.filter(({ data }) => Date.parse(data.timestamp) > latest)
           .forEach(({ data }) => {
-            if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
+            if (data.no) {
               splitInSentences(data.comment)
                 .forEach((s: string) => {
                   Model.learn(s.trim());
                 });
-              {
-                const reply = Model.reply(data.comment);
-                console.log(`reply: ${reply}`);
-                if (reply) {
-                  talkQueue.push(reply);
-                }
+            }
+
+            if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
+              const reply = Model.reply(data.comment);
+              console.log(`reply: ${reply} << ${data.comment}`);
+              if (reply) {
+                talkQueue.push(reply);
               }
             }
 
