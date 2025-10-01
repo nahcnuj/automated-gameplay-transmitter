@@ -64,11 +64,11 @@ export function App() {
             </div>
             <div className="text-md font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
               <div className="flex gap-5">
-                <div className="flex-none font-mono">
+                <div className="flex-none">
                   {formatDateTime(now)}
                 </div>
                 <div className="flex-none px-2 bg-black/90 rounded-sm">
-                  &#x1D54F; @makamujo
+                  &#x1D54F; &#xFF20;<span className="font-mono">makamujo</span>
                 </div>
                 <div className="flex-auto"></div>
                 {total > 0 && (
@@ -100,7 +100,7 @@ export function App() {
                   </div>
                 )}
                 {startTime &&
-                  <div className="flex-none font-mono">
+                  <div className="flex-none">
                     {formatDuration(new Date(now.getTime() - startTime + now.getTimezoneOffset() * 60 * 1000))}
                   </div>
                 }
