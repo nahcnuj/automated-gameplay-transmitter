@@ -18,9 +18,9 @@ const { values: {
   },
 });
 
-// if (!userDataDir || !statSync(userDataDir).isDirectory()) {
-//   throw new Error('--user-data-dir must be a directory path');
-// }
+if (!userDataDir || !statSync(userDataDir).isDirectory()) {
+  throw new Error('--user-data-dir must be a directory path');
+}
 // console.debug(userDataDir);
 
 // const url = await fetch('http://localhost:9222/json/version').then((res) => res.json()).then(({ webSocketDebuggerUrl }) => webSocketDebuggerUrl);
@@ -28,13 +28,13 @@ const { values: {
 (async () => {
   console.debug(`0`);
 
-  const browser = await chromium.launch({
+  const ctx = await chromium.launchPersistentContext(userDataDir, {
     executablePath,
     headless: false,
   });
   console.debug(`100`);
 
-  const ctx = await browser.newContext();
+  // const ctx = await browser.newContext();
   if (!ctx) {
     throw new Error('could not get a context of the browser');
   }
@@ -46,16 +46,27 @@ const { values: {
   await page.goto('https://live.nicovideo.jp/create');
   console.debug(`400`);
 
-  const btn = page.locator('button', { hasText: '詳細設定を開く' });
-  console.debug(`450`);
-  await btn.waitFor({ state: 'visible', timeout: 600_000 });
-  console.debug(`500`);
+  {
+    const btn = page.locator('button', { hasText: '詳細設定を開く' });
+    console.debug(`500`);
 
-  await btn.click();
-  console.debug(`600`);
+    await btn.waitFor({ state: 'visible', timeout: 600_000 });
+    console.debug(`510`);
+
+    await btn.click();
+    console.debug(`599`);
+  }
+
+  {
+    const btn = page.locator('button', { hasText: '番組を作成する' });
+    console.debug(`600`);
+
+    await btn.waitFor({ state: 'detached', timeout: 600_000 });
+    console.debug(`699`);
+  }
 
   await ctx.close();
   console.debug(`999`);
 
-  await browser.close();
+  // await browser.close();
 })();
