@@ -76,7 +76,7 @@ if (!userDataDir || !statSync(userDataDir).isDirectory()) {
   }
 
   {
-    const reserveCheckbox = page.getByRole('checkbox', { name: '予約放送を利用する' });
+    const reserveCheckbox = page.getByRole('button'/*'checkbox'*/, { name: '予約放送を利用する' });
     console.debug(`620`);
     await reserveCheckbox.check();
     console.debug(`621`);
