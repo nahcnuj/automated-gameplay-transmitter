@@ -76,7 +76,7 @@ const server = serve({
             }
 
             if (data.userId === 'onecomme.system') {
-              if (data.comment === 'まもなく生放送クルーズが到着します') {
+              if (data.comment === '「生放送クルーズさん」が引用を開始しました') {
                 talkQueue.push(
                   '生放送クルーズのみなさん、こんにちは。',
                   'AI Vチューバーの馬可無序です。',
