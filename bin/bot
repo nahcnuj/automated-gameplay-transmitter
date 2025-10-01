@@ -3,7 +3,7 @@ set -eu
 
 while true
 do
-    sleep 0.5
+    sleep 0.2
     curl -s 'http://localhost:7777/api/talk' | \
         tee /tmp/speech.txt | \
         open_jtalk \

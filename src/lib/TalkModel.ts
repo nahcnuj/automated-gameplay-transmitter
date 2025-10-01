@@ -20,7 +20,7 @@ const pick = (cands: { [k: string]: number }) => {
 
 const talk = (model: Model, bos: string) => {
   let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
-  while (s.at(-1) !== '。' && [...s.join('')].length < 16) {
+  while (s.at(-1) !== '。' && [...s.join('')].length < 32) {
     // console.debug(`constructing...: ${s}`);
     const w = pick(model[s.at(-1) ?? ''] ?? {});
     if (w.length <= 0) {
