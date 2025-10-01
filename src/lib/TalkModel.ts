@@ -18,7 +18,7 @@ const pick = (cands: { [k: string]: number }) => {
   return next;
 };
 
-const talk = (model: Model, bos: string) => {
+const talk = (model: Model, bos: string[]) => {
   let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
   while (s.at(-1) !== '。' && [...s.join('')].length < 32) {
     // console.debug(`constructing...: ${s}`);
@@ -43,12 +43,12 @@ export const fromFile = (path: string) => {
         const cands = words.reduce<string[]>((prev, s) => {
           const a = [...s].length;
           const b = [...prev[0] ?? ''].length;
-          console.debug(s, a, b, [s], [...prev, s]);
+          // console.debug(s, a, b, [s], [...prev, s]);
           return a > b ? [s] : a === b ? [...prev, s] : prev;
         }, ['']);
         const topic = cands.at(Math.floor(Math.random() * cands.length));
         console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
-        return topic ? talk(model, topic) : '';
+        return topic ? talk(model, [topic]) : '';
       },
       learn: (word: string) => {
         console.log(word);
