@@ -60,8 +60,8 @@ obs-cli stream status
 cp /etc/apt/sources.list{,.orig}
 
 cat <EOS >>/etc/apt/sources.list
-deb http://deb.debian.org/debian bullseye main contrib non-free
-deb-src http://deb.debian.org/debian bullseye main contrib non-free
+deb http://deb.debian.org/debian bookworm main contrib
+deb-src http://deb.debian.org/debian bookworm main contrib
 EOS
 apt update
 apt install -y open-jtalk open-jtalk-mecab-naist-jdic hts-voice-nitech-jp-atr503-m001
