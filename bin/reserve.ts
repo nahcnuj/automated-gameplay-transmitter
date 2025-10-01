@@ -87,7 +87,9 @@ if (!userDataDir || !statSync(userDataDir).isDirectory()) {
     console.debug(`624 ${await children.allTextContents()}`);
     const reserveDate = page.getByRole('listbox').filter({ has: children });
     console.debug(`625 ${await reserveDate.allTextContents()}`);
-    const selected = await reserveDate.selectOption(await children.nth(3).textContent());
+    const label = await children.nth(3).textContent() ?? '(null)';
+    console.debug(`    ${label}`);
+    const selected = await reserveDate.selectOption({ label });
     console.debug(`626 ${selected}`);
   }
 
