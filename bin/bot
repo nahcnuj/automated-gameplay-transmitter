@@ -6,6 +6,11 @@ do
     sleep 0.2
     curl -s 'http://localhost:7777/api/talk' | \
         tee /tmp/speech.txt | \
+        sed \
+            -e 's/馬可/ まか /g' \
+            -e 's/うまかむじょ/ まか むじょ /g' \
+            -e 's/\bうまか\b/まか/g' \
+            | \
         open_jtalk \
             -m /usr/share/hts-voice/nitech-jp-atr503-m001/nitech_jp_atr503_m001.htsvoice \
             -x /var/lib/mecab/dic/open-jtalk/naist-jdic \
