@@ -86,7 +86,8 @@ if (!userDataDir || !statSync(userDataDir).isDirectory()) {
     const children = page.getByText(/20\d\d\/1?\d\/1?\d\([月火水木金土日]\)/);
     console.debug(`624 ${await children.allTextContents()}`);
     const reserveDate = page.getByRole('listbox').filter({ has: children });
-    console.debug(`625 ${await reserveDate.allTextContents()}`);
+    await reserveDate.click();
+    console.debug(`625`);
     const label = await children.nth(3).textContent() ?? '(null)';
     console.debug(`    ${label}`);
     const selected = await reserveDate.selectOption({ label });
