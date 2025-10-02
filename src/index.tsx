@@ -36,7 +36,7 @@ const server = serve({
 
         const { address, family } = ip;
         client = `${family}/${address}`;
-        console.log('connected', client);
+        // console.log('connected', client);
         return new Response();
       },
       PUT: async (req, server) => {
