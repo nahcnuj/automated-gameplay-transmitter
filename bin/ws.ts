@@ -20,11 +20,10 @@ setInterval(async () => {
 const ws = new WebSocket('ws://localhost:11180/sub?p=comments,meta');
 ws.addEventListener('message', async (event) => {
   const { type, data } = JSON.parse(event.data);
-  console.log(data);
   switch (type) {
     case 'connected':
     case 'comments':
-      // console.log(JSON.stringify(data.comments, null, 2));
+      console.log(data.comments);
       await fetch(`http://${target}/`, {
         method: 'PUT',
         body: JSON.stringify(data.comments),
@@ -34,6 +33,7 @@ ws.addEventListener('message', async (event) => {
       });
       break;
     case 'meta':
+      console.log(data.data);
       await fetch(`http://${target}/api/meta`, {
         method: 'POST',
         body: JSON.stringify(data.data),

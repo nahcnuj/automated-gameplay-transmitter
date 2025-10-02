@@ -61,6 +61,8 @@ const server = serve({
 
         data.filter(({ data }) => Date.parse(data.timestamp) > latest)
           .forEach(({ data }) => {
+            console.debug(data.comment);
+
             if (data.no) {
               splitInSentences(data.comment)
                 .forEach((s: string) => {
