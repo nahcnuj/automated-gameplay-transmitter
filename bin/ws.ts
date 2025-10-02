@@ -20,6 +20,7 @@ setInterval(async () => {
 const ws = new WebSocket('ws://localhost:11180/sub?p=comments,meta');
 ws.addEventListener('message', async (event) => {
   const { type, data } = JSON.parse(event.data);
+  console.log(data);
   switch (type) {
     case 'connected':
     case 'comments':
@@ -40,7 +41,6 @@ ws.addEventListener('message', async (event) => {
       }).catch((err) => {
         console.warn(err);
       });
-      console.log(data);
       break;
     default:
       console.error('unknown data type: ', type);

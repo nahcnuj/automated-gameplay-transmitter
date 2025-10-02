@@ -5,7 +5,8 @@ while true
 do
     sleep 0.2
     curl -s 'http://localhost:7777/api/talk' | \
-        tee /tmp/speech.txt | \
+        tee /tmp/speech.txt
+    cat /tmp/speech.txt | \
         sed \
             -e 's/馬可/ まか /g' \
             -e 's/うまかむじょ/ まか むじょ /g' \

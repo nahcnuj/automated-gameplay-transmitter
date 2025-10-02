@@ -36,6 +36,7 @@ const server = serve({
 
         const { address, family } = ip;
         client = `${family}/${address}`;
+        console.log('connected', client);
         return new Response();
       },
       PUT: async (req, server) => {
@@ -69,8 +70,8 @@ const server = serve({
 
             if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
               const reply = Model.reply(data.comment);
-              console.log(`reply: ${reply} << ${data.comment}`);
               if (reply) {
+                console.log(`reply: ${reply} << ${data.comment}`);
                 talkQueue.push(reply);
               }
             }
@@ -88,6 +89,7 @@ const server = serve({
               if (data.comment.endsWith('広告しました')) {
                 const name = data.comment.slice(data.comment.indexOf('】') + '】'.length, data.comment.lastIndexOf('さんが'));
                 if (!adQueue.includes(name)) {
+                  console.log(`[AD] ${name}`);
                   adQueue.push(name);
                 }
               }
@@ -96,6 +98,7 @@ const server = serve({
             if (data.hasGift) {
               const name = (data.origin as any)?.message?.gift?.advertiserName;
               if (name && !giftQueue.includes(name)) {
+                console.log(`[GIFT] ${name}`);
                 giftQueue.push(name);
               }
             }
@@ -124,6 +127,8 @@ const server = serve({
 
         comments.splice(0);
 
+        console.log('cleared the comments');
+
         return new Response();
       }
     },
@@ -134,7 +139,7 @@ const server = serve({
       {
         const ad = adQueue.shift();
         if (ad) {
-          console.log(`[AD] ${ad}`);
+          // console.log(`[AD] ${ad}`);
           return new Response(`${ad}さん、広告ありがとうございます！\n`);
         }
       }
@@ -142,7 +147,7 @@ const server = serve({
       {
         const gift = giftQueue.shift();
         if (gift) {
-          console.log(`[GIFT] ${gift}`);
+          // console.log(`[GIFT] ${gift}`);
           return new Response(`${gift}さん、ギフトありがとうございます！\n`);
         }
       }
@@ -150,14 +155,14 @@ const server = serve({
       {
         const text = talkQueue.shift();
         if (text) {
-          console.log(`[REPLY] ${text}`);
+          // console.log(`[REPLY] ${text}`);
           return new Response(`${text}\n`);
         }
       }
 
       if (Model) {
         const text = Model.gen().replace(/。$/, '');
-        console.log(`> ${text}`);
+        // console.log(`> ${text}`);
         return new Response(`${text}\n`);
       }
 
