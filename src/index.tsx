@@ -57,11 +57,12 @@ const server = serve({
         }
 
         const data: NicoNamaComment[] = await req.json();
+        console.log(data);
         comments.push(...data);
 
         data.filter(({ data }) => Date.parse(data.timestamp) > latest)
           .forEach(({ data }) => {
-            console.debug(data.comment);
+            console.log(`comment: ${data.comment}`);
 
             if (data.no) {
               splitInSentences(data.comment)
@@ -141,7 +142,7 @@ const server = serve({
       {
         const ad = adQueue.shift();
         if (ad) {
-          // console.log(`[AD] ${ad}`);
+          console.log(`[AD] ${ad}`);
           return new Response(`${ad}さん、広告ありがとうございます！\n`);
         }
       }
@@ -149,7 +150,7 @@ const server = serve({
       {
         const gift = giftQueue.shift();
         if (gift) {
-          // console.log(`[GIFT] ${gift}`);
+          console.log(`[GIFT] ${gift}`);
           return new Response(`${gift}さん、ギフトありがとうございます！\n`);
         }
       }
@@ -157,7 +158,7 @@ const server = serve({
       {
         const text = talkQueue.shift();
         if (text) {
-          // console.log(`[REPLY] ${text}`);
+          console.log(`[REPLY] ${text}`);
           return new Response(`${text}\n`);
         }
       }
