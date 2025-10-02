@@ -11,52 +11,58 @@ const { values: {
   options: {
     'user-data-dir': {
       type: 'string',
+      default: './playwright/.auth/',
     },
     'exec-path': {
       type: 'string',
+      default: '/usr/bin/chromium',
     },
   },
 });
 
-if (!userDataDir || !statSync(userDataDir).isDirectory()) {
+if (!statSync(userDataDir).isDirectory()) {
   throw new Error('--user-data-dir must be a directory path');
 }
-// console.debug(userDataDir);
 
-// const url = await fetch('http://localhost:9222/json/version').then((res) => res.json()).then(({ webSocketDebuggerUrl }) => webSocketDebuggerUrl);
+console.debug(`0`);
 
-(async () => {
-  console.debug(`0`);
+const ctx = await chromium.launchPersistentContext(userDataDir, {
+  executablePath,
+  headless: false,
+});
+console.debug('200');
 
-  const ctx = await chromium.launchPersistentContext(userDataDir, {
-    executablePath,
-    headless: false,
-  });
-  console.debug(`100`);
+const page = await ctx.newPage();
+console.debug(`300`);
 
-  // const ctx = await browser.newContext();
-  if (!ctx) {
-    throw new Error('could not get a context of the browser');
-  }
-  console.debug('200');
+const firstDate = new Date('2025-08-03T10:48:00+09:00');
+const day = new Date().getDay();
 
-  const page = await ctx.newPage();
-  console.debug(`300`);
+let cont = true;
+
+do {
+  const next = await (async () => {
+    await page.goto('https://garage.nicovideo.jp/niconico-garage/live/history');
+    const frame = page.frameLocator('iframe[src]');
+    const child = frame.getByText('終了').first();
+    await child.waitFor({ state: 'attached' });
+    const datetime = await child.getAttribute('datetime');
+    if (!datetime) {
+      throw new Error('datetime is null');
+    }
+    return new Date(datetime);
+  })();
+  console.debug(next.toLocaleString('ja-JP'));
 
   await page.goto('https://live.nicovideo.jp/create');
   console.debug(`400`);
 
-  {
+  try {
     const btn = page.getByRole('button', { name: '閉じる' });
-    await btn.waitFor({ state: 'visible', timeout: 1_000 })
-      .then(async () => {
-        await btn.click({ timeout: 100 }).catch((err) => {
-          console.log('could not the close button', err);
-        });
-      })
-      .catch((err) => {
-        console.log('A close button did not appear or failed to click.', err);
-      });
+    await btn.waitFor({ state: 'visible', timeout: 1_000 });
+    await btn.click({ timeout: 100 });
+  } catch (_) {
+    // ignore
   }
 
   {
@@ -71,40 +77,80 @@ if (!userDataDir || !statSync(userDataDir).isDirectory()) {
   {
     const titleInput = page.getByLabel('番組タイトル', { exact: true });
     console.debug(`600`);
-    await titleInput.fill('【人工知能実況】Cookie Clicker【AIVTuber】');
+    const day = Math.ceil((next.getTime() - firstDate.getTime()) / 1000 / 60 / 60 / 24);
+    await titleInput.fill(`【人工知能実況】Cookie Clicker ${day}日目【AIVTuber】`);
     console.debug(`601`);
   }
 
   {
-    // const reserveCheckbox = page.getByRole('checkbox', { name: '予約放送を利用する' });
     const reserveCheckbox = page.getByRole('button', { name: '予約放送を利用する' });
     console.debug(`620`);
-    // await reserveCheckbox.check();
     await reserveCheckbox.click();
     console.debug(`621`);
 
-    const children = page.getByText(/20\d\d\/1?\d\/1?\d\([月火水木金土日]\)/);
-    console.debug(`624 ${await children.allTextContents()}`);
-    console.debug(`    ${await page.getByRole('listbox').allTextContents()}\n    ${await page.locator('select').allTextContents()}\n   ${await page.locator('select', { has: children }).allTextContents()}`);
-    const reserveDate = page.locator('select').filter({ has: children });
-    await reserveDate.click();
-    console.debug(`625`);
-    const label = await children.nth(3).textContent() ?? '(null)';
-    console.debug(`    ${label}`);
-    const selected = await reserveDate.selectOption({ label });
-    console.debug(`626 ${selected}`);
+    {
+      const selects = page.getByText('放送開始日時').locator('xpath=../..').locator('select');
+
+      {
+        const reserveDate = selects.nth(0);
+        await reserveDate.click();
+        console.debug(`625`);
+        const value = new Intl.DateTimeFormat('ja-JP', {
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+        }).format(next);
+        console.debug(`    ${value}`)
+        const selected = await reserveDate.selectOption({ value });
+        console.debug(`626 ${selected}`);
+      }
+
+      {
+        const reserveHours = selects.nth(1);
+        await reserveHours.click();
+        const selected = await reserveHours.selectOption({ label: next.getHours().toString() });
+        console.debug(`627 ${selected}`);
+      }
+
+      {
+        const reserveMinutes = selects.nth(2);
+        await reserveMinutes.click();
+        const selected = await reserveMinutes.selectOption({ value: next.getMinutes().toString() });
+        console.debug(`628 ${selected}`);
+      }
+    }
+
+    {
+      const selects = page.getByText('放送時間').locator('xpath=../..').locator('select');
+
+      {
+        const durationHours = selects.nth(0);
+        await durationHours.click();
+        const label = await durationHours.locator(':not([disabled])').allTextContents().then((vs) => vs.at(-1));
+        const selected = await durationHours.selectOption({ label });
+        console.debug(`629 ${selected}`);
+      }
+
+      {
+        const durationMinutes = selects.nth(1);
+        await durationMinutes.click();
+        const selected = await durationMinutes.selectOption({ value: '0' });
+        console.debug(`630 ${selected}`);
+      }
+    }
   }
 
   {
-    const btn = page.locator('button', { hasText: '番組を作成する' });
+    const btn = page.getByRole('button', { name: '予約する' });
     console.debug(`800`);
+    await btn.focus();
 
     await btn.waitFor({ state: 'detached', timeout: 600_000 });
     console.debug(`899`);
   }
 
-  await ctx.close();
-  console.debug(`999`);
+  cont = next.getDay() !== day;
+} while (cont);
 
-  // await browser.close();
-})();
+await ctx.close();
+console.debug(`999`);
