@@ -17,8 +17,15 @@ if (!Model) {
 const comments: NicoNamaComment[] = [];
 
 const talkQueue: string[] = [];
-const giftQueue: string[] = [];
+const giftQueue: { name: string; icon: string }[] = [];
 const adQueue: string[] = [];
+
+let nextSpeech: {
+  text: string,
+  icon?: string,
+} = {
+  text: '',
+};
 
 const server = serve({
   routes: {
@@ -101,8 +108,12 @@ const server = serve({
             if (data.hasGift) {
               const name = (data.origin as any)?.message?.gift?.advertiserName;
               if (name && !giftQueue.includes(name)) {
-                console.log(`[GIFT] ${name}`);
-                giftQueue.push(name);
+                const src = (({ comment }) => {
+                  const start = comment.indexOf('https://');
+                  return comment.substring(start, comment.indexOf('"', start));
+                })(data);
+                console.log(`[GIFT] ${name} ${src}`);
+                giftQueue.push({ name, icon: src });
               }
             }
           });
@@ -142,43 +153,47 @@ const server = serve({
       {
         const ad = adQueue.shift();
         if (ad) {
-          // console.log(`[AD] ${ad}`);
-          return new Response(`${ad}さん、広告ありがとうございます！\n`);
+          const text = `${ad}さん、広告ありがとうございます！\n`;
+          nextSpeech = { text };
+          return new Response(text);
         }
       }
 
       {
         const gift = giftQueue.shift();
         if (gift) {
-          // console.log(`[GIFT] ${gift}`);
-          return new Response(`${gift}さん、ギフトありがとうございます！\n`);
+          const text = `${gift.name}さん、ギフトありがとうございます！\n`;
+          nextSpeech = { text, icon: gift.icon };
+          return new Response(text);
         }
       }
 
       {
         const text = talkQueue.shift();
         if (text) {
-          // console.log(`[REPLY] ${text}`);
+          nextSpeech = { text };
           return new Response(`${text}\n`);
         }
       }
 
       if (Model) {
         const text = Model.gen().replace(/。$/, '');
-        // console.log(`> ${text}`);
+        nextSpeech = { text };
         return new Response(`${text}\n`);
       }
 
       return new Response('', { status: 500 })
     },
-    '/api/speech': async () => new Response(
-      await Bun.file('/tmp/speech.txt')
-        .bytes()
-        .catch((err) => {
-          console.warn(err);
-          return null;
-        })
-    ),
+    '/api/speech': async () => Response.json(nextSpeech),
+    // '/api/speech': async () => Response.json(
+    //   {
+    //     text: await Bun.file('/tmp/speech.txt')
+    //       .text()
+    //       .catch((err) => {
+    //         console.warn(err);
+    //       }),
+    //   },
+    // ),
     '/api/meta': {
       GET: () => Response.json(serviceMeta),
       POST: async (req) => {

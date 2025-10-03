@@ -42,7 +42,7 @@ const formatNumber = (n: number) => new Intl.NumberFormat('ja-JP').format(n);
 export function App() {
   const { startTime, url, total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
   const { comments } = useCommentContext();
-  const { text: speechText } = useSpeechContext();
+  const { text: speechText, icon } = useSpeechContext();
 
   const now = new Date();
 
@@ -59,7 +59,7 @@ export function App() {
           <div className="h-fit flex-none">
             <div className="after:block after:bg-[#001100f7] after:-mb-10 after:translate-x-243 after:-translate-y-18 after:w-10 after:h-10 after:[clip-path:polygon(100%_50%,8%_0,8%_100%)]">
               <div className="w-full h-30 p-2 border-5 border-green-200 bg-[#001100f7] rounded-xl text-3xl/10 font-bold text-white [text-shadow:-2px_-2px_4px_#000,2px_2px_4px_#000]">
-                {speechText}
+                {icon}{speechText}
               </div>
             </div>
             <div className="text-md font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
