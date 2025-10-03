@@ -1,21 +1,20 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type JSX, type PropsWithChildren } from "react";
+import { createContext, useContext, useEffect, useState, type PropsWithChildren } from "react";
 
 type T = {
   text: string
-  icon: JSX.Element | null,
+  icon?: string,
 };
 
 const SpeechContext = createContext<T>({
   text: '',
-  icon: null,
 });
 
 export const useSpeechContext = () => useContext(SpeechContext);
 
 export const SpeechProvider = ({ children }: PropsWithChildren) => {
-  const [value, setValue] = useState<T>({ text: '', icon: null });
+  const [value, setValue] = useState<T>({ text: '' });
 
   useEffect(() => {
     const id = setInterval(async () => {
@@ -23,7 +22,7 @@ export const SpeechProvider = ({ children }: PropsWithChildren) => {
         .then((res) => res.json())
         .then(({ text, icon }) => setValue({
           text,
-          icon: icon ? <img src={icon} width={32} height={32} /> : null,
+          icon,
         }));
     }, 500);
 
