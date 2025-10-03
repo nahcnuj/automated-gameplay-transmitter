@@ -107,7 +107,7 @@ const server = serve({
 
             if (data.hasGift) {
               const name = (data.origin as any)?.message?.gift?.advertiserName;
-              if (name && !giftQueue.includes(name)) {
+              if (name && !giftQueue.map(({ name }) => name).includes(name)) {
                 const src = (({ comment }) => {
                   const start = comment.indexOf('https://');
                   return comment.substring(start, comment.indexOf('"', start));
