@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+flatpak run -vv \
+    --share=network \
+    com.obsproject.Studio \
+    --startstreaming \
+    --disable-shutdown-check \
+    --disable-missing-files-check \
+    --disable-updater \
+    --unfiltered_log \
+    --verbose
