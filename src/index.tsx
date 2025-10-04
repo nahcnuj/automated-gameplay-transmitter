@@ -69,19 +69,20 @@ const server = serve({
 
         data.filter(({ data }) => Date.parse(data.timestamp) > latest)
           .forEach(({ data }) => {
-            console.log(`comment: ${data.comment}`);
+            const comment = data.comment.normalize('NFC');
+            console.log(`comment: ${comment}`);
 
             if (data.no) {
-              splitInSentences(data.comment)
+              splitInSentences(comment)
                 .forEach((s: string) => {
                   Model.learn(s.trim());
                 });
             }
 
             if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
-              const reply = Model.reply(data.comment);
+              const reply = Model.reply(comment);
               if (reply) {
-                console.log(`reply: ${reply} << ${data.comment}`);
+                console.log(`reply: ${reply} << ${comment}`);
                 talkQueue.push(reply);
               }
             }
