@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { readFileSync, statSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 
@@ -137,6 +137,18 @@ if (data) {
   console.debug(`Closed the menu.`);
 }
 
+const say = async (text: string) => {
+  try {
+    console.debug(`${new Date().toLocaleString()}: ${text}`);
+    await fetch('http://localhost:7777/api/talk', {
+      method: 'POST',
+      body: text,
+    });
+  } catch (err) {
+    console.warn(err);
+  }
+};
+
 const clicker = setInterval(async () => {
   const bigCookie = page.locator('#bigCookie');
   try {
@@ -145,6 +157,27 @@ const clicker = setInterval(async () => {
     // do nothing
   }
 }, 250);
+
+const shopper = setInterval(async () => {
+  const shop = page.locator('#store');
+
+  const purchasable = shop.locator('#products').locator('.enabled');
+  if (await purchasable.count() > 0) {
+    const mostExpensive = purchasable.last();
+    await say(`${await mostExpensive.locator('.productName').textContent()} を買います`);
+    await mostExpensive.click();
+  }
+}, 1_000);
+
+const notifier = setInterval(async () => {
+  const notes = page.locator('#notes');
+
+  for (const l of await notes.locator('.note', { hasText: '実績が解除' }).all()) {
+    const title = await l.getByRole('heading', { level: 5 }).textContent();
+    await l.locator('.close').click();
+    await say(`${title} の実績が解除されました！`);
+  }
+}, 1_000);
 
 const exporter = setInterval(async () => {
   console.debug(`Exporting...`);
@@ -174,11 +207,10 @@ const exporter = setInterval(async () => {
   }
 }, 600_000);
 
-// const notes = page.locator('#notes');
-// notes.dispatchEvent()
-
 setTimeout(async () => {
   clearInterval(clicker);
+  clearInterval(shopper);
+  clearInterval(notifier);
   clearInterval(exporter);
   await ctx.close();
   await browser.close();

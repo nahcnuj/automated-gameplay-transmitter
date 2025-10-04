@@ -188,7 +188,10 @@ const server = serve({
       },
       POST: async (req) => {
         const text = await req.text();
-        console.debug(`POST /api/talk ${text}`);
+        if (talkQueue.includes(text)) {
+          return new Response();
+        }
+        console.debug(`Queued: ${text}`);
         talkQueue.push(text);
         return Response.json({ text });
       },
