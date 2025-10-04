@@ -161,30 +161,34 @@ const clicker = setInterval(async () => {
 const shopper = setInterval(async () => {
   const shop = page.locator('#store');
 
-  const upgradable = shop.locator('#upgrades').locator('.enabled');
-  if (await upgradable.count() > 0) {
-    const mostExpensive = upgradable.first();
-    await mostExpensive.scrollIntoViewIfNeeded();
-    await mostExpensive.hover();
+  try {
+    const upgradable = shop.locator('#upgrades').locator('.enabled');
+    if (await upgradable.count() > 0) {
+      const mostExpensive = upgradable.first();
+      await mostExpensive.scrollIntoViewIfNeeded();
+      await mostExpensive.hover();
 
-    const tooltip = page.locator('#tooltipAnchor');
-    const name = await tooltip.locator('.name').innerText();
-    await say(`アップグレード ${name}を 買います`);
-    const description = await tooltip.locator('.description').innerText();
-    await say(description);
-    await mostExpensive.click();
+      const tooltip = page.locator('#tooltipAnchor');
+      const name = await tooltip.locator('.name').innerText();
+      await say(`アップグレード ${name}を 買います`);
+      const description = await tooltip.locator('.description').innerText();
+      await say(description);
+      await mostExpensive.click();
 
-    return;
-  }
+      return;
+    }
 
-  const purchasable = shop.locator('#products').locator('.enabled');
-  if (await purchasable.count() > 0) {
-    const mostExpensive = purchasable.last();
-    await mostExpensive.scrollIntoViewIfNeeded();
+    const purchasable = shop.locator('#products').locator('.enabled');
+    if (await purchasable.count() > 0) {
+      const mostExpensive = purchasable.last();
+      await mostExpensive.scrollIntoViewIfNeeded();
 
-    const name = await mostExpensive.locator('.productName').textContent();
-    await say(`${name}を 買います`);
-    await mostExpensive.click();
+      const name = await mostExpensive.locator('.productName').textContent();
+      await say(`${name}を 買います`);
+      await mostExpensive.click();
+    }
+  } catch (err) {
+    console.warn(err);
   }
 }, 1_000);
 
