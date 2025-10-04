@@ -221,7 +221,10 @@ const exporter = setInterval(async () => {
     console.debug(`Clicked the option button.`);
 
     const menu = page.locator('#menu');
-    await menu.getByText('エクスポート').click();
+    const exportBtn = menu.getByText('エクスポート');
+    await exportBtn.scrollIntoViewIfNeeded();
+    await exportBtn.hover();
+    await exportBtn.click();
     console.debug(`Clicked the exporting button`);
 
     const popup = page.locator('#prompt');
