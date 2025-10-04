@@ -163,7 +163,7 @@ const shopper = setInterval(async () => {
 
   const upgradable = shop.locator('#upgrades').locator('.enabled');
   if (await upgradable.count() > 0) {
-    const mostExpensive = upgradable.last();
+    const mostExpensive = upgradable.first();
     await mostExpensive.scrollIntoViewIfNeeded();
     await mostExpensive.hover();
 
