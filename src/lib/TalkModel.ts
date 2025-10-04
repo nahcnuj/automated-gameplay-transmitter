@@ -39,7 +39,7 @@ export const fromFile = (path: string) => {
     return {
       gen: () => talk(model, bos),
       reply: (comment: string) => {
-        const words = [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(comment)].map(({ segment }) => segment);
+        const words = [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(comment)].map(({ segment }) => segment.normalize('NFC'));
         const cands = words.reduce<string[]>((prev, s) => {
           const a = [...s].length;
           const b = [...prev[0] ?? ''].length;
