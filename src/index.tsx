@@ -149,51 +149,50 @@ const server = serve({
 
     '/api/comments': () => Response.json(comments),
     '/api/status': () => Response.json({ latest }),
-    '/api/talk': () => {
-      {
-        const ad = adQueue.shift();
-        if (ad) {
-          const text = `${ad}さん、広告ありがとうございます！\n`;
-          nextSpeech = { text };
-          return new Response(text);
+    '/api/talk': {
+      GET: () => {
+        {
+          const ad = adQueue.shift();
+          if (ad) {
+            const text = `${ad}さん、広告ありがとうございます！\n`;
+            nextSpeech = { text };
+            return new Response(text);
+          }
         }
-      }
 
-      {
-        const gift = giftQueue.shift();
-        if (gift) {
-          const text = `${gift.name}さん、ギフトありがとうございます！\n`;
-          nextSpeech = { text, icon: gift.icon };
-          return new Response(text);
+        {
+          const gift = giftQueue.shift();
+          if (gift) {
+            const text = `${gift.name}さん、ギフトありがとうございます！\n`;
+            nextSpeech = { text, icon: gift.icon };
+            return new Response(text);
+          }
         }
-      }
 
-      {
-        const text = talkQueue.shift();
-        if (text) {
+        {
+          const text = talkQueue.shift();
+          if (text) {
+            nextSpeech = { text };
+            return new Response(`${text}\n`);
+          }
+        }
+
+        if (Model) {
+          const text = Model.gen().replace(/。$/, '');
           nextSpeech = { text };
           return new Response(`${text}\n`);
         }
-      }
 
-      if (Model) {
-        const text = Model.gen().replace(/。$/, '');
-        nextSpeech = { text };
-        return new Response(`${text}\n`);
-      }
-
-      return new Response('', { status: 500 })
+        return new Response('', { status: 500 })
+      },
+      POST: async (req) => {
+        const text = await req.text();
+        console.debug(`POST /api/talk ${text}`);
+        talkQueue.push(text);
+        return Response.json({ text });
+      },
     },
     '/api/speech': async () => Response.json(nextSpeech),
-    // '/api/speech': async () => Response.json(
-    //   {
-    //     text: await Bun.file('/tmp/speech.txt')
-    //       .text()
-    //       .catch((err) => {
-    //         console.warn(err);
-    //       }),
-    //   },
-    // ),
     '/api/meta': {
       GET: () => Response.json(serviceMeta),
       POST: async (req) => {
