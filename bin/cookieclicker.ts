@@ -196,9 +196,13 @@ const notifier = setInterval(async () => {
   const notes = page.locator('#notes');
 
   for (const l of await notes.locator('.note', { hasText: '実績が解除' }).all()) {
-    const title = await l.getByRole('heading', { level: 5 }).textContent();
-    await say(`${title} 実績が解除されました！`);
-    await l.locator('.close').click();
+    try {
+      const title = await l.getByRole('heading', { level: 5 }).textContent();
+      await say(`${title} 実績が解除されました！`);
+      await l.locator('.close').click();
+    } catch (err) {
+      console.warn(err);
+    }
   }
 }, 1_000);
 
