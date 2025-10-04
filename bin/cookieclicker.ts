@@ -161,10 +161,23 @@ const clicker = setInterval(async () => {
 const shopper = setInterval(async () => {
   const shop = page.locator('#store');
 
+  const upgradable = shop.locator('#upgrades').locator('.enabled');
+  if (await upgradable.count() > 0) {
+    const mostExpensive = upgradable.last();
+    await mostExpensive.hover();
+    const tooltip = page.locator('#tooltipAnchor');
+    const name = await tooltip.locator('.name').innerText();
+    await say(`アップグレード ${name}を 買います`);
+    const description = await tooltip.locator('.description').innerText();
+    await say(description);
+    await mostExpensive.click();
+  }
+
   const purchasable = shop.locator('#products').locator('.enabled');
   if (await purchasable.count() > 0) {
     const mostExpensive = purchasable.last();
-    await say(`${await mostExpensive.locator('.productName').textContent()} を買います`);
+    const name = await mostExpensive.locator('.productName').textContent();
+    await say(`${name}を 買います`);
     await mostExpensive.click();
   }
 }, 1_000);
@@ -174,8 +187,8 @@ const notifier = setInterval(async () => {
 
   for (const l of await notes.locator('.note', { hasText: '実績が解除' }).all()) {
     const title = await l.getByRole('heading', { level: 5 }).textContent();
+    await say(`${title}の 実績が解除されました！`);
     await l.locator('.close').click();
-    await say(`${title} の実績が解除されました！`);
   }
 }, 1_000);
 
