@@ -44,6 +44,12 @@ if (!page) {
   throw new Error('could not create a page');
 }
 
+{
+  const cdp = await ctx.newCDPSession(page);
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 10 });
+  // await cdp.detach();
+}
+
 await page.goto('https://orteil.dashnet.org/cookieclicker/');
 
 try {
@@ -144,6 +150,7 @@ const say = async (text: string) => {
       method: 'POST',
       body: text,
     });
+    await page.waitForTimeout(100 * [...text].length);
   } catch (err) {
     console.warn(err);
   }
