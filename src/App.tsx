@@ -41,13 +41,18 @@ const formatNumber = (n: number) => new Intl.NumberFormat('ja-JP').format(n);
 
 export function App() {
   const { startTime, url, total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
-  const { comments } = useCommentContext();
+  const { comments: allComments } = useCommentContext();
   const { text: speechText, icon } = useSpeechContext();
 
   const now = new Date();
 
+  const displayComments = allComments
+    .filter(({ data }) => Date.now() - Date.parse(data.timestamp) < 12 /* hour */ * 60 /* min/hour */ * 60 /* min/sec */ * 1000 /* ms/sec */)
+    .filter(({ data }) => data.no || data.userId === 'onecomme.system' && data.name === '生放送クルーズ')
+    .slice(-10);
+
   const liveId = url?.split('/').at(-1)?.slice(2);
-  const numUserComments = comments.filter(({ data: { no, origin } }) => (origin as any)?.meta?.origin?.chat?.liveId === liveId && no).length;
+  const numUserComments = allComments.filter(({ data: { no, origin } }) => (origin as any)?.meta?.origin?.chat?.liveId === liveId && no).length;
 
   return (
     <div className="w-screen h-screen max-w-[1280px] max-h-[720px] m-auto overflow-hidden flex font-[Noto_Sans_CJK_JP]">
@@ -116,7 +121,7 @@ export function App() {
             <img src="/img/nc433974.png" width="720" height="960" className="h-full object-cover object-top" />
           </div>
           <div className="flex-auto">
-            <CommentList comments={comments} />
+            <CommentList comments={displayComments} />
           </div>
         </div>
       </div>
