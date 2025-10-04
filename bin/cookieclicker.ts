@@ -150,7 +150,7 @@ const say = async (text: string) => {
       method: 'POST',
       body: text,
     });
-    await page.waitForTimeout(100 * [...text].length);
+    await page.waitForTimeout(50 * [...text].length);
   } catch (err) {
     console.warn(err);
   }
@@ -191,7 +191,7 @@ const shopper = setInterval(async () => {
       await mostExpensive.scrollIntoViewIfNeeded();
 
       const name = await mostExpensive.locator('.productName').textContent();
-      await say(`${name}を 買います`);
+      await say(`${name}を買います`);
       await mostExpensive.click();
     }
   } catch (err) {
