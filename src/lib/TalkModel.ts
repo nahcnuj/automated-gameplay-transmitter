@@ -39,10 +39,10 @@ export const fromFile = (path: string) => {
     return {
       gen: () => talk(model, bos),
       reply: (comment: string) => {
-        const words = [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(comment)].map(({ segment }) => segment.normalize('NFC'));
+        const words = [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(comment)].map(({ segment }) => segment);
         const cands = words.reduce<string[]>((prev, s) => {
-          const a = [...s].length;
-          const b = [...prev[0] ?? ''].length;
+          const a = [...s.normalize('NFC')].length;
+          const b = [...prev[0]?.normalize('NFC') ?? ''].length;
           // console.debug(s, a, b, [s], [...prev, s]);
           return a > b ? [s] : a === b ? [...prev, s] : prev;
         }, ['']);
