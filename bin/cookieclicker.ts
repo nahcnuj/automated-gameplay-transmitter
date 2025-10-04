@@ -187,7 +187,7 @@ const notifier = setInterval(async () => {
 
   for (const l of await notes.locator('.note', { hasText: '実績が解除' }).all()) {
     const title = await l.getByRole('heading', { level: 5 }).textContent();
-    await say(`${title}の 実績が解除されました！`);
+    await say(`${title} 実績が解除されました！`);
     await l.locator('.close').click();
   }
 }, 1_000);
@@ -227,4 +227,4 @@ setTimeout(async () => {
   clearInterval(exporter);
   await ctx.close();
   await browser.close();
-}, 6_000_000);
+}, 24 * 60 * 60 * 1000);
