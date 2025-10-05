@@ -28,7 +28,6 @@ const browser = await chromium.launch({
     '--window-size=960,576',
     '--window-position=1280,300',
   ],
-  slowMo: 50,
 });
 
 const ctx = await browser.newContext();
@@ -143,7 +142,7 @@ if (data) {
   console.debug(`Closed the menu.`);
 }
 
-ctx.setDefaultTimeout(100);
+ctx.setDefaultTimeout(250);
 
 const say = async (text: string) => {
   try {
