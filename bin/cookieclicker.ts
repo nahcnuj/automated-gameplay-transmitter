@@ -36,6 +36,7 @@ if (!ctx) {
   await browser.close();
   throw new Error('could not create a context');
 }
+ctx.setDefaultTimeout(100);
 
 const page = await ctx.newPage();
 if (!page) {
@@ -248,7 +249,6 @@ const elderPledger = setInterval(async () => {
   try {
     const pledger = page.locator('#store').locator('#toggleUpgrades').locator('.enabled').first();
     await pledger.scrollIntoViewIfNeeded();
-    await pledger.highlight(); // XXX
     await pledger.hover();
 
     const tooltip = page.locator('#tooltipAnchor');
