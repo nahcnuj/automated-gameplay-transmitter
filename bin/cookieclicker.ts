@@ -246,7 +246,7 @@ const exporter = setInterval(async () => {
 
 const elderPledger = setInterval(async () => {
   try {
-    const pledger = page.locator('#store').locator('#toggleUpgrades').first();
+    const pledger = page.locator('#store').locator('#toggleUpgrades').locator('.enabled').first();
     await pledger.scrollIntoViewIfNeeded();
     await pledger.highlight(); // XXX
     await pledger.hover();
