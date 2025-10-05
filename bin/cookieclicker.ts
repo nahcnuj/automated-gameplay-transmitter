@@ -159,7 +159,7 @@ const say = async (text: string) => {
 const clicker = setInterval(async () => {
   const bigCookie = page.locator('#bigCookie');
   try {
-    await bigCookie.click({ timeout: 100 });
+    await bigCookie.click({ timeout: 200 });
   } catch {
     // do nothing
   }
@@ -244,11 +244,30 @@ const exporter = setInterval(async () => {
   }
 }, 600_000);
 
+const elderPledger = setInterval(async () => {
+  try {
+    const pledger = page.locator('#store').locator('#toggleUpgrades').first();
+    await pledger.scrollIntoViewIfNeeded();
+    await pledger.highlight(); // XXX
+    await pledger.hover();
+
+    const tooltip = page.locator('#tooltipAnchor');
+    const name = await tooltip.locator('.name').innerText();
+    if (name === 'エルダー宣誓') {
+      await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除します。`);
+      await pledger.click();
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}, 3_600_000);
+
 setTimeout(async () => {
   clearInterval(clicker);
   clearInterval(shopper);
   clearInterval(notifier);
   clearInterval(exporter);
+  clearInterval(elderPledger);
   await ctx.close();
   await browser.close();
 }, 24 * 60 * 60 * 1000);
