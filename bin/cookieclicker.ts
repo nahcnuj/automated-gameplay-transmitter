@@ -28,7 +28,7 @@ const browser = await chromium.launch({
     '--window-size=960,576',
     '--window-position=1280,300',
   ],
-  slowMo: 100,
+  slowMo: 50,
 });
 
 const ctx = await browser.newContext();
@@ -46,7 +46,7 @@ if (!page) {
 
 {
   const cdp = await ctx.newCDPSession(page);
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 10 });
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 5 });
   // await cdp.detach();
 }
 
