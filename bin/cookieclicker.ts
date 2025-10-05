@@ -43,11 +43,11 @@ if (!page) {
   throw new Error('could not create a page');
 }
 
-{
-  const cdp = await ctx.newCDPSession(page);
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 5 });
-  // await cdp.detach();
-}
+// {
+//   const cdp = await ctx.newCDPSession(page);
+//   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 5 });
+//   // await cdp.detach();
+// }
 
 await page.goto('https://orteil.dashnet.org/cookieclicker/');
 
@@ -74,8 +74,37 @@ try {
   // do nothing
 }
 
-{
-  console.debug(`Configurating...`);
+let data: string | undefined;
+try {
+  data = readFileSync(file, 'utf8');
+} catch (err) {
+  console.warn(err);
+}
+
+if (data) {
+  console.debug(`Importing...`);
+
+  const options = page.locator('.subButton', { hasText: 'オプション' });
+  await options.click();
+  console.debug(`Clicked the option button.`);
+
+  const menu = page.locator('#menu');
+
+  await menu.press('Control+O');
+  console.debug(`Pressed Ctrl+O.`);
+
+  const popup = page.locator('#prompt');
+
+  await popup.getByRole('textbox').fill(data);
+  await popup.getByText('ロード').click();
+
+  await popup.waitFor({ state: 'hidden' });
+  console.debug(`Imported!`);
+
+  await menu.locator('.close').click();
+  console.debug(`Closed the menu.`);
+} else {
+  console.debug(`Initializing...`);
 
   const options = page.locator('.subButton', { hasText: 'オプション' });
   await options.click();
@@ -111,38 +140,7 @@ try {
   console.debug(`Closed the menu.`);
 }
 
-let data: string | undefined;
-try {
-  data = readFileSync(file, 'utf8');
-} catch (err) {
-  console.warn(err);
-}
-
-if (data) {
-  console.debug(`Importing...`);
-
-  const options = page.locator('.subButton', { hasText: 'オプション' });
-  await options.click();
-  console.debug(`Clicked the option button.`);
-
-  const menu = page.locator('#menu');
-
-  await menu.press('Control+O');
-  console.debug(`Pressed Ctrl+O.`);
-
-  const popup = page.locator('#prompt');
-
-  await popup.getByRole('textbox').fill(data);
-  await popup.getByText('ロード').click();
-
-  await popup.waitFor({ state: 'hidden' });
-  console.debug(`Imported!`);
-
-  await menu.locator('.close').click();
-  console.debug(`Closed the menu.`);
-}
-
-ctx.setDefaultTimeout(250);
+ctx.setDefaultTimeout(500);
 
 const say = async (text: string) => {
   try {
