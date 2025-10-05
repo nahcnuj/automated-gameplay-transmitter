@@ -36,7 +36,6 @@ if (!ctx) {
   await browser.close();
   throw new Error('could not create a context');
 }
-ctx.setDefaultTimeout(100);
 
 const page = await ctx.newPage();
 if (!page) {
@@ -143,6 +142,8 @@ if (data) {
   await menu.locator('.close').click();
   console.debug(`Closed the menu.`);
 }
+
+ctx.setDefaultTimeout(100);
 
 const say = async (text: string) => {
   try {
