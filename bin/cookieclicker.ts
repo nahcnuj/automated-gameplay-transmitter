@@ -258,7 +258,7 @@ const elderPledger = setInterval(async () => {
   } catch (err) {
     console.warn(err);
   }
-}, 3_600_000);
+}, 1_000_000);
 
 setTimeout(async () => {
   clearInterval(clicker);
