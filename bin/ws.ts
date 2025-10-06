@@ -9,7 +9,7 @@ const { positionals: [ target = 'localhost:7777' ] } = parseArgs({
   allowPositionals: true,
 })
 
-await fetch(`http://${target}/`, { method: 'DELETE' });
+// await fetch(`http://${target}/`, { method: 'DELETE' });
 
 setInterval(async () => {
   await fetch(`http://${target}/`, { method: 'POST' }).catch((err) => {
