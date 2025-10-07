@@ -171,7 +171,6 @@ const shopper = setInterval(async () => {
     const upgradable = shop.locator('#upgrades').locator('.enabled');
     if (await upgradable.count() > 0) {
       const mostExpensive = upgradable.first();
-      await mostExpensive.scrollIntoViewIfNeeded();
       await mostExpensive.hover();
 
       const tooltip = page.locator('#tooltipAnchor');
@@ -187,7 +186,6 @@ const shopper = setInterval(async () => {
     const purchasable = shop.locator('#products').locator('.enabled');
     if (await purchasable.count() > 0) {
       const mostExpensive = purchasable.last();
-      await mostExpensive.scrollIntoViewIfNeeded();
 
       const name = await mostExpensive.locator('.productName').textContent();
       await say(`${name}を買います`);
@@ -221,7 +219,6 @@ const exporter = setInterval(async () => {
 
     const menu = page.locator('#menu');
     const exportBtn = menu.getByText('エクスポート');
-    await exportBtn.scrollIntoViewIfNeeded();
     await exportBtn.hover();
     await exportBtn.click();
     console.debug(`Clicked the exporting button`);
@@ -246,7 +243,6 @@ const exporter = setInterval(async () => {
 const elderPledger = setInterval(async () => {
   try {
     const pledger = page.locator('#store').locator('#toggleUpgrades').locator('.enabled').first();
-    await pledger.scrollIntoViewIfNeeded();
     await pledger.hover();
 
     const tooltip = page.locator('#tooltipAnchor');
