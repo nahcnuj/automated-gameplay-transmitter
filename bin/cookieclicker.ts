@@ -2,7 +2,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
-import { chromium } from "playwright";
+import { chromium, type Locator, type Page } from "playwright";
 
 const { values: {
   file,
@@ -49,30 +49,72 @@ if (!page) {
 //   // await cdp.detach();
 // }
 
-await page.goto('https://orteil.dashnet.org/cookieclicker/');
+const CookieClicker = async (page: Page) => {
+  await page.goto('https://orteil.dashnet.org/cookieclicker/');
 
-try {
-  await page.getByText('Got it').click();
-  console.debug(`Got it!`);
-} catch {
-  // do nothing
-}
-
-try {
   await page.getByText('日本語').click();
   console.debug(`日本語`);
-} catch {
-  // do nothing
-}
 
-try {
-  const btn = page.getByText('次回から表示しない');
-  await btn.waitFor({ state: 'visible', timeout: 10_000 });
-  await btn.click();
+  await page.getByText('Got it').click();
+  console.debug(`Got it!`);
+
+  await page.getByText('次回から表示しない').click();
   console.debug(`Do not show again`);
-} catch {
-  // do nothing
-}
+
+  const withOptionMenu = async (callback: (menu: Locator) => Promise<void>) => {
+    const options = page.locator('.subButton', { hasText: 'オプション' });
+    await options.click();
+    console.debug(`Clicked the option button.`);
+
+    const menu = page.locator('#menu');
+    await menu.waitFor({ state: 'visible' });
+    console.debug(`Opened the menu.`);
+
+    await callback(menu);
+
+    await menu.locator('.close').click();
+    console.debug(`Clicked the close button.`);
+    await menu.waitFor({ state: 'hidden' });
+    console.debug(`Closed the menu.`);
+  };
+
+  return {
+    withOptionMenu,
+    importData: async (data: string) => {
+      console.debug(`Importing data...`);
+
+      await page.locator('#game').press('Control+O');
+      console.debug(`Pressed Ctrl+O.`);
+
+      const prompt = page.locator('#prompt');
+
+      await prompt.getByRole('textbox').fill(data);
+      await prompt.getByText('ロード').click();
+
+      await prompt.waitFor({ state: 'hidden' });
+      console.debug(`Imported!`);
+    },
+    exportData: async () => {
+      console.debug(`Exporting data...`);
+
+      let data: string | undefined;
+      await withOptionMenu(async (menu) => {
+        await menu.getByText('エクスポート').click();
+        console.debug(`Clicked the exporting button`);
+
+        const prompt = page.locator('#prompt');
+        console.debug(`Popped up the exporting menu.`);
+
+        data = await prompt.getByRole('textbox').inputValue();
+
+        await prompt.getByText('完了').click();
+        await prompt.waitFor({ state: 'hidden' });
+        console.debug(`Exported!`);
+      });
+      return data;
+    }
+  };
+};
 
 let data: string | undefined;
 try {
@@ -81,66 +123,128 @@ try {
   console.warn(err);
 }
 
-if (data) {
-  console.debug(`Importing...`);
+const config = {
+  '高品質で描画': false,
+  'CSSフィルター': false,
+  'パーティクル': false,
+  '数字': true,
+  'ミルク': true,
+  'カーソル': true,
+  '動くクッキー': false,
+  '別のクッキー音': false,
+  'アイコンの枠': false,
+  '別のフォント': false,
+  '数字を短く表記': false,
+  '短い通知': true,
+  '終了警告': false,
+  '追加ボタン': true,
+  '砂糖玉使用の確認': false,
+  'カスタムグランマ': false,
+  '恐ろしいもの': true,
+  'スリープモードのタイムアウト': true,
+  'スクリーン リーダー モード': true,
+};
 
-  const options = page.locator('.subButton', { hasText: 'オプション' });
-  await options.click();
-  console.debug(`Clicked the option button.`);
+try {
+  const player = await CookieClicker(page);
 
-  const menu = page.locator('#menu');
-
-  await menu.press('Control+O');
-  console.debug(`Pressed Ctrl+O.`);
-
-  const popup = page.locator('#prompt');
-
-  await popup.getByRole('textbox').fill(data);
-  await popup.getByText('ロード').click();
-
-  await popup.waitFor({ state: 'hidden' });
-  console.debug(`Imported!`);
-
-  await menu.locator('.close').click();
-  console.debug(`Closed the menu.`);
-} else {
-  console.debug(`Initializing...`);
-
-  const options = page.locator('.subButton', { hasText: 'オプション' });
-  await options.click();
-  console.debug(`Clicked the option button.`);
-
-  const menu = page.locator('#menu');
-
-  await menu.locator('#volumeSlider').fill('100');
-  console.debug(`Made the volume maximum.`);
-
-  try {
-    await menu.getByText(/高品質.*ON/i).click();
-    console.debug(`Turned off high quality.`);
-  } catch {
-    // do nothing
+  if (data) {
+    player.importData(data);
   }
 
-  try {
-    await menu.getByText(/CSS.*ON/i).click();
-    console.debug(`Turned off CSS filters.`);
-  } catch {
-    // do nothing
-  }
+  await player.withOptionMenu(async (menu) => {
+    await menu.locator('#volumeSlider').fill('100');
 
-  try {
-    await menu.getByText(/パーティクル.*ON/i).click();
-    console.debug(`Turned off particles.`);
-  } catch {
-    // do nothing
-  }
+    await Promise.all(
+      Object.entries(config).map(async ([text, flag]) => {
+        const link = menu.getByText(`${text} ON`).or(menu.getByText(`${text} OFF`));
+        console.debug(`${text}, ${flag}, ${await link.innerText()}`);
+        if (await link.innerText().then(async (text) => !text.endsWith(flag ? 'ON' : 'OFF'))) {
+          await link.click();
+          console.debug(`Clicked "${text}"`);
+        }
+      })
+    );
+  });
 
-  await menu.locator('.close').click();
-  console.debug(`Closed the menu.`);
+  setInterval(async () => {
+    const data = await player.exportData();
+    if (!data) {
+      console.warn(`Failed to export.`);
+      return;
+    }
+
+    try {
+      writeFileSync(file, data, 'utf8');
+    } catch (err) {
+      console.warn(`Failed to save the data.`, err);
+    }
+  }, 600_000);
+} catch (err) {
+  console.error(err);
+  process.exit(1);
 }
 
-ctx.setDefaultTimeout(500);
+// if (data) {
+//   console.debug(`Importing...`);
+
+//   const options = page.locator('.subButton', { hasText: 'オプション' });
+//   await options.click();
+//   console.debug(`Clicked the option button.`);
+
+//   const menu = page.locator('#menu');
+
+//   await menu.press('Control+O');
+//   console.debug(`Pressed Ctrl+O.`);
+
+//   const popup = page.locator('#prompt');
+
+//   await popup.getByRole('textbox').fill(data);
+//   await popup.getByText('ロード').click();
+
+//   await popup.waitFor({ state: 'hidden' });
+//   console.debug(`Imported!`);
+
+//   await menu.locator('.close').click();
+//   console.debug(`Closed the menu.`);
+// } else {
+//   console.debug(`Initializing...`);
+
+//   const options = page.locator('.subButton', { hasText: 'オプション' });
+//   await options.click();
+//   console.debug(`Clicked the option button.`);
+
+//   const menu = page.locator('#menu');
+
+//   await menu.locator('#volumeSlider').fill('100');
+//   console.debug(`Made the volume maximum.`);
+
+//   try {
+//     await menu.getByText(/高品質.*ON/i).click();
+//     console.debug(`Turned off high quality.`);
+//   } catch {
+//     // do nothing
+//   }
+
+//   try {
+//     await menu.getByText(/CSS.*ON/i).click();
+//     console.debug(`Turned off CSS filters.`);
+//   } catch {
+//     // do nothing
+//   }
+
+//   try {
+//     await menu.getByText(/パーティクル.*ON/i).click();
+//     console.debug(`Turned off particles.`);
+//   } catch {
+//     // do nothing
+//   }
+
+//   await menu.locator('.close').click();
+//   console.debug(`Closed the menu.`);
+// }
+
+ctx.setDefaultTimeout(1_000);
 
 const say = async (text: string) => {
   try {
@@ -149,7 +253,7 @@ const say = async (text: string) => {
       method: 'POST',
       body: text,
     });
-    await page.waitForTimeout(50 * [...text].length);
+    await page.waitForTimeout(50 * text.length);
   } catch (err) {
     console.warn(err);
   }
@@ -210,35 +314,35 @@ const notifier = setInterval(async () => {
   }
 }, 1_000);
 
-const exporter = setInterval(async () => {
-  console.debug(`Exporting...`);
-  try {
-    const options = page.locator('.subButton', { hasText: 'オプション' });
-    await options.click();
-    console.debug(`Clicked the option button.`);
+// const exporter = setInterval(async () => {
+//   console.debug(`Exporting...`);
+//   try {
+//     const options = page.locator('.subButton', { hasText: 'オプション' });
+//     await options.click();
+//     console.debug(`Clicked the option button.`);
 
-    const menu = page.locator('#menu');
-    const exportBtn = menu.getByText('エクスポート');
-    await exportBtn.hover();
-    await exportBtn.click();
-    console.debug(`Clicked the exporting button`);
+//     const menu = page.locator('#menu');
+//     const exportBtn = menu.getByText('エクスポート');
+//     await exportBtn.hover();
+//     await exportBtn.click();
+//     console.debug(`Clicked the exporting button`);
 
-    const popup = page.locator('#prompt');
-    console.debug(`Popped up the exporting menu.`);
+//     const popup = page.locator('#prompt');
+//     console.debug(`Popped up the exporting menu.`);
 
-    data = await popup.getByRole('textbox').inputValue();
-    writeFileSync(file, data, 'utf8');
+//     data = await popup.getByRole('textbox').inputValue();
+//     writeFileSync(file, data, 'utf8');
 
-    await popup.getByText('完了').click();
-    await popup.waitFor({ state: 'hidden' });
-    console.debug(`Exported!`);
+//     await popup.getByText('完了').click();
+//     await popup.waitFor({ state: 'hidden' });
+//     console.debug(`Exported!`);
 
-    await menu.locator('.close').click();
-    console.debug(`Closed the menu.`);
-  } catch (err) {
-    console.warn('Failed to save.', err);
-  }
-}, 600_000);
+//     await menu.locator('.close').click();
+//     console.debug(`Closed the menu.`);
+//   } catch (err) {
+//     console.warn('Failed to save.', err);
+//   }
+// }, 600_000);
 
 const elderPledger = setInterval(async () => {
   try {
@@ -260,8 +364,8 @@ setTimeout(async () => {
   clearInterval(clicker);
   clearInterval(shopper);
   clearInterval(notifier);
-  clearInterval(exporter);
+  // clearInterval(exporter);
   clearInterval(elderPledger);
   await ctx.close();
   await browser.close();
-}, 24 * 60 * 60 * 1000);
+}, 12 * 60 * 60 * 1000);
