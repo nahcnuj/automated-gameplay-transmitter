@@ -1,25 +1,27 @@
 import { CommentList } from "./components/CommentList";
 import { HighlightOnChange } from "./components/HighlightOnChange";
+import { useAIVTuberContext } from "./contexts/AIVTuberContext";
 import { useCommentContext } from "./contexts/CommentContext";
 import { useServiceMetaContext } from "./contexts/ServiceMetaContext";
-import { useSpeechContext } from "./contexts/SpeechContext";
 import "./index.css";
 
 const getClockEmoji = (d: Date) =>
   [...'🕛🕧🕐🕜🕑🕝🕒🕞🕓🕟🕔🕠🕕🕡🕖🕢🕗🕣🕘🕤🕙🕥🕚🕦']
     .at(2 * (d.getHours() % 12) + Math.floor(d.getMinutes() / 30));
 
-const formatDateTime = (d: Date) => getClockEmoji(d) +
-  new Intl.DateTimeFormat('ja-JP', {
-    second: '2-digit',
-    minute: '2-digit',
-    hour: '2-digit',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'Asia/Tokyo',
-  })
-    .format(d);
+const formatDate = (d: Date) => new Intl.DateTimeFormat('ja-JP', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'Asia/Tokyo',
+}).format(d);
+
+const formatTime = (d: Date) => new Intl.DateTimeFormat('ja-JP', {
+  second: '2-digit',
+  minute: '2-digit',
+  hour: '2-digit',
+  timeZone: 'Asia/Tokyo',
+}).format(d);
 
 const formatDuration = (d: Date) => getClockEmoji(d) +
   `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
@@ -40,9 +42,9 @@ const formatDuration = (d: Date) => getClockEmoji(d) +
 const formatNumber = (n: number) => new Intl.NumberFormat('ja-JP').format(n);
 
 export function App() {
-  const { startTime, url, total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
+  const { url, startTime, total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
   const { comments: allComments } = useCommentContext();
-  const { text: speechText, icon } = useSpeechContext();
+  const { speech, sprite } = useAIVTuberContext();
 
   const now = new Date();
 
@@ -55,73 +57,116 @@ export function App() {
   const numUserComments = allComments.filter(({ data: { no, origin } }) => (origin as any)?.meta?.origin?.chat?.liveId === liveId && no).length;
 
   return (
-    <div className="w-screen h-screen max-w-[1280px] max-h-[720px] m-auto overflow-hidden flex font-[Noto_Sans_CJK_JP]">
-      <div className="h-full flex-auto">
-        <div className="h-full flex flex-col">
-          <div className="flex-auto">
-            {/* Game screen */}
-          </div>
-          <div className="h-fit flex-none">
-            <div className="after:block after:bg-[#001100f7] after:-mb-10 after:translate-x-243 after:-translate-y-18 after:w-10 after:h-10 after:[clip-path:polygon(100%_50%,8%_0,8%_100%)]">
-              <div className="w-full h-30 p-2 border-5 border-green-200 bg-[#001100f7] rounded-xl text-3xl/10 font-bold text-white [text-shadow:-2px_-2px_4px_#000,2px_2px_4px_#000]">
-                {icon && <img src={icon} width={100} height={100} className="h-full mr-2 object-contain float-left" />}
-                {speechText}
+    <div className="w-screen h-screen max-w-[1280px] max-h-[720px] m-auto bg-[#000700f7] overflow-hidden flex flex-col font-[Noto_Sans_CJK_JP]">
+      <div className="flex-auto">
+        <div className="w-full h-140 flex flex-row">
+          <div className="flex-auto h-full">
+            <div className="aspect-video h-full bg-black">
+              <div className="w-full h-full text-center content-center text-7xl text-green-100 font-serif [font-variant-caps:small-caps]">
+                No Signal
               </div>
             </div>
-            <div className="text-md font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
-              <div className="flex gap-5">
-                <div className="flex-none">
-                  {formatDateTime(now)}
+          </div>
+          <div className="flex-none w-70 h-full">
+            <div className="h-full">
+              <div className="flex flex-col h-full gap-2">
+                <div className="flex-none pt-2 text-center text-6xl text-green-300 font-bold [ruby-position:under] [text-shadow:-1px_-1px_5px_#000700,1px_1px_5px_#000700]">
+                  <ruby>馬<rp>(</rp><rt>ま</rt><rp>)</rp></ruby>
+                  <ruby>可<rp>(</rp><rt>か</rt><rp>)</rp></ruby>
+                  <ruby>無<rp>(</rp><rt>む</rt><rp>)</rp></ruby>
+                  <ruby>序<rp>(</rp><rt>じょ</rt><rp>)</rp></ruby>
                 </div>
-                <div className="flex-none px-2 bg-black/90 rounded-sm">
-                  &#x1D54F; &#xFF20;<span className="font-mono">makamujo</span>
+                <div className="flex-none text-right text-3xl text-white">
+                  <span className="bg-black rounded-sm">
+                    <span className="px-3">&#x1D54F;</span>
+                    <span className="text-green-100">
+                      &#xFF20;
+                      <span className="font-mono">makamujo</span>
+                    </span>
+                  </span>
                 </div>
-                <div className="flex-auto"></div>
-                {total > 0 && (
-                  <div className="flex-none">
-                    <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
-                      {`🙎${formatNumber(total)}`}
-                    </HighlightOnChange>
+                <div className="flex-auto">
+                  <div className="h-full flex flex-col justify-between p-1 bg-black/70 border-5 border-green-300 rounded-xl text-xl/8 font-bold text-green-100">
+                    <div className="flex-none">
+                      <div>📆{formatDate(now)}</div>
+                      <div>{getClockEmoji(now)}{formatTime(now)}</div>
+                    </div>
+                    <div className="flex-none">
+                      {total > 0 && (
+                        <div>
+                          <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
+                            {`🙎${formatNumber(total)}`}
+                          </HighlightOnChange>
+                        </div>
+                      )}
+                      {numUserComments > 0 && (
+                        <div>
+                          <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
+                            {`💬${formatNumber(numUserComments)}`}
+                          </HighlightOnChange>
+                        </div>
+                      )}
+                      {ad > 0 && (
+                        <div>
+                          <HighlightOnChange timeout={60_000} classNameOnChanged="text-yellow-300">
+                            {`📣${formatNumber(ad)}`}
+                          </HighlightOnChange>
+                        </div>
+                      )}
+                      {gift > 0 && (
+                        <div>
+                          <HighlightOnChange timeout={30_000} classNameOnChanged="text-yellow-300">
+                            {`🎁${formatNumber(gift)}`}
+                          </HighlightOnChange>
+                        </div>
+                      )}
+                      {startTime &&
+                        <div>
+                          {formatDuration(new Date(now.getTime() - startTime + now.getTimezoneOffset() * 60 * 1000))}
+                        </div>
+                      }
+                    </div>
                   </div>
-                )}
-                {numUserComments > 0 && (
-                  <div className="flex-none">
-                    <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
-                      {`💬${formatNumber(numUserComments)}`}
-                    </HighlightOnChange>
-                  </div>
-                )}
-                {ad > 0 && (
-                  <div className="flex-none">
-                    <HighlightOnChange timeout={60_000} classNameOnChanged="text-yellow-300">
-                      {`📣${formatNumber(ad)}`}
-                    </HighlightOnChange>
-                  </div>
-                )}
-                {gift > 0 && (
-                  <div className="flex-none">
-                    <HighlightOnChange timeout={30_000} classNameOnChanged="text-yellow-300">
-                      {`🎁${formatNumber(gift)}`}
-                    </HighlightOnChange>
-                  </div>
-                )}
-                {startTime &&
-                  <div className="flex-none">
-                    {formatDuration(new Date(now.getTime() - startTime + now.getTimezoneOffset() * 60 * 1000))}
-                  </div>
-                }
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div className="w-[300px] flex-none">
-        <div className="h-full flex flex-col-reverse gap-5">
-          <div className="h-70 flex-none">
-            <img src="/img/nc433974.png" width="720" height="960" className="h-full object-cover object-top" />
+      <div className="flex-none">
+        <div className="flex gap-2 max-w-full w-full h-40">
+          <div className="flex-none w-50 h-50">
+            {sprite}
           </div>
-          <div className="flex-auto">
-            <CommentList comments={displayComments} />
+          <div className="flex-auto w-full h-full">
+            <div className="flex flex-col w-full h-full overflow-hidden">
+              <div className="flex-none">
+                <div className="text-3xl/10">
+                  <div className="w-max text-base font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
+                    {/* <CommentList comments={displayComments} /> */}
+                  </div>
+                </div>
+              </div>
+              <div className="flex-auto w-full h-full">
+                <div className="h-full flex flex-col justify-between">
+                  <div className="flex-none">
+                    {/* TODO */}
+                  </div>
+                  <div className="flex-none w-full px-2 py-1 bg-black/70 border-5 border-green-300 rounded-xl text-3xl/10 font-bold text-green-100 [text-shadow:-2px_-2px_4px_#000,2px_2px_4px_#000]">
+                    Hello, お<br />あworld!
+                    {speech && (
+                      <>
+                        {speech.icon && <img src={speech.icon} width={100} height={100} className="h-full mr-2 object-contain float-left" />}
+                        {speech.text}
+                      </>
+                    )}
+                  </div>
+                  <div className="flex-none">
+                    {/* a dummy box */}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

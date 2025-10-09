@@ -20,6 +20,8 @@ const talkQueue: string[] = [];
 const giftQueue: { name: string; icon: string }[] = [];
 const adQueue: string[] = [];
 
+const talkedHistory: string[] = [];
+
 let nextSpeech: {
   text: string,
   icon?: string,
@@ -151,40 +153,46 @@ const server = serve({
     '/api/comments': () => Response.json(comments),
     '/api/status': () => Response.json({ latest }),
     '/api/talk': {
-      GET: () => {
-        {
-          const ad = adQueue.shift();
-          if (ad) {
-            const text = `${ad}さん、広告ありがとうございます！\n`;
-            nextSpeech = { text };
-            return new Response(text);
+      GET: async () => {
+        const res = await (async () => {
+          {
+            const ad = adQueue.shift();
+            if (ad) {
+              const text = `${ad}さん、広告ありがとうございます！\n`;
+              nextSpeech = { text };
+              return new Response(text);
+            }
           }
-        }
 
-        {
-          const gift = giftQueue.shift();
-          if (gift) {
-            const text = `${gift.name}さん、ギフトありがとうございます！\n`;
-            nextSpeech = { text, icon: gift.icon };
-            return new Response(text);
+          {
+            const gift = giftQueue.shift();
+            if (gift) {
+              const text = `${gift.name}さん、ギフトありがとうございます！\n`;
+              nextSpeech = { text, icon: gift.icon };
+              return new Response(text);
+            }
           }
-        }
 
-        {
-          const text = talkQueue.shift();
-          if (text) {
+          {
+            const text = talkQueue.shift();
+            if (text) {
+              nextSpeech = { text };
+              return new Response(`${text}\n`);
+            }
+          }
+
+          if (Model) {
+            const text = Model.gen().replace(/。$/, '');
             nextSpeech = { text };
             return new Response(`${text}\n`);
           }
-        }
 
-        if (Model) {
-          const text = Model.gen().replace(/。$/, '');
-          nextSpeech = { text };
-          return new Response(`${text}\n`);
-        }
+          return new Response('', { status: 500 });
+        })();
 
-        return new Response('', { status: 500 })
+        talkedHistory.unshift(await res.text());
+
+        return res;
       },
       POST: async (req) => {
         const text = await req.text();
@@ -196,7 +204,11 @@ const server = serve({
         return Response.json({ text });
       },
     },
-    '/api/speech': async () => Response.json(nextSpeech),
+    '/api/told': () => {
+      talkedHistory.splice(10);
+      return Response.json(talkedHistory);
+    },
+    '/api/speech': () => Response.json(nextSpeech),
     '/api/meta': {
       GET: () => Response.json(serviceMeta),
       POST: async (req) => {
@@ -206,6 +218,7 @@ const server = serve({
     },
 
     '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes()),
+    '/img/nc436438.png': new Response(await Bun.file('./public/ext/nc436438.png').bytes()),
   },
 
   error(error) {

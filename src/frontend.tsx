@@ -7,19 +7,19 @@
 
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { AIVTuberProvider } from "./contexts/AIVTuberContext";
 import { CommentProvider } from "./contexts/CommentContext";
-import { SpeechProvider } from "./contexts/SpeechContext";
 import { ServiceMetaProvider } from "./contexts/ServiceMetaContext";
 
 function start() {
   const root = createRoot(document.getElementById("root")!);
   root.render(
     <ServiceMetaProvider>
-      <SpeechProvider>
+      <AIVTuberProvider>
         <CommentProvider>
           <App />
         </CommentProvider>
-      </SpeechProvider>
+      </AIVTuberProvider>
     </ServiceMetaProvider>
   );
 }

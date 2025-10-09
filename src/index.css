@@ -2,11 +2,11 @@
 
 @layer base {
   :root {
-    @apply text-[rgba(207,207,207)] bg-transparent font-sans w-screen h-screen;
+    @apply bg-black font-sans w-screen h-screen;
   }
 
   body {
-    @apply grid justify-items-center items-end w-full h-full relative mb-20;
+    @apply grid justify-items-center items-center w-full h-full relative mb-20;
   }
 }
 
