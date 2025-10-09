@@ -25,8 +25,8 @@ const browser = await chromium.launch({
   executablePath,
   headless: false,
   args: [
-    '--window-size=960,576',
-    '--window-position=1280,300',
+    '--window-size=1024,576',
+    '--window-position=1280,600',
   ],
 });
 

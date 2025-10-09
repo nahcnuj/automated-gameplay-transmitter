@@ -152,7 +152,7 @@ export function App() {
                   <div className="flex-auto">
                     {/* TODO */}
                   </div>
-                  <div className="flex-none w-full h-[2.5lh] overflow-hidden px-2 py-1 bg-black/70 border-5 border-green-300 rounded-xl text-3xl/10 font-bold text-green-100 [text-shadow:-2px_-2px_4px_#000,2px_2px_4px_#000]">
+                  <div className="flex-none w-full h-[3.5lh] overflow-hidden px-2 py-1 bg-black/70 border-5 border-green-300 rounded-xl text-3xl/10 font-bold text-green-100 [text-shadow:-2px_-2px_4px_#000,2px_2px_4px_#000]">
                     {speech && (
                       <>
                         {speech.icon && <img src={speech.icon} width={100} height={100} className="h-full mr-2 object-contain float-left" />}
