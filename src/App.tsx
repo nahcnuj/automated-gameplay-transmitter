@@ -149,19 +149,16 @@ export function App() {
               </div>
               <div className="flex-auto w-full h-full">
                 <div className="h-full flex flex-col justify-between">
-                  <div className="flex-none">
+                  <div className="flex-auto">
                     {/* TODO */}
                   </div>
-                  <div className="flex-none w-full px-2 py-1 bg-black/70 border-5 border-green-300 rounded-xl text-3xl/10 font-bold text-green-100 [text-shadow:-2px_-2px_4px_#000,2px_2px_4px_#000]">
+                  <div className="flex-none w-full h-[2.5lh] overflow-hidden px-2 py-1 bg-black/70 border-5 border-green-300 rounded-xl text-3xl/10 font-bold text-green-100 [text-shadow:-2px_-2px_4px_#000,2px_2px_4px_#000]">
                     {speech && (
                       <>
                         {speech.icon && <img src={speech.icon} width={100} height={100} className="h-full mr-2 object-contain float-left" />}
                         {speech.text}
                       </>
                     )}
-                  </div>
-                  <div className="flex-none">
-                    {/* a dummy box */}
                   </div>
                 </div>
               </div>
