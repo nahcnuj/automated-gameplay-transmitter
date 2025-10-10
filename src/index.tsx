@@ -1,5 +1,5 @@
 import type { NicoNamaComment, ServiceMeta } from "@onecomme.com/onesdk";
-import { serve } from "bun";
+import { serve, type BunRequest } from "bun";
 import index from "./index.html";
 import { fromFile } from "./lib/TalkModel";
 
@@ -190,11 +190,12 @@ const server = serve({
           return new Response('', { status: 500 });
         })();
 
-        talkedHistory.unshift(await res.text());
+        const text = await res.text();
+        talkedHistory.unshift(text);
 
-        return res;
+        return new Response(text, { status: res.status });
       },
-      POST: async (req) => {
+      POST: async (req: BunRequest) => {
         const text = await req.text();
         if (talkQueue.includes(text)) {
           return new Response();
@@ -217,8 +218,8 @@ const server = serve({
       },
     },
 
-    '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes()),
-    '/img/nc436438.png': new Response(await Bun.file('./public/ext/nc436438.png').bytes()),
+    '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes().catch()),
+    '/img/nc436438.png': new Response(await Bun.file('./public/ext/nc436438.png').bytes().catch()),
   },
 
   error(error) {
