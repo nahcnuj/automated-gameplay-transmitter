@@ -79,9 +79,9 @@ export function App() {
                 <div className="flex-none text-right text-3xl text-white">
                   <span className="bg-black rounded-sm">
                     <span className="px-3">&#x1D54F;</span>
-                    <span className="text-green-100">
+                    <span className="text-green-100 font-bold">
                       &#xFF20;
-                      <span className="font-mono font-bold">makamujo</span>
+                      <span className="font-mono">makamujo</span>
                     </span>
                   </span>
                 </div>
