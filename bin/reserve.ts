@@ -79,7 +79,7 @@ do {
     console.debug(`600`);
     const day = Math.ceil((next.getTime() - firstDate.getTime()) / 1000 / 60 / 60 / 24);
     await titleInput.fill(`【人工無能実況】Cookie Clicker ${day}日目【AIVTuber】`);
-    console.debug(`601`);
+    console.debug(`601 ${day}`);
   }
 
   {
