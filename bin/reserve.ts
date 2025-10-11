@@ -78,7 +78,7 @@ do {
     const titleInput = page.getByLabel('番組タイトル', { exact: true });
     console.debug(`600`);
     const day = Math.ceil((next.getTime() - firstDate.getTime()) / 1000 / 60 / 60 / 24);
-    await titleInput.fill(`【人工知能実況】Cookie Clicker ${day}日目【AIVTuber】`);
+    await titleInput.fill(`【人工無能実況】Cookie Clicker ${day}日目【AIVTuber】`);
     console.debug(`601`);
   }
 
