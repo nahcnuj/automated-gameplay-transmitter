@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { readFileSync, writeFileSync } from "node:fs";
+import timersPromises from "node:timers/promises";
 import { parseArgs } from "node:util";
 import { chromium, type Locator, type Page } from "playwright";
 
@@ -21,49 +22,34 @@ const { values: {
   },
 });
 
-const browser = await chromium.launch({
-  executablePath,
-  headless: false,
-  args: [
-    '--window-size=1024,576',
-    '--window-position=1280,600',
-  ],
-});
-
-const ctx = await browser.newContext();
-if (!ctx) {
-  await browser.close();
-  throw new Error('could not create a context');
-}
-
-const page = await ctx.newPage();
-if (!page) {
-  await ctx.close();
-  await browser.close();
-  throw new Error('could not create a page');
-}
-
-// {
-//   const cdp = await ctx.newCDPSession(page);
-//   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 5 });
-//   // await cdp.detach();
-// }
+const say = async (text: string) => {
+  try {
+    console.debug(`${new Date().toLocaleString()}: ${text}`);
+    await fetch('http://localhost:7777/api/talk', {
+      method: 'POST',
+      body: text,
+    });
+    await page.waitForTimeout(50 * text.length);
+  } catch (err) {
+    console.warn(err);
+  }
+};
 
 const CookieClicker = async (page: Page) => {
-  await page.goto('https://orteil.dashnet.org/cookieclicker/');
+  await page.goto('https://orteil.dashnet.org/cookieclicker/', { timeout: 30_000 });
 
-  await page.getByText('日本語').click();
+  await page.getByText('日本語').click({ timeout: 30_000 });
   console.debug(`日本語`);
 
-  await page.getByText('Got it').click();
+  await page.getByText('Got it').click({ timeout: 30_000 });
   console.debug(`Got it!`);
 
-  await page.getByText('次回から表示しない').click();
+  await page.getByText('次回から表示しない').click({ timeout: 30_000 });
   console.debug(`Do not show again`);
 
   const withOptionMenu = async (callback: (menu: Locator) => Promise<void>) => {
     const options = page.locator('.subButton', { hasText: 'オプション' });
-    await options.click();
+    await options.click({ timeout: 30_000 });
     console.debug(`Clicked the option button.`);
 
     const menu = page.locator('#menu');
@@ -116,6 +102,107 @@ const CookieClicker = async (page: Page) => {
   };
 };
 
+const browser = await chromium.launch({
+  executablePath,
+  headless: false,
+  args: [
+    '--window-size=1024,576',
+    '--window-position=1280,600',
+  ],
+});
+
+const ctx = await browser.newContext();
+if (!ctx) {
+  await browser.close();
+  throw new Error('could not create a context');
+}
+
+const page = await ctx.newPage();
+if (!page) {
+  await ctx.close();
+  await browser.close();
+  throw new Error('could not create a page');
+}
+
+ctx.setDefaultTimeout(5_000);
+
+const clicker = setInterval(async () => {
+  const bigCookie = page.locator('#bigCookie');
+  try {
+    await bigCookie.click({ timeout: 200 });
+  } catch {
+    // do nothing
+  }
+}, 250);
+
+const shopper = setInterval(async () => {
+  const shop = page.locator('#store');
+
+  try {
+    const upgradable = shop.locator('#upgrades').locator('.enabled');
+    if (await upgradable.count() > 0) {
+      const mostExpensive = upgradable.first();
+      await mostExpensive.hover();
+
+      const tooltip = page.locator('#tooltipAnchor');
+      const name = await tooltip.locator('.name').innerText();
+      await say(`アップグレード ${name}を 買います`);
+      const description = await tooltip.locator('.description').innerText();
+      await say(description);
+      await mostExpensive.click();
+      console.debug(`Bought an upgrade, ${name}`);
+
+      return;
+    }
+
+    const purchasable = shop.locator('#products').locator('.enabled');
+    if (await purchasable.count() > 0) {
+      const mostExpensive = purchasable.last();
+
+      const name = await mostExpensive.locator('.productName').textContent();
+      await say(`${name}を買います`);
+      await mostExpensive.click();
+
+      console.debug(`Bought a product, ${name}`);
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}, 1_000);
+
+const notifier = setInterval(async () => {
+  const notes = page.locator('#notes');
+
+  for (const l of await notes.locator('.note', { hasText: '実績が解除' }).all()) {
+    try {
+      const title = await l.getByRole('heading', { level: 5 }).textContent();
+      await say(`${title} 実績が解除されました！`);
+      await l.locator('.close').click();
+
+      console.debug(`Closed a notification about an achievement, ${title}`);
+    } catch (err) {
+      console.warn(err);
+    }
+  }
+}, 1_000);
+
+const elderPledger = setInterval(async () => {
+  try {
+    const pledger = page.locator('#store').locator('#toggleUpgrades').locator('.enabled').first();
+    await pledger.hover();
+
+    const tooltip = page.locator('#tooltipAnchor');
+    const name = await tooltip.locator('.name').innerText();
+    if (name === 'エルダー宣誓') {
+      await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除します。`);
+      await pledger.click();
+      console.debug(`Pledged the Elder.`);
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}, 1_000_000);
+
 let data: string | undefined;
 try {
   data = readFileSync(file, 'utf8');
@@ -145,6 +232,17 @@ const config = {
   'スクリーン リーダー モード': true,
 };
 
+let exitCode = 0;
+let intervals: NodeJS.Timeout[] = [
+  clicker,
+  shopper,
+  notifier,
+  elderPledger,
+];
+let timeouts: NodeJS.Timeout[] = [];
+
+let cont = true;
+
 try {
   const player = await CookieClicker(page);
 
@@ -152,6 +250,7 @@ try {
     player.importData(data);
   }
 
+  // make sure that options are expected
   await player.withOptionMenu(async (menu) => {
     await menu.locator('#volumeSlider').fill('100');
 
@@ -167,115 +266,46 @@ try {
     );
   });
 
-  setInterval(async () => {
-    const data = await player.exportData();
-    if (!data) {
-      console.warn(`Failed to export.`);
-      return;
-    }
+  // save data regularly
+  {
+    const id = setInterval(async () => {
+      const data = await player.exportData();
+      if (!data) {
+        console.warn(`Failed to export.`);
+        return;
+      }
 
-    try {
-      writeFileSync(file, data, 'utf8');
-    } catch (err) {
-      console.warn(`Failed to save the data.`, err);
-    }
-  }, 600_000);
+      try {
+        console.debug(`Exporting to ${file}`);
+        writeFileSync(file, data, 'utf8');
+      } catch (err) {
+        console.warn(`Failed to save the data.`, err);
+      }
+    }, 600_000);
+    intervals.push(id);
+  }
+
+  // Schedule stopping the game
+  {
+    const id = setTimeout(async () => {
+      cont = false;
+      console.debug(`Stopping to play...`);
+    }, 6 * 60 * 60 * 1000);
+    timeouts.push(id);
+  }
+
+  while (cont) {
+    await timersPromises.setTimeout(1_000);
+  }
 } catch (err) {
   console.error(err);
-  process.exit(1);
-}
+  exitCode = 1;
+} finally {
+  intervals.forEach(clearInterval);
+  timeouts.forEach(clearTimeout);
 
-ctx.setDefaultTimeout(1_000);
-
-const say = async (text: string) => {
-  try {
-    console.debug(`${new Date().toLocaleString()}: ${text}`);
-    await fetch('http://localhost:7777/api/talk', {
-      method: 'POST',
-      body: text,
-    });
-    await page.waitForTimeout(50 * text.length);
-  } catch (err) {
-    console.warn(err);
-  }
-};
-
-const clicker = setInterval(async () => {
-  const bigCookie = page.locator('#bigCookie');
-  try {
-    await bigCookie.click({ timeout: 200 });
-  } catch {
-    // do nothing
-  }
-}, 250);
-
-const shopper = setInterval(async () => {
-  const shop = page.locator('#store');
-
-  try {
-    const upgradable = shop.locator('#upgrades').locator('.enabled');
-    if (await upgradable.count() > 0) {
-      const mostExpensive = upgradable.first();
-      await mostExpensive.hover();
-
-      const tooltip = page.locator('#tooltipAnchor');
-      const name = await tooltip.locator('.name').innerText();
-      await say(`アップグレード ${name}を 買います`);
-      const description = await tooltip.locator('.description').innerText();
-      await say(description);
-      await mostExpensive.click();
-
-      return;
-    }
-
-    const purchasable = shop.locator('#products').locator('.enabled');
-    if (await purchasable.count() > 0) {
-      const mostExpensive = purchasable.last();
-
-      const name = await mostExpensive.locator('.productName').textContent();
-      await say(`${name}を買います`);
-      await mostExpensive.click();
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-}, 1_000);
-
-const notifier = setInterval(async () => {
-  const notes = page.locator('#notes');
-
-  for (const l of await notes.locator('.note', { hasText: '実績が解除' }).all()) {
-    try {
-      const title = await l.getByRole('heading', { level: 5 }).textContent();
-      await say(`${title} 実績が解除されました！`);
-      await l.locator('.close').click();
-    } catch (err) {
-      console.warn(err);
-    }
-  }
-}, 1_000);
-
-const elderPledger = setInterval(async () => {
-  try {
-    const pledger = page.locator('#store').locator('#toggleUpgrades').locator('.enabled').first();
-    await pledger.hover();
-
-    const tooltip = page.locator('#tooltipAnchor');
-    const name = await tooltip.locator('.name').innerText();
-    if (name === 'エルダー宣誓') {
-      await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除します。`);
-      await pledger.click();
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-}, 1_000_000);
-
-setTimeout(async () => {
-  clearInterval(clicker);
-  clearInterval(shopper);
-  clearInterval(notifier);
-  clearInterval(elderPledger);
   await ctx.close();
   await browser.close();
-}, 12 * 60 * 60 * 1000);
+
+  process.exit(exitCode);
+}
