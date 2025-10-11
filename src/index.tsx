@@ -74,7 +74,7 @@ const server = serve({
             const comment = data.comment.normalize('NFC');
             console.log(`comment: ${comment}`);
 
-            if (data.no) {
+            if (data.no || data.isOwner) {
               splitInSentences(comment)
                 .forEach((s: string) => {
                   Model.learn(s.trim());
