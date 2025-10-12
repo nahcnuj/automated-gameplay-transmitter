@@ -1,5 +1,6 @@
 import type { NicoNamaComment, ServiceMeta } from "@onecomme.com/onesdk";
 import { serve, type BunRequest } from "bun";
+import { setTimeout } from "node:timers/promises";
 import index from "./index.html";
 import { fromFile } from "./lib/TalkModel";
 
@@ -154,13 +155,13 @@ const server = serve({
     '/api/status': () => Response.json({ latest }),
     '/api/talk': {
       GET: async () => {
-        const res = await (async () => {
+        const text = await (async () => {
           {
             const ad = adQueue.shift();
             if (ad) {
               const text = `${ad}さん、広告ありがとうございます！\n`;
               nextSpeech = { text };
-              return new Response(text);
+              return text;
             }
           }
 
@@ -169,7 +170,7 @@ const server = serve({
             if (gift) {
               const text = `${gift.name}さん、ギフトありがとうございます！\n`;
               nextSpeech = { text, icon: gift.icon };
-              return new Response(text);
+              return text;
             }
           }
 
@@ -177,23 +178,37 @@ const server = serve({
             const text = talkQueue.shift();
             if (text) {
               nextSpeech = { text };
-              return new Response(`${text}\n`);
+              return text;
             }
           }
 
-          if (Model) {
-            const text = Model.gen().replace(/。$/, '');
-            nextSpeech = { text };
-            return new Response(`${text}\n`);
+          {
+            const timestamp = comments.at(-1)?.data.timestamp;
+            if (timestamp) {
+              const quietMs = Date.now() - Date.parse(timestamp);
+              if (quietMs > 3_000_000) {
+                // TODO 寝顔
+                const text = '💤';
+                nextSpeech = { text };
+                await setTimeout(30_000);
+                return text;
+              } else if (quietMs > 1_000_000) {
+                // Dare to remain silent
+                const text = '・・・';
+                nextSpeech = { text };
+                await setTimeout(5_000);
+                return text;
+              }
+            }
           }
 
-          return new Response('', { status: 500 });
+          const text = Model.gen().replace(/。*$/, '');
+          nextSpeech = { text };
+          return text;
         })();
 
-        const text = await res.text();
         talkedHistory.unshift(text);
-
-        return new Response(text, { status: res.status });
+        return new Response(`${text}\n`);
       },
       POST: async (req: BunRequest) => {
         const text = await req.text();
