@@ -48,13 +48,15 @@ const CookieClicker = async (page: Page) => {
   console.debug(`Do not show again`);
 
   const withOptionMenu = async (callback: (menu: Locator) => Promise<void>) => {
-    const options = page.locator('.subButton', { hasText: 'オプション' });
-    await options.click({ timeout: 30_000 });
-    console.debug(`Clicked the option button.`);
-
     const menu = page.locator('#menu');
-    await menu.waitFor({ state: 'visible' });
-    console.debug(`Opened the menu.`);
+    if (!await menu.isVisible()) {
+      const options = page.locator('.subButton', { hasText: 'オプション' });
+      await options.click({ timeout: 30_000 });
+      console.debug(`Clicked the option button.`);
+
+      await menu.waitFor({ state: 'visible' });
+      console.debug(`Opened the menu.`);
+    }
 
     await callback(menu);
 
@@ -64,8 +66,17 @@ const CookieClicker = async (page: Page) => {
     console.debug(`Closed the menu.`);
   };
 
+  const cookie = page.locator('#bigCookie');
+
   return {
     withOptionMenu,
+    clickCookie: async () => {
+      try {
+        await cookie.click({ timeout: 200 });
+      } catch {
+        /* do nothing */
+      }
+    },
     importData: async (data: string) => {
       console.debug(`Importing data...`);
 
@@ -125,15 +136,6 @@ if (!page) {
 }
 
 ctx.setDefaultTimeout(5_000);
-
-const clicker = setInterval(async () => {
-  const bigCookie = page.locator('#bigCookie');
-  try {
-    await bigCookie.click({ timeout: 200 });
-  } catch {
-    // do nothing
-  }
-}, 250);
 
 const shopper = setInterval(async () => {
   const shop = page.locator('#store');
@@ -234,14 +236,14 @@ const config = {
 
 let exitCode = 0;
 let intervals: NodeJS.Timeout[] = [
-  clicker,
   shopper,
   notifier,
   elderPledger,
 ];
-let timeouts: NodeJS.Timeout[] = [];
 
-let cont = true;
+const tickMs = 250;
+const timeoutMs = 600_000;
+const ticksToSave = Math.floor(60_000 / tickMs);
 
 try {
   const player = await CookieClicker(page);
@@ -266,43 +268,40 @@ try {
     );
   });
 
-  // save data regularly
-  {
-    const id = setInterval(async () => {
-      const data = await player.exportData();
-      if (!data) {
-        console.warn(`Failed to export.`);
-        return;
-      }
+  // `start` is always the first `Date.now()`.
+  // The first iteration starts after `intervalMs` milliseconds.
+  // Therefore, `count` starts from one.
+  for await (const start of timersPromises.setInterval(tickMs, Date.now())) {
+    const elapsed = Date.now() - start;
+    if (elapsed > timeoutMs) break;
 
+    const ticks = Math.floor(elapsed / tickMs);
+    console.debug(`Tick #${ticks}`);
+
+    // Save data regularly
+    if (ticks % ticksToSave === 0) {
       try {
         console.debug(`Exporting to ${file}`);
-        writeFileSync(file, data, 'utf8');
+        const data = await player.exportData();
+        if (data) {
+          writeFileSync(file, data, 'utf8');
+        } else {
+          console.warn('Failed to export data.');
+        }
       } catch (err) {
         console.warn(`Failed to save the data.`, err);
       }
-    }, 600_000);
-    intervals.push(id);
-  }
+      continue;
+    }
 
-  // Schedule stopping the game
-  {
-    const id = setTimeout(async () => {
-      cont = false;
-      console.debug(`Stopping to play...`);
-    }, 6 * 60 * 60 * 1000);
-    timeouts.push(id);
-  }
-
-  while (cont) {
-    await timersPromises.setTimeout(1_000);
+    // Otherwise, click cookie
+    await player.clickCookie();
   }
 } catch (err) {
   console.error(err);
   exitCode = 1;
 } finally {
   intervals.forEach(clearInterval);
-  timeouts.forEach(clearTimeout);
 
   await ctx.close();
   await browser.close();
