@@ -60,7 +60,7 @@ export function App() {
     <div className="w-screen h-screen max-w-[1280px] max-h-[720px] m-auto bg-[#000700f7] overflow-hidden flex flex-col font-[Noto_Sans_CJK_JP]">
       <div className="flex-auto">
         <div className="w-full h-140 flex flex-row">
-          <div className="flex-auto h-full">
+          <div className="flex-auto h-full p-3">
             <div className="aspect-video h-full bg-black">
               <div className="w-full h-full text-center content-center text-7xl text-green-100 font-serif [font-variant-caps:small-caps]">
                 No Signal
@@ -70,20 +70,22 @@ export function App() {
           <div className="flex-none w-70 h-full">
             <div className="h-full">
               <div className="flex flex-col h-full gap-2">
-                <div className="flex-none pt-2 text-center text-6xl text-green-300 font-bold [ruby-position:under] [text-shadow:-1px_-1px_5px_#000700,1px_1px_5px_#000700]">
-                  <ruby>馬<rp>(</rp><rt>ま</rt><rp>)</rp></ruby>
-                  <ruby>可<rp>(</rp><rt>か</rt><rp>)</rp></ruby>
-                  <ruby>無<rp>(</rp><rt>む</rt><rp>)</rp></ruby>
-                  <ruby>序<rp>(</rp><rt>じょ</rt><rp>)</rp></ruby>
+                <div className="flex-none">
+                  <div className="mt-2 text-center text-6xl text-green-300 font-bold [ruby-position:under] [text-shadow:-1px_-1px_5px_#000700,1px_1px_5px_#000700]">
+                    <ruby>馬<rp>(</rp><rt>ま</rt><rp>)</rp></ruby>
+                    <ruby>可<rp>(</rp><rt>か</rt><rp>)</rp></ruby>
+                    <ruby>無<rp>(</rp><rt>む</rt><rp>)</rp></ruby>
+                    <ruby>序<rp>(</rp><rt>じょ</rt><rp>)</rp></ruby>
+                  </div>
                 </div>
-                <div className="flex-none text-right text-3xl text-white">
-                  <span className="bg-black rounded-sm">
-                    <span className="px-3">&#x1D54F;</span>
-                    <span className="text-green-100 font-bold">
+                <div className="flex-none">
+                  <div className="text-center text-3xl text-white">
+                    <span className="px-3 bg-black rounded-sm font-bold text-green-100">
+                      <span className="font-normal text-white pr-3">&#x1D54F;</span>
                       &#xFF20;
                       <span className="font-mono">makamujo</span>
                     </span>
-                  </span>
+                  </div>
                 </div>
                 <div className="flex-auto">
                   <div className="h-full flex flex-col justify-between p-1 bg-black/70 border-5 border-green-300 rounded-xl text-xl/8 font-bold text-green-100">
