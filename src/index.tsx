@@ -31,6 +31,8 @@ let nextSpeech: {
 };
 
 const server = serve({
+  idleTimeout: 60,
+
   routes: {
     "/*": index,
 
