@@ -186,18 +186,16 @@ const server = serve({
             const timestamp = comments.at(-1)?.data.timestamp;
             if (timestamp) {
               const quietMs = Date.now() - Date.parse(timestamp);
-              if (quietMs > 3_000_000) {
+              if (quietMs > 10_000_000) {
                 // TODO 寝顔
-                const text = '💤';
-                nextSpeech = { text };
+                nextSpeech = { text: '💤' };
                 await setTimeout(30_000);
-                return text;
-              } else if (quietMs > 1_000_000) {
+                return '・・・';
+              } else if (quietMs > 3_000_000) {
                 // Dare to remain silent
-                const text = '・・・';
-                nextSpeech = { text };
+                nextSpeech = { text: '・・・' };
                 await setTimeout(5_000);
-                return text;
+                return '・・・';
               }
             }
           }
