@@ -35,6 +35,11 @@ const say = async (text: string) => {
   }
 };
 
+const tickMs = 250;
+const timeoutMs = 6_000_000;
+const ticksToSave = Math.floor(600_000 / tickMs);
+const ticksToPledge = Math.floor(1_000_000 / tickMs);
+
 const CookieClicker = async (page: Page) => {
   await page.goto('https://orteil.dashnet.org/cookieclicker/', { timeout: 30_000 });
 
@@ -78,7 +83,7 @@ const CookieClicker = async (page: Page) => {
     withOptionMenu,
     clickCookie: async () => {
       try {
-        await cookie.click({ timeout: 200 });
+        await cookie.click({ timeout: tickMs });
       } catch {
         /* do nothing */
       }
@@ -243,11 +248,6 @@ let intervals: NodeJS.Timeout[] = [
   shopper,
   notifier,
 ];
-
-const tickMs = 250;
-const timeoutMs = 6_000_000;
-const ticksToSave = Math.floor(600_000 / tickMs);
-const ticksToPledge = Math.floor(1_000_000 / tickMs);
 
 try {
   const player = await CookieClicker(page);
