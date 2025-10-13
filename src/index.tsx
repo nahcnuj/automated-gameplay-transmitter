@@ -4,7 +4,7 @@ import { setTimeout } from "node:timers/promises";
 import index from "./index.html";
 import { fromFile } from "./lib/TalkModel";
 
-const splitInSentences = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'sentence' }).segment(text)].map(({ segment }) => segment);
+// const splitInSentences = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'sentence' }).segment(text)].map(({ segment }) => segment);
 
 let latest = Date.now();
 let serviceMeta: ServiceMeta;
@@ -78,10 +78,7 @@ const server = serve({
             console.log(`comment: ${comment}`);
 
             if (data.no || data.isOwner) {
-              splitInSentences(comment)
-                .forEach((s: string) => {
-                  Model.learn(s.trim());
-                });
+              Model.learn(comment.trim());
             }
 
             if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
