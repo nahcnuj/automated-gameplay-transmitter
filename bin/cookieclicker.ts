@@ -68,12 +68,35 @@ const CookieClicker = async (page: Page) => {
 
   const cookie = page.locator('#bigCookie');
 
+  const tooltip = page.locator('#tooltipAnchor');
+
+  const store = page.locator('#store');
+  const switches = store.locator('#toggleUpgrades');
+  const enableSwitches = switches.locator('.enabled');
+
   return {
     withOptionMenu,
     clickCookie: async () => {
       try {
         await cookie.click({ timeout: 200 });
       } catch {
+        /* do nothing */
+      }
+    },
+    pledgeElder: async () => {
+      try {
+        const elderPledger = enableSwitches.first();
+        await elderPledger.hover();
+
+        if ('エルダー宣誓' === await tooltip.locator('.name').innerText()) {
+          await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除します。`);
+          await elderPledger.click();
+          console.debug(`Pledged the Elder.`);
+        } else {
+          console.warn(`Not found Elder Pledger.`);
+        }
+      } catch (err) {
+        console.warn(`Failed to pledge the elder: ${err}`);
         /* do nothing */
       }
     },
@@ -135,8 +158,6 @@ if (!page) {
   throw new Error('could not create a page');
 }
 
-ctx.setDefaultTimeout(5_000);
-
 const shopper = setInterval(async () => {
   const shop = page.locator('#store');
 
@@ -188,23 +209,6 @@ const notifier = setInterval(async () => {
   }
 }, 1_000);
 
-const elderPledger = setInterval(async () => {
-  try {
-    const pledger = page.locator('#store').locator('#toggleUpgrades').locator('.enabled').first();
-    await pledger.hover();
-
-    const tooltip = page.locator('#tooltipAnchor');
-    const name = await tooltip.locator('.name').innerText();
-    if (name === 'エルダー宣誓') {
-      await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除します。`);
-      await pledger.click();
-      console.debug(`Pledged the Elder.`);
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-}, 1_000_000);
-
 let data: string | undefined;
 try {
   data = readFileSync(file, 'utf8');
@@ -238,12 +242,12 @@ let exitCode = 0;
 let intervals: NodeJS.Timeout[] = [
   shopper,
   notifier,
-  elderPledger,
 ];
 
 const tickMs = 250;
-const timeoutMs = 600_000;
-const ticksToSave = Math.floor(60_000 / tickMs);
+const timeoutMs = 6_000_000;
+const ticksToSave = Math.floor(600_000 / tickMs);
+const ticksToPledge = Math.floor(1_000_000 / tickMs);
 
 try {
   const player = await CookieClicker(page);
@@ -268,6 +272,8 @@ try {
     );
   });
 
+  ctx.setDefaultTimeout(1_000);
+
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `intervalMs` milliseconds.
   // Therefore, `count` starts from one.
@@ -276,7 +282,7 @@ try {
     if (elapsed > timeoutMs) break;
 
     const ticks = Math.floor(elapsed / tickMs);
-    console.debug(`Tick #${ticks}`);
+    // console.debug(`Tick #${ticks}`);
 
     // Save data regularly
     if (ticks % ticksToSave === 0) {
@@ -291,6 +297,12 @@ try {
       } catch (err) {
         console.warn(`Failed to save the data.`, err);
       }
+      continue;
+    }
+
+    // Pledge the Elder
+    if (ticks % ticksToPledge === 0) {
+      await player.pledgeElder();
       continue;
     }
 
