@@ -76,8 +76,11 @@ const CookieClicker = async (page: Page) => {
   const tooltip = page.locator('#tooltipAnchor');
 
   const store = page.locator('#store');
+
   const switches = store.locator('#toggleUpgrades');
   const enableSwitches = switches.locator('.enabled');
+
+  const products = store.locator('#products');
 
   return {
     withOptionMenu,
@@ -97,12 +100,9 @@ const CookieClicker = async (page: Page) => {
           await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除します。`);
           await elderPledger.click();
           console.debug(`Pledged the Elder.`);
-        } else {
-          console.warn(`Not found Elder Pledger.`);
         }
       } catch (err) {
         console.warn(`Failed to pledge the elder: ${err}`);
-        /* do nothing */
       }
     },
     importData: async (data: string) => {
@@ -137,7 +137,14 @@ const CookieClicker = async (page: Page) => {
         console.debug(`Exported!`);
       });
       return data;
-    }
+    },
+    keepProductsView: async () => {
+      try {
+        await products.getByRole('button').nth(3).scrollIntoViewIfNeeded();
+      } catch {
+        /* nothing */
+      }
+    },
   };
 };
 
@@ -263,7 +270,7 @@ try {
     await Promise.all(
       Object.entries(config).map(async ([text, flag]) => {
         const link = menu.getByText(`${text} ON`).or(menu.getByText(`${text} OFF`));
-        console.debug(`${text}, ${flag}, ${await link.innerText()}`);
+        // console.debug(`${text}, ${flag}, ${await link.innerText()}`);
         if (await link.innerText().then(async (text) => !text.endsWith(flag ? 'ON' : 'OFF'))) {
           await link.click();
           console.debug(`Clicked "${text}"`);
@@ -275,19 +282,18 @@ try {
   ctx.setDefaultTimeout(1_000);
 
   // `start` is always the first `Date.now()`.
-  // The first iteration starts after `intervalMs` milliseconds.
-  // Therefore, `count` starts from one.
+  // The first iteration starts after `tickMs` milliseconds.
   for await (const start of timersPromises.setInterval(tickMs, Date.now())) {
     const elapsed = Date.now() - start;
     if (elapsed > timeoutMs) break;
 
-    const ticks = Math.floor(elapsed / tickMs);
+    const ticks = Math.floor(elapsed / tickMs); // starts from one.
     // console.debug(`Tick #${ticks}`);
 
     // Save data regularly
     if (ticks % ticksToSave === 0) {
       try {
-        console.debug(`Exporting to ${file}`);
+        console.debug(`Saving data to the file "${file}"...`);
         const data = await player.exportData();
         if (data) {
           writeFileSync(file, data, 'utf8');
@@ -306,7 +312,8 @@ try {
       continue;
     }
 
-    // Otherwise, click cookie
+    // otherwise
+    await player.keepProductsView();
     await player.clickCookie();
   }
 } catch (err) {
