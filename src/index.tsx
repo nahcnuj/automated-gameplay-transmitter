@@ -185,12 +185,13 @@ const server = serve({
             const timestamp = comments.at(-1)?.data.timestamp;
             if (timestamp) {
               const quietMs = Date.now() - Date.parse(timestamp);
-              if (quietMs > 10_000_000) {
-                // TODO 寝顔
-                nextSpeech = { text: '💤' };
-                await setTimeout(30_000);
-                return '・・・';
-              } else if (quietMs > 3_000_000) {
+              // if (quietMs > 10_000_000) {
+              //   // TODO 寝顔
+              //   nextSpeech = { text: '💤' };
+              //   await setTimeout(30_000);
+              //   return '・・・';
+              // }
+              if (4_000_000 > quietMs && quietMs > 3_000_000) {
                 // Dare to remain silent
                 nextSpeech = { text: '・・・' };
                 await setTimeout(5_000);
