@@ -10,7 +10,7 @@ let latest = Date.now();
 let serviceMeta: ServiceMeta;
 let client: string | undefined;
 
-const Model = fromFile('model.json');
+const Model = fromFile('./var/model.json');
 if (!Model) {
   throw new Error('could not load the model');
 }
@@ -202,10 +202,11 @@ const server = serve({
 
           const text = Model.gen().replace(/。*$/, '');
           nextSpeech = { text };
-          return text;
+          return text.normalize('NFC');
         })();
 
         talkedHistory.unshift(text);
+
         return new Response(`${text}\n`);
       },
       POST: async (req: BunRequest) => {
