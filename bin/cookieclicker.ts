@@ -3,7 +3,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import timersPromises from "node:timers/promises";
 import { parseArgs } from "node:util";
-import { chromium, type Locator, type Page } from "playwright";
+import { type Locator, type Page } from "playwright";
+import { chromium } from "playwright-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 
 const { values: {
   file,
@@ -36,20 +38,22 @@ const say = async (text: string) => {
 };
 
 const tickMs = 250;
-const timeoutMs = 6_000_000;
+const timeoutMs = 600_000_000;
 const ticksToSave = Math.floor(600_000 / tickMs);
 const ticksToPledge = Math.floor(1_000_000 / tickMs);
 
 const CookieClicker = async (page: Page) => {
-  await page.goto('https://orteil.dashnet.org/cookieclicker/', { timeout: 30_000 });
+  await page.goto('https://orteil.dashnet.org/cookieclicker/', { timeout: 300_000 });
 
-  await page.getByText('日本語').click({ timeout: 30_000 });
+  await page.getByText('日本語').click({ timeout: 300_000 });
   console.debug(`日本語`);
 
-  await page.getByText('Got it').click({ timeout: 30_000 });
+  // await timersPromises.setTimeout(300_000);
+
+  await page.getByText('Got it').click({ timeout: 300_000 });
   console.debug(`Got it!`);
 
-  await page.getByText('次回から表示しない').click({ timeout: 30_000 });
+  await page.getByText('次回から表示しない').click({ timeout: 300_000 });
   console.debug(`Do not show again`);
 
   const withOptionMenu = async (callback: (menu: Locator) => Promise<void>) => {
@@ -148,6 +152,8 @@ const CookieClicker = async (page: Page) => {
   };
 };
 
+chromium.use(StealthPlugin());
+
 const browser = await chromium.launch({
   executablePath,
   headless: false,
@@ -157,7 +163,9 @@ const browser = await chromium.launch({
   ],
 });
 
-const ctx = await browser.newContext();
+const ctx = await browser.newContext({
+  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+});
 if (!ctx) {
   await browser.close();
   throw new Error('could not create a context');
