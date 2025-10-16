@@ -13,3 +13,8 @@ nohup ./bin/obs &>>./var/obs.log &
 # Start playing Cookie Clicker (restarting periodically)
 nohup sh -c 'while true ; do bun ./bin/cookieclicker.ts ; done' &>>./var/clicker.log
 ```
+
+## Acknowledgements
+
+This application uses the following software(s):
+- 配信者のためのコメントアプリ「わんコメ」https://onecomme.com
