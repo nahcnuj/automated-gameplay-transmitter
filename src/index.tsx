@@ -48,7 +48,7 @@ const server = serve({
 
         const { address, family } = ip;
         client = `${family}/${address}`;
-        // console.log('connected', client);
+        console.log('Connected from', client, 'at', new Date().toUTCString());
         return new Response();
       },
       PUT: async (req, server) => {
