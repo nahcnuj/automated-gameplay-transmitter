@@ -33,7 +33,7 @@ const talk = (model: Model, bos: string[]) => {
 
 const split = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(text.normalize('NFC'))].map(({ segment }) => segment);
 
-const acceptBeginning = (text: string) => [...text].length > 1 || text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
+const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
 
 export const fromFile = (path: string) => {
   try {
