@@ -110,7 +110,7 @@ const server = serve({
             }
 
             if (data.hasGift) {
-              const name = (data.origin as any).message?.gift?.advertiserName;
+              const name = (data.origin as any)?.message?.gift?.advertiserName;
               if (name && !giftQueue.map(({ name }) => name).includes(name)) {
                 const src = (({ comment }) => {
                   const start = comment.indexOf('https://');
