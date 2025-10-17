@@ -1,13 +1,16 @@
 import { readFileSync, statSync, writeFileSync } from "node:fs";
 
-type Model = {
-  [word: string]: {
-    [next: string]: number
-  }
+type WeightedCandidates = Record<string, number>;
+
+type MarkovModel = {
+  /** initial word candidates */
+  '': WeightedCandidates
+  /** candidates following by `word` */
+  [word: string]: WeightedCandidates
 };
 
-const pick = (cands: { [k: string]: number }) => {
-  const total = Object.values(cands).reduce((s, v) => s + v, 0);
+const pick = (cands: WeightedCandidates) => {
+  const total = Math.sumPrecise(Object.values(cands));
   const rnd = Math.floor(Math.random() * total);
   const [next,]: [string, number] = Object.entries(cands).reduce(([w, s], [word, weight]) => {
     if (s > rnd) {
@@ -18,7 +21,7 @@ const pick = (cands: { [k: string]: number }) => {
   return next;
 };
 
-const talk = (model: Model, bos: string[]) => {
+const talk = (model: MarkovModel, bos: string[]) => {
   let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
   while (s.at(-1) !== '。' && s.length < 10 && [...s.join('')].length < 32) {
     // console.debug(`constructing...: ${s}`);
@@ -83,3 +86,10 @@ export const fromFile = (path: string) => {
     return;
   }
 };
+
+declare global {
+  interface Math {
+    /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sumPrecise */
+    sumPrecise(args: number[]): number;
+  }
+}
