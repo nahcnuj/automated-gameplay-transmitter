@@ -1,14 +1,23 @@
 'use client';
 
-import type { ServiceMeta } from "@onecomme.com/onesdk";
 import { createContext, useContext, useEffect, useState, type PropsWithChildren } from "react";
 
-const ServiceMetaContext = createContext<ServiceMeta>({});
+export type LiveInfo = {
+  url?: string
+  startTime?: number
+  total?: number
+  points?: {
+    ad?: number
+    gift?: number
+  }
+};
+
+const ServiceMetaContext = createContext<LiveInfo>({});
 
 export const useServiceMetaContext = () => useContext(ServiceMetaContext);
 
 export function ServiceMetaProvider({ children }: PropsWithChildren) {
-  const [serviceMeta, setServiceMeta] = useState<ServiceMeta>({});
+  const [serviceMeta, setServiceMeta] = useState<LiveInfo>({});
 
   useEffect(() => {
     const id = setInterval(async () => {

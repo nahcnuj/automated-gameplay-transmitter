@@ -1,9 +1,9 @@
 'use client';
 
-import type { NicoNamaComment } from "@onecomme.com/onesdk";
 import { createContext, useContext, useEffect, useState, type PropsWithChildren } from "react";
+import type { Comment } from "../lib/Comment";
 
-const CommentContext = createContext<{ comments: NicoNamaComment[] }>({
+const CommentContext = createContext<{ comments: Comment[] }>({
   comments: [],
 });
 
@@ -19,7 +19,7 @@ export const useCommentContext = () => useContext(CommentContext);
  * @returns A context provider that supplies the current list of comments.
  */
 export const CommentProvider = ({ children }: PropsWithChildren) => {
-  const [comments, setComments] = useState<NicoNamaComment[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
     const id = setInterval(async () => {

@@ -1,13 +1,14 @@
-import type { NicoNamaComment, ServiceMeta } from "@onecomme.com/onesdk";
 import { serve, type BunRequest } from "bun";
 import { setTimeout } from "node:timers/promises";
+import type { LiveInfo } from "./contexts/ServiceMetaContext";
 import index from "./index.html";
+import type { Comment } from "./lib/Comment";
 import { fromFile } from "./lib/TalkModel";
 
 // const splitInSentences = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'sentence' }).segment(text)].map(({ segment }) => segment);
 
 let latest = Date.now();
-let serviceMeta: ServiceMeta;
+let serviceMeta: LiveInfo;
 let client: string | undefined;
 
 const Model = fromFile('./var/model.json');
@@ -15,7 +16,7 @@ if (!Model) {
   throw new Error('could not load the model');
 }
 
-const comments: NicoNamaComment[] = [];
+const comments: Comment[] = [];
 
 const talkQueue: string[] = [];
 const giftQueue: { name: string; icon: string }[] = [];
@@ -68,7 +69,7 @@ const server = serve({
           return Response.json(undefined, { status: 404 });
         }
 
-        const data: NicoNamaComment[] = await req.json();
+        const data: Comment[] = await req.json();
         // console.log(data);
         comments.push(...data);
 
@@ -109,7 +110,7 @@ const server = serve({
             }
 
             if (data.hasGift) {
-              const name = (data.origin as any)?.message?.gift?.advertiserName;
+              const name = (data.origin as any).message?.gift?.advertiserName;
               if (name && !giftQueue.map(({ name }) => name).includes(name)) {
                 const src = (({ comment }) => {
                   const start = comment.indexOf('https://');

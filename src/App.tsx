@@ -48,10 +48,10 @@ export function App() {
 
   const now = new Date();
 
-  const displayComments = allComments
-    .filter(({ data }) => Date.now() - Date.parse(data.timestamp) < 12 /* hour */ * 60 /* min/hour */ * 60 /* min/sec */ * 1000 /* ms/sec */)
-    .filter(({ data }) => data.no || data.userId === 'onecomme.system' && data.name === '生放送クルーズ')
-    .slice(-10);
+  // const displayComments = allComments
+  //   .filter(({ data }) => Date.now() - Date.parse(data.timestamp) < 12 /* hour */ * 60 /* min/hour */ * 60 /* min/sec */ * 1000 /* ms/sec */)
+  //   .filter(({ data }) => data.no || data.userId === 'onecomme.system' && data.name === '生放送クルーズ')
+  //   .slice(-10);
 
   const liveId = url?.split('/').at(-1)?.slice(2);
   const numUserComments = allComments.filter(({ data: { no, origin } }) => (origin as any)?.meta?.origin?.chat?.liveId === liveId && no).length;

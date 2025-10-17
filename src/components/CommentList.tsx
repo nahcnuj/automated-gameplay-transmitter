@@ -1,11 +1,11 @@
 'use client';
 
-import type { NicoNamaComment } from "@onecomme.com/onesdk";
+import type { Comment } from '../lib/Comment';
 
-const isUser = ({ no }: NicoNamaComment['data']) => no;
-const fromCruise = ({ name }: NicoNamaComment['data']) => name === '生放送クルーズ';
+const isUser = ({ no }: { no?: number }) => no;
+const fromCruise = ({ name }: { name: string }) => name === '生放送クルーズ';
 
-export function CommentList({ comments }: { comments: NicoNamaComment[] }) {
+export function CommentList({ comments }: { comments: Comment[] }) {
   return (
     <div className="w-full h-full flex flex-col justify-end">
       {comments.map(({ data }) => (
