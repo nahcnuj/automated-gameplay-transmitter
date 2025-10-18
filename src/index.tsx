@@ -71,7 +71,9 @@ const server = serve({
 
         const data: Comment[] = await req.json();
         // console.log(data);
-        comments.push(...data);
+        const latestComment = comments.at(-1);
+        console.debug(data.filter(({ data }) => !latestComment || data.timestamp > latestComment.data.timestamp));
+        comments.push(...data.filter(({ data }) => !latestComment || data.timestamp > latestComment.data.timestamp));
 
         data.filter(({ data }) => Date.parse(data.timestamp) > latest)
           .forEach(({ data }) => {
