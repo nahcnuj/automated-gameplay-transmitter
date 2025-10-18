@@ -70,8 +70,11 @@ const server = serve({
         }
 
         const data: Comment[] = await req.json();
+
         const latestComment = comments.at(-1);
-        comments.push(...data.filter(({ data }) => !latestComment || Date.parse(data.timestamp) > Date.parse(latestComment.data.timestamp)));
+        const newComments = data.filter(({ data }) => latestComment ? Date.parse(data.timestamp) > Date.parse(latestComment.data.timestamp) : Date.parse(data.timestamp) > latest);
+        console.debug(newComments.map(({ data: { no, comment, timestamp } }) => `${timestamp} #${no} ${comment}`));
+        comments.push(...newComments);
         console.debug(`${comments.length} comments (includes system messages)`);
 
         data.filter(({ data }) => Date.parse(data.timestamp) > latest)

@@ -7,7 +7,7 @@ const comments = [];
 module.exports = {
   name: 'automated-gameplay-transmitter',
   uid: 'work.nahcnuj.automated-gameplay-transmitter',
-  version: '0.0.3',
+  version: '0.0.4',
   author: 'Junichi Hayashi',
   url: 'https://github.com/nahcnuj/automated-gameplay-transmitter',
   permissions: ['comments', 'meta'],
@@ -25,11 +25,10 @@ module.exports = {
                 method: 'PUT',
                 body: JSON.stringify(comments),
                 headers: { 'Content-Type': 'application/json' },
-              
               });
               if (!res.ok) throw new Error('Not found');
-              console.info('[DEBUG] put comments to', target);
-              retry = false;
+              console.info(`[DEBUG] put ${comments.length} comments to`, target);
+              break;
             } catch (err) {
               console.info('[WARN] failed to put comments to', target, err);
             }
@@ -60,7 +59,7 @@ module.exports = {
               });
               if (!res.ok) throw new Error('Not found');
               console.info('[DEBUG] sent the live info to', target);
-              retry = false;
+              break;
             } catch (err) {
               console.info('[WARN] failed to send the live info to', target, err);
             }
