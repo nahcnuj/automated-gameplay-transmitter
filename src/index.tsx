@@ -1,6 +1,6 @@
 import { serve, type BunRequest } from "bun";
-import { readFileSync } from "node:fs";
-import { setTimeout } from "node:timers/promises";
+import { readFileSync, writeFileSync } from "node:fs";
+import { setInterval, setTimeout } from "node:timers/promises";
 import type { LiveInfo } from "./contexts/ServiceMetaContext";
 import index from "./index.html";
 import type { Comment } from "./lib/Comment";
@@ -10,11 +10,14 @@ let latest = Date.now();
 let serviceMeta: LiveInfo;
 let client: string | undefined;
 
+const path = './var/model.json';
+const encoding = 'utf8';
+
 const model = ((path) => {
-  const { model } = JSON.parse(readFileSync(path, 'utf8'));
+  const { model } = JSON.parse(readFileSync(path, { encoding }));
   // TODO verify
   return MarkovModel.create(model);
-})('./var/model.json');
+})(path);
 
 const comments: Comment[] = [];
 
@@ -253,3 +256,10 @@ const server = serve({
 });
 
 console.log(`🚀 Server running at ${server.url}`);
+
+console.debug(new Date().toUTCString());
+for await (const _ of setInterval(3_600_000)) {
+  console.debug(`Saving the model...`, new Date().toUTCString());
+  const data = JSON.stringify(model.json, null, 0);
+  writeFileSync(path, data, { encoding });
+}
