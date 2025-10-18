@@ -9,12 +9,14 @@ nohup ./bin/bot &>>./var/bot.log &
 
 # Start OBS Studio
 nohup ./bin/obs &>>./var/obs.log &
-
-# Start playing Cookie Clicker (restarting periodically)
-nohup sh -c 'while true ; do bun ./bin/cookieclicker.ts ; done' &>>./var/clicker.log
 ```
 
-## Acknowledgements
+## Dependencies
 
-This application uses the following software(s):
+This application uses the following software(s) in addition to dependencies in `package.json`:
+- [Open JTalk](https://open-jtalk.sourceforge.net/)
+- [OBS Studio](https://obsproject.com/ja)
+- [Bun](https://bun.com/)
 - 配信者のためのコメントアプリ「わんコメ」https://onecomme.com
+
+See also [init.dash](./init.dash) without any warranty of reproducibility.
