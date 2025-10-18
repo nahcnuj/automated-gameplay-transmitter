@@ -5,8 +5,6 @@ import index from "./index.html";
 import type { Comment } from "./lib/Comment";
 import { fromFile } from "./lib/TalkModel";
 
-// const splitInSentences = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'sentence' }).segment(text)].map(({ segment }) => segment);
-
 let latest = Date.now();
 let serviceMeta: LiveInfo;
 let client: string | undefined;
@@ -70,10 +68,9 @@ const server = serve({
         }
 
         const data: Comment[] = await req.json();
-        // console.log(data);
         const latestComment = comments.at(-1);
-        console.debug(data.filter(({ data }) => !latestComment || data.timestamp > latestComment.data.timestamp));
-        comments.push(...data.filter(({ data }) => !latestComment || data.timestamp > latestComment.data.timestamp));
+        comments.push(...data.filter(({ data }) => !latestComment || Date.parse(data.timestamp) > Date.parse(latestComment.data.timestamp)));
+        console.debug(`${comments.length} comments (includes system messages)`);
 
         data.filter(({ data }) => Date.parse(data.timestamp) > latest)
           .forEach(({ data }) => {
