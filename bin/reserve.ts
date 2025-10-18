@@ -24,16 +24,12 @@ if (!statSync(userDataDir).isDirectory()) {
   throw new Error('--user-data-dir must be a directory path');
 }
 
-console.debug(`0`);
-
 const ctx = await chromium.launchPersistentContext(userDataDir, {
   executablePath,
   headless: false,
 });
-console.debug('200');
 
-const page = await ctx.newPage();
-console.debug(`300`);
+const page = ctx.pages()[0] ?? await ctx.newPage();
 
 const firstDate = new Date('2025-08-03T10:48:00+09:00');
 const day = new Date().getDay();
@@ -41,6 +37,7 @@ const day = new Date().getDay();
 let cont = true;
 
 do {
+  console.debug(`Getting the date of the latest live...`);
   const next = await (async () => {
     await page.goto('https://garage.nicovideo.jp/niconico-garage/live/history');
     const frame = page.frameLocator('iframe[src]');
@@ -54,103 +51,114 @@ do {
   })();
   console.debug(next.toLocaleString('ja-JP'));
 
-  await page.goto('https://live.nicovideo.jp/create');
-  console.debug(`400`);
+  await page.goto('https://live.nicovideo.jp/create', { waitUntil: 'domcontentloaded' });
+  console.debug(`Creating a reservation...`);
 
   try {
     const btn = page.getByRole('button', { name: '閉じる' });
     await btn.waitFor({ state: 'visible', timeout: 1_000 });
     await btn.click({ timeout: 100 });
-  } catch (_) {
-    // ignore
+  } catch {
+    // do nothing
   }
 
   {
     const detailButton = page.getByRole('button', { name: '詳細設定を開く' });
-    console.debug(`500`);
-    await detailButton.waitFor({ state: 'visible', timeout: 600_000 });
-    console.debug(`510`);
     await detailButton.click();
-    console.debug(`599`);
+    await detailButton.waitFor({ state: 'hidden' });
+    console.debug(`Opened the detail configuration.`);
   }
 
   {
     const titleInput = page.getByLabel('番組タイトル', { exact: true });
-    console.debug(`600`);
     const day = Math.ceil((next.getTime() - firstDate.getTime()) / 1000 / 60 / 60 / 24);
-    await titleInput.fill(`【人工無能実況】Cookie Clicker ${day}日目【AIVTuber】`);
-    console.debug(`601 ${day}`);
+    const title = `Cookie Clicker ${day}日目`;
+    await titleInput.fill(title);
+    console.debug(`Filled title: "${title}"`);
   }
 
   {
-    const reserveCheckbox = page.getByRole('button', { name: '予約放送を利用する' });
-    console.debug(`620`);
-    await reserveCheckbox.click();
-    console.debug(`621`);
+    await page.getByRole('button', { name: '予約放送を利用する' }).click();
+    console.debug(`Reservating...`);
 
     {
+      console.debug(`Selecting date...`)
       const selects = page.getByText('放送開始日時').locator('xpath=../..').locator('select');
 
       {
-        const reserveDate = selects.nth(0);
-        await reserveDate.click();
-        console.debug(`625`);
-        const value = new Intl.DateTimeFormat('ja-JP', {
+        const date = new Intl.DateTimeFormat('ja-JP', {
           year: 'numeric',
           month: 'numeric',
           day: 'numeric',
         }).format(next);
-        console.debug(`    ${value}`)
-        const selected = await reserveDate.selectOption({ value });
-        console.debug(`626 ${selected}`);
+        console.debug(`Next date: ${date}`);
+
+        const reserveDate = selects.nth(0);
+        await reserveDate.click();
+        const selected = await reserveDate.selectOption({ value: date });
+        console.debug(`Selected date: ${selected}`);
       }
 
       {
         const reserveHours = selects.nth(1);
         await reserveHours.click();
         const selected = await reserveHours.selectOption({ label: next.getHours().toString() });
-        console.debug(`627 ${selected}`);
+        console.debug(`Selected hours: ${selected}`);
       }
 
       {
         const reserveMinutes = selects.nth(2);
         await reserveMinutes.click();
         const selected = await reserveMinutes.selectOption({ value: next.getMinutes().toString() });
-        console.debug(`628 ${selected}`);
+        console.debug(`Selected minutes: ${selected}`);
       }
     }
 
     {
+      console.debug(`Selecting duration...`);
+
       const selects = page.getByText('放送時間').locator('xpath=../..').locator('select');
 
-      {
-        const durationHours = selects.nth(0);
-        await durationHours.click();
-        const label = await durationHours.locator(':not([disabled])').allTextContents().then((vs) => vs.at(-1));
-        const selected = await durationHours.selectOption({ label });
-        console.debug(`629 ${selected}`);
+      const [durationHours, durationMinutes] = await selects.all();
+      if (!durationHours || !durationMinutes) {
+        throw new Error('failed to select duration');
       }
 
       {
-        const durationMinutes = selects.nth(1);
+        const hours = await durationHours.locator(':not([disabled])').last().textContent();
+        if (!hours) {
+          throw new Error('failed to select duration hours');
+        }
+
+        await durationHours.click();
+        const selected = await durationHours.selectOption({ label: hours });
+        console.debug(`Selected duration hours: ${selected}`);
+      }
+
+      {
         await durationMinutes.click();
         const selected = await durationMinutes.selectOption({ value: '0' });
-        console.debug(`630 ${selected}`);
+        console.debug(`Selected duration minutes: ${selected}`);
       }
     }
   }
 
   {
-    const btn = page.getByRole('button', { name: '予約する' });
-    console.debug(`800`);
-    await btn.focus();
-
-    await btn.waitFor({ state: 'detached', timeout: 600_000 });
-    console.debug(`899`);
+    const selected = await page.getByLabel('強度', { exact: true }).selectOption({ label: '強' });
+    console.debug(`Selected comment filtering strength: ${selected}`);
   }
 
+  // wait for submitting by human
+  {
+    const btn = page.getByRole('button', { name: '予約する' });
+    await btn.focus();
+    console.debug(`Waiting for submitting by human...`);
+    await btn.waitFor({ state: 'detached', timeout: 600_000 });
+    console.debug(`Reserved!`);
+  }
+
+  // until the same day of the next week
   cont = next.getDay() !== day;
 } while (cont);
 
 await ctx.close();
-console.debug(`999`);
