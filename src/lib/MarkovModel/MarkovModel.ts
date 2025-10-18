@@ -57,6 +57,7 @@ const pick = (cands: WeightedCandidates) => {
 
 const talk = (model: MarkovModel, bos: string[]) => {
   let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
+  console.debug(s[0], ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));
   while (s.at(-1) !== '。' && s.length < 10 && [...s.join('')].length < 32) {
     // console.debug(`constructing...: ${s}`);
     const w = pick(model[s.at(-1) ?? ''] ?? {});
