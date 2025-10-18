@@ -91,7 +91,11 @@ const server = serve({
           if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
             const reply = model.reply(comment).replace(/。*$/, '');
             console.log(`reply: ${reply} << ${comment}`);
-            talkQueue.push(reply);
+            if (comment.normalize('NFKC') === reply.normalize('NFKC')) {
+              talkQueue.push(`「${comment}」ってなんですか？`);
+            } else {
+              talkQueue.push(reply);
+            }
           }
 
           if (data.userId === 'onecomme.system') {
