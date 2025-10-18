@@ -77,54 +77,51 @@ const server = serve({
         comments.push(...newComments);
         console.debug(`${comments.length} comments (includes system messages)`);
 
-        data.filter(({ data }) => Date.parse(data.timestamp) > latest)
-          .forEach(({ data }) => {
-            const comment = data.comment.normalize('NFC');
-            console.log(`comment: ${comment}`);
+        for (const { data } of newComments) {
+          const comment = data.comment.normalize('NFC');
+          console.log(`comment: ${comment}`);
 
-            if (data.no || data.isOwner) {
-              model.learn(comment.trim());
+          if (data.no || data.isOwner) {
+            model.learn(comment.trim());
+          }
+
+          if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
+            const reply = model.reply(comment).replace(/。*$/, '');
+            console.log(`reply: ${reply} << ${comment}`);
+            talkQueue.push(reply);
+          }
+
+          if (data.userId === 'onecomme.system') {
+            if (data.comment === '「生放送クルーズさん」が引用を開始しました') {
+              talkQueue.push(
+                '生放送クルーズのみなさん、こんにちは。',
+                'AI Vチューバーの馬可無序です。',
+                'コメントを学習してお話ししています。',
+                'ぜひ上のリンクから遊びに来てね。',
+              );
             }
 
-            if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
-              const reply = model.reply(comment);
-              if (reply) {
-                console.log(`reply: ${reply} << ${comment}`);
-                talkQueue.push(reply);
+            if (data.comment.endsWith('広告しました')) {
+              const name = data.comment.slice(data.comment.indexOf('】') + '】'.length, data.comment.lastIndexOf('さんが'));
+              if (!adQueue.includes(name)) {
+                console.log(`[AD] ${name}`);
+                adQueue.push(name);
               }
             }
+          }
 
-            if (data.userId === 'onecomme.system') {
-              if (data.comment === '「生放送クルーズさん」が引用を開始しました') {
-                talkQueue.push(
-                  '生放送クルーズのみなさん、こんにちは。',
-                  'AI Vチューバーの馬可無序です。',
-                  'コメントを学習してお話ししています。',
-                  'ぜひ上のリンクから遊びに来てね。',
-                );
-              }
-
-              if (data.comment.endsWith('広告しました')) {
-                const name = data.comment.slice(data.comment.indexOf('】') + '】'.length, data.comment.lastIndexOf('さんが'));
-                if (!adQueue.includes(name)) {
-                  console.log(`[AD] ${name}`);
-                  adQueue.push(name);
-                }
-              }
+          if (data.hasGift) {
+            const name = (data.origin as any)?.message?.gift?.advertiserName;
+            if (name && !giftQueue.map(({ name }) => name).includes(name)) {
+              const src = (({ comment }) => {
+                const start = comment.indexOf('https://');
+                return comment.substring(start, comment.indexOf('"', start));
+              })(data);
+              console.log(`[GIFT] ${name} ${src}`);
+              giftQueue.push({ name, icon: src });
             }
-
-            if (data.hasGift) {
-              const name = (data.origin as any)?.message?.gift?.advertiserName;
-              if (name && !giftQueue.map(({ name }) => name).includes(name)) {
-                const src = (({ comment }) => {
-                  const start = comment.indexOf('https://');
-                  return comment.substring(start, comment.indexOf('"', start));
-                })(data);
-                console.log(`[GIFT] ${name} ${src}`);
-                giftQueue.push({ name, icon: src });
-              }
-            }
-          });
+          }
+        };
 
         latest = Date.now();
 
