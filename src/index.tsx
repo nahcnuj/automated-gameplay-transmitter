@@ -1,18 +1,20 @@
 import { serve, type BunRequest } from "bun";
+import { readFileSync } from "node:fs";
 import { setTimeout } from "node:timers/promises";
 import type { LiveInfo } from "./contexts/ServiceMetaContext";
 import index from "./index.html";
 import type { Comment } from "./lib/Comment";
-import { fromFile } from "./lib/TalkModel";
+import * as MarkovModel from "./lib/MarkovModel";
 
 let latest = Date.now();
 let serviceMeta: LiveInfo;
 let client: string | undefined;
 
-const Model = fromFile('./var/model.json');
-if (!Model) {
-  throw new Error('could not load the model');
-}
+const model = ((path) => {
+  const { model } = JSON.parse(readFileSync(path, 'utf8'));
+  // TODO verify
+  return MarkovModel.create(model);
+})('./var/model.json');
 
 const comments: Comment[] = [];
 
@@ -78,11 +80,11 @@ const server = serve({
             console.log(`comment: ${comment}`);
 
             if (data.no || data.isOwner) {
-              Model.learn(comment.trim());
+              model.learn(comment.trim());
             }
 
             if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
-              const reply = Model.reply(comment);
+              const reply = model.reply(comment);
               if (reply) {
                 console.log(`reply: ${reply} << ${comment}`);
                 talkQueue.push(reply);
@@ -200,7 +202,7 @@ const server = serve({
             }
           }
 
-          const text = Model.gen().replace(/。*$/, '');
+          const text = model.gen().replace(/。*$/, '');
           nextSpeech = { text };
           return text.normalize('NFC');
         })();
