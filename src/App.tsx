@@ -1,5 +1,6 @@
-import { CommentList } from "./components/CommentList";
-import { HighlightOnChange } from "./components/HighlightOnChange";
+import { BottomPanel } from "./components/BottomPanel";
+import { Layout } from "./components/Layout";
+import { SidePanel } from "./components/SidePanel";
 import { useAIVTuberContext } from "./contexts/AIVTuberContext";
 import { useCommentContext } from "./contexts/CommentContext";
 import { useServiceMetaContext } from "./contexts/ServiceMetaContext";
@@ -57,118 +58,10 @@ export function App() {
   const numUserComments = allComments.filter(({ data: { no, origin } }) => (origin as any)?.meta?.origin?.chat?.liveId === liveId && no).length;
 
   return (
-    <div className="w-screen h-screen max-w-[1280px] max-h-[720px] m-auto bg-[#000700f7] overflow-hidden flex flex-col font-[Noto_Sans_CJK_JP]">
-      <div className="flex-auto">
-        <div className="w-full h-140 flex flex-row">
-          <div className="flex-auto h-full p-3">
-            <div className="aspect-video h-full bg-black">
-              <div className="w-full h-full text-center content-center text-7xl text-green-100 font-serif [font-variant-caps:small-caps]">
-                No Signal
-              </div>
-            </div>
-          </div>
-          <div className="flex-none w-70 h-full">
-            <div className="h-full">
-              <div className="flex flex-col h-full gap-2">
-                <div className="flex-none">
-                  <div className="mt-2 text-center text-6xl text-green-300 font-bold [ruby-position:under] [text-shadow:-1px_-1px_5px_#000700,1px_1px_5px_#000700]">
-                    <ruby>馬<rp>(</rp><rt>ま</rt><rp>)</rp></ruby>
-                    <ruby>可<rp>(</rp><rt>か</rt><rp>)</rp></ruby>
-                    <ruby>無<rp>(</rp><rt>む</rt><rp>)</rp></ruby>
-                    <ruby>序<rp>(</rp><rt>じょ</rt><rp>)</rp></ruby>
-                  </div>
-                </div>
-                <div className="flex-none">
-                  <div className="text-center text-3xl text-white">
-                    <span className="px-3 bg-black rounded-sm font-bold text-green-100">
-                      <span className="font-normal text-white pr-3">&#x1D54F;</span>
-                      &#xFF20;
-                      <span className="font-mono">makamujo</span>
-                    </span>
-                  </div>
-                </div>
-                <div className="flex-auto">
-                  <div className="h-full flex flex-col justify-between p-1 bg-black/70 border-5 border-green-300 rounded-xl text-xl/8 font-bold text-green-100">
-                    <div className="flex-none">
-                      <div>📆{formatDate(now)}</div>
-                      <div>{getClockEmoji(now)}{formatTime(now)}</div>
-                    </div>
-                    <div className="flex-none">
-                      {total > 0 && (
-                        <div>
-                          <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
-                            {`🙎${formatNumber(total)}`}
-                          </HighlightOnChange>
-                        </div>
-                      )}
-                      {numUserComments > 0 && (
-                        <div>
-                          <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
-                            {`💬${formatNumber(numUserComments)}`}
-                          </HighlightOnChange>
-                        </div>
-                      )}
-                      {ad > 0 && (
-                        <div>
-                          <HighlightOnChange timeout={60_000} classNameOnChanged="text-yellow-300">
-                            {`📣${formatNumber(ad)}`}
-                          </HighlightOnChange>
-                        </div>
-                      )}
-                      {gift > 0 && (
-                        <div>
-                          <HighlightOnChange timeout={30_000} classNameOnChanged="text-yellow-300">
-                            {`🎁${formatNumber(gift)}`}
-                          </HighlightOnChange>
-                        </div>
-                      )}
-                      {startTime &&
-                        <div>
-                          {formatDuration(new Date(now.getTime() - startTime + now.getTimezoneOffset() * 60 * 1000))}
-                        </div>
-                      }
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="flex-none">
-        <div className="flex gap-2 max-w-full w-full h-40">
-          <div className="flex-none w-50 h-50">
-            {sprite}
-          </div>
-          <div className="flex-auto w-full h-full">
-            <div className="flex flex-col w-full h-full overflow-hidden">
-              <div className="flex-none">
-                <div className="text-3xl/10">
-                  <div className="w-max text-base font-bold [text-shadow:1px_1px_6px_#000,-1px_-1px_6px_#000,-1px_1px_6px_#000,1px_-1px_6px_#000]">
-                    {/* <CommentList comments={displayComments} /> */}
-                  </div>
-                </div>
-              </div>
-              <div className="flex-auto w-full h-full">
-                <div className="h-full flex flex-col justify-between">
-                  <div className="flex-auto">
-                    {/* TODO */}
-                  </div>
-                  <div className="flex-none w-full h-[3.5lh] overflow-hidden px-2 py-1 bg-black/70 border-5 border-green-300 rounded-xl text-3xl/10 font-bold text-green-100 [text-shadow:-2px_-2px_4px_#000,2px_2px_4px_#000]">
-                    {speech && (
-                      <>
-                        {speech.icon && <img src={speech.icon} width={100} height={100} className="h-full mr-2 object-contain float-left" />}
-                        {speech.text}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Layout count={10} span={8} className="bg-emerald-950/30 text-green-100 font-[Noto_Sans_CJK_JP]">
+      <SidePanel />
+      <BottomPanel />
+    </Layout>
   );
 }
 
