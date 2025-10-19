@@ -157,19 +157,21 @@ chromium.use(StealthPlugin());
 const browser = await chromium.launch({
   executablePath,
   headless: false,
+
+  // https://peter.sh/experiments/chromium-command-line-switches/
   args: [
-    '--window-size=1024,576',
+    '--hide-scrollbars',
+    '--window-size=1024,576', // It may be required by `--window-position`.
     '--window-position=1280,600',
   ],
 });
 
 const ctx = await browser.newContext({
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+  viewport: {
+    width: 1280,
+    height: 720 + 32/* top bar */,
+  },
 });
-if (!ctx) {
-  await browser.close();
-  throw new Error('could not create a context');
-}
 
 const page = await ctx.newPage();
 if (!page) {
