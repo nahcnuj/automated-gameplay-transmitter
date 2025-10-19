@@ -55,23 +55,15 @@ const pick = (cands: WeightedCandidates) => {
   return choose(Object.entries(cands), rnd);
 };
 
-const talk = (model: MarkovModel, bos: string[]) => {
-  let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
-  while (s.at(-1) !== '。' && s.length < 10 && [...s.join('')].length < 32) {
-    // console.debug('[DEBUG]', s.at(-1), ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));
-    const w = pick(model[s.at(-1) ?? ''] ?? {});
-    if (w.length <= 0) {
-      break;
-    }
-    s.push(w);
-  }
-  return s.join('');
-};
-
 const split = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(text.normalize('NFC'))].map(({ segment }) => segment);
 
 const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
 
+export const sliceByNumber = <T>(arr: readonly T[], n: number): T[][] =>
+  new Array(Math.ceil(arr.length / n))
+    .keys()
+    .map((_, i) => arr.slice(i * n, i * n + n))
+    .toArray();
 /**
  * Create a word-level Markov chain model.
  * The model provides some helper methods to generate something to talk or replies and learn new sentences.
@@ -93,8 +85,20 @@ const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[
  * @throws If something went wrong.
  */
 export const create = (model: MarkovModel = { '': {} }) => ({
-  gen: (bos = Object.keys(model[''])) => talk(model, bos),
-  reply: (text: string) => {
+  gen: (bos = Object.keys(model[''])): string => {
+    let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
+    while (s.at(-1) !== '。' && s.length < 15 && [...s.join('')].length < 50) {
+      // console.debug('[DEBUG]', s.at(-1), ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));
+      const w = pick(model[s.at(-1) ?? ''] ?? {});
+      if (w.length <= 0) {
+        break;
+      }
+      s.push(w);
+    }
+    // console.debug('[DEBUG]', [...s].length, 'words', [...s.join('')].length, 'charas', sliceByNumber(s, 7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join(''));
+    return s.join('');
+  },
+  reply(text: string): string {
     const words = [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(text)].map(({ segment }) => segment);
     const cands = words.reduce<string[]>((prev, s) => {
       const a = [...s].length;
@@ -104,7 +108,7 @@ export const create = (model: MarkovModel = { '': {} }) => ({
     }, ['']);
     const topic = cands.at(Math.floor(Math.random() * cands.length));
     console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
-    return topic ? talk(model, [topic]) : '';
+    return topic ? this.gen([topic]) : '';
   },
   learn: (text: string): void => {
     console.debug('learn', text);
@@ -124,7 +128,7 @@ export const create = (model: MarkovModel = { '': {} }) => ({
   },
   get json() {
     return { model };
-  }
+  },
 });
 
 /**

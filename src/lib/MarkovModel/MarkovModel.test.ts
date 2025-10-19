@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, jest, test } from "bun:test";
 import { choose, create } from "./MarkovModel";
 
 describe('generate', () => {
@@ -25,6 +25,24 @@ describe('generate', () => {
       '。': { '': 1 },
     });
     expect(model.gen()).toBe('。');
+  });
+
+  const times = 100;
+  test('A model with some branches should choose one from them.', () => {
+    const model = create({ '': { 'こん': 2 }, 'こん': { 'にちは': 1, 'ばんは': 1 }, 'にちは': { '。': 1 }, 'ばんは': { '。': 1 } });
+    const counts = {
+      'こんにちは。': 0,
+      'こんばんは。': 0,
+    };
+    for (const i in [...new Array(times)]) {
+      const rnd = Number.parseInt(i, 10) / times;
+      jest.spyOn(global.Math, 'random').mockReturnValue(rnd);
+      const got = model.gen() as 'こんにちは。' | 'こんばんは。';
+      expect(got).toBeOneOf(['こんにちは。', 'こんばんは。']);
+      counts[got]++;
+    }
+    expect(counts["こんにちは。"]).toBe(50);
+    expect(counts["こんばんは。"]).toBe(50);
   });
 });
 
