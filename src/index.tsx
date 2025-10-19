@@ -94,7 +94,7 @@ const server = serve({
             if (comment.normalize('NFKC') === reply.normalize('NFKC')) {
               talkQueue.push(`「${comment}」ってなんですか？`);
             } else {
-              talkQueue.push(reply.replace(/。*$/, ''));
+              talkQueue.push(reply.replace(/。*$/, '').trimEnd());
             }
           }
 
@@ -209,7 +209,7 @@ const server = serve({
             }
           }
 
-          const text = model.gen().replace(/。*$/, '');
+          const text = model.gen().replace(/。*$/, '').trimEnd();
           nextSpeech = { text };
           return text.normalize('NFC');
         })();
