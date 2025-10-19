@@ -24,7 +24,10 @@ export function ServiceMetaProvider({ children }: PropsWithChildren) {
       await fetch('http://localhost:7777/api/meta')
         .then((res) => res.json())
         .then(setServiceMeta)
-        .catch(console.warn);
+        .catch((err) => {
+          console.warn(err);
+          clearInterval(id);
+        });
     }, 500);
 
     return () => clearInterval(id);
