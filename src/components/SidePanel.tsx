@@ -23,25 +23,27 @@ const formatTime = (d: Date) => new Intl.DateTimeFormat('ja-JP', {
 }).format(d);
 
 const formatDuration = (d: Date) =>
-  new Intl.DurationFormat('ja-JP', {
-    style: 'digital',
-    seconds: '2-digit',
-    minutes: '2-digit',
-    hours: '2-digit',
-    timeZone: 'Asia/Tokyo',
-  }).format({
-    seconds: d.getSeconds(),
-    minutes: d.getMinutes(),
-    hours: d.getHours(),
-  });
+  `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+  // // Not implemented on an OBS browser...
+  // new Intl.DurationFormat('ja-JP', {
+  //   style: 'digital',
+  //   seconds: '2-digit',
+  //   minutes: '2-digit',
+  //   hours: '2-digit',
+  //   timeZone: 'Asia/Tokyo',
+  // }).format({
+  //   seconds: d.getSeconds(),
+  //   minutes: d.getMinutes(),
+  //   hours: d.getHours(),
+  // });
 
 const formatNumber = (n: number) => new Intl.NumberFormat('ja-JP').format(n);
 
 export function SidePanel({ }: PanelProps) {
-  const { url, startTime = new Date(0).getTime(), total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
+  const { startTime = new Date(0).getTime(), total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
 
   const now = new Date();
-  const duration = new Date(now.getTime() - startTime);
+  const duration = new Date(now.getTime() - startTime + now.getTimezoneOffset() * 60_000);
 
   return (
     <div className="h-full flex flex-col justify-between items-center">
