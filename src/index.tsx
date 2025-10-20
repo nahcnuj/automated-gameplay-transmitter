@@ -7,7 +7,7 @@ import type { Comment } from "./lib/Comment";
 import * as MarkovModel from "./lib/MarkovModel";
 
 let latest = Date.now();
-let serviceMeta: LiveInfo;
+let serviceMeta: LiveInfo = {};
 let client: string | undefined;
 
 const path = './var/model.json';

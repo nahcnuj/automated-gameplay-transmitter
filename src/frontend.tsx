@@ -5,24 +5,15 @@
  * It is included in `src/index.html`.
  */
 
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
-import { AIVTuberProvider } from "./contexts/AIVTuberContext";
-import { CommentProvider } from "./contexts/CommentContext";
-import { ServiceMetaProvider } from "./contexts/ServiceMetaContext";
-import { StrictMode } from "react";
 
 function start() {
   const root = createRoot(document.getElementById("root")!);
   root.render(
     <StrictMode>
-      <ServiceMetaProvider>
-        <AIVTuberProvider>
-          <CommentProvider>
-            <App />
-          </CommentProvider>
-        </AIVTuberProvider>
-      </ServiceMetaProvider>
+      <App />
     </StrictMode>
   );
 }
