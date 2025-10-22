@@ -81,17 +81,17 @@ const server = serve({
         console.debug(`${comments.length} comments (includes system messages)`);
 
         for (const { data } of newComments) {
-          const comment = data.comment.normalize('NFC');
+          const comment = `${data.comment.normalize('NFC').trim()}。` as const;
           console.log(`comment: ${comment}`);
 
           if (data.no || data.isOwner) {
-            model.learn(comment.trim());
+            model.learn(comment);
           }
 
           if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
             const reply = model.reply(comment);
             console.log(`reply: ${reply} << ${comment}`);
-            if (comment.normalize('NFKC') === reply.normalize('NFKC')) {
+            if (data.comment.normalize('NFKC') === reply.normalize('NFKC')) {
               talkQueue.push(`「${comment}」ってなんですか？`);
             } else {
               talkQueue.push(reply.replace(/。*$/, '').trimEnd());

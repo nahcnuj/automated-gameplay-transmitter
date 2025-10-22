@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { sliceByNumber } from "../extensions/Array";
+import { splitIntoWords } from "../extensions/String";
 
 type WeightedCandidates = Record<string, number>;
 
@@ -63,9 +64,9 @@ const pick = (cands: WeightedCandidates) => {
   return choose(Object.entries(cands), rnd);
 };
 
-const split = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(text.normalize('NFC'))].map(({ segment }) => segment);
-
 const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
+
+const jaJP = new Intl.Locale('ja-JP');
 
 /**
  * Create a word-level Markov chain model.
@@ -78,7 +79,7 @@ const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[
  * ```
  * const model = fromFile('./model.json');
  * 
- * model.learn('こんにちは');
+ * model.learn('こんにちは。');
  * console.log(JSON.stringify(model.json, null, 2));
  * 
  * const reply = model.reply('元気ですか？');
@@ -102,7 +103,7 @@ export const create = (model: MarkovModel = { '': {} }) => ({
     return s.join('');
   },
   reply(text: string): string {
-    const words = [...new Intl.Segmenter(new Intl.Locale('ja-JP'), { granularity: 'word' }).segment(text)].map(({ segment }) => segment);
+    const words = text[splitIntoWords](jaJP);
     const cands = words.reduce<string[]>((prev, s) => {
       const a = [...s].length;
       const b = [...prev[0] ?? ''].length;
@@ -113,9 +114,9 @@ export const create = (model: MarkovModel = { '': {} }) => ({
     console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
     return topic ? this.gen([topic]) : '';
   },
-  learn: (text: string): void => {
+  learn: (text: `${string}。`): void => {
     console.debug('learn', text);
-    split(`${text}。`).reduce<string>((prev, next) => {
+    text[splitIntoWords](jaJP).reduce<string>((prev, next) => {
       if (prev === '' && !acceptBeginning(next)) {
         // skip
         return next;
@@ -143,7 +144,7 @@ export const create = (model: MarkovModel = { '': {} }) => ({
  * ```
  * const model = fromFile('./model.json');
  * 
- * model.learn('こんにちは');
+ * model.learn('こんにちは。');
  * console.log(JSON.stringify(model.json, null, 2));
  * 
  * const reply = model.reply('元気ですか？');
