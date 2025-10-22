@@ -91,7 +91,7 @@ const jaJP = new Intl.Locale('ja-JP');
 export const create = (model: MarkovModel = { '': {} }) => ({
   gen: (bos = Object.keys(model[''])): string => {
     let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
-    while (s.at(-1) !== '。' && s.length < 15 && [...s.join('')].length < 50) {
+    while (s.at(-1) !== '。' && s.length < 15 && [...s.join('')].length < 32) {
       // console.debug('[DEBUG]', s.at(-1), ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));
       const w = pick(model[s.at(-1) ?? ''] ?? {});
       if (w.length <= 0) {
