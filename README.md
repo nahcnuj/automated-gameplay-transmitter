@@ -1,4 +1,4 @@
-# Automated Gameplay Transmitter
+# Automated Gameplay Transmitter (WIP)
 
 ```sh
 # Start a display server
@@ -14,7 +14,9 @@ nohup ./bin/obs &>>./var/obs.log &
 nohup sh -c 'while true ; do bun ./bin/cookieclicker.ts ; done' &>>./var/clicker.log
 ```
 
-## Acknowledgements
+## Dependencies
 
-This application uses the following software(s):
+This application relies on the following software.
+Please review and agree to the terms and conditions of each software before using this application.
+
 - 配信者のためのコメントアプリ「わんコメ」https://onecomme.com
