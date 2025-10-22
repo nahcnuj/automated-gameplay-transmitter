@@ -1,3 +1,5 @@
+export const sliceByNumber = Symbol('sliceByNumber');
+
 /**
  * Splits an array into consecutive chunks (sublists) of up to `n` elements each.
  *
@@ -11,19 +13,26 @@
  *
  * @example
  * // returns [[1, 2], [3, 4], [5]]
- * sliceByNumber([1, 2, 3, 4, 5], 2);
+ * [1, 2, 3, 4, 5][sliceByNumber](2);
  *
  * @example
  * // returns [['a', 'b', 'c']]
- * sliceByNumber(['a', 'b', 'c'], 10);
+ * ['a', 'b', 'c'][sliceByNumber](10);
  *
  * @throws {RangeError} If `n` is not a positive integer (e.g. 0, negative, or non-finite),
  *         the implementation may fail when allocating internal structures.
  * 
  * @see {@link https://yucatio.hatenablog.com/entry/2019/12/10/222311|JavaScriptでn個ずつ配列を分割する - yucatio@システムエンジニア}
  */
-export const sliceByNumber = <T>(arr: readonly T[], n: number): T[][] =>
-  new Array(Math.ceil(arr.length / n))
+Array.prototype[sliceByNumber] = function (n: number) {
+  return new Array(Math.ceil(this.length / n))
     .keys()
-    .map((_, i) => arr.slice(i * n, i * n + n))
+    .map((_, i) => this.slice(i * n, i * n + n))
     .toArray();
+};
+
+declare global {
+  interface Array<T> {
+    [sliceByNumber](this: Array<T>, n: number): T[][]
+  }
+}

@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
+import { sliceByNumber } from "../extensions/Array";
 
 type WeightedCandidates = Record<string, number>;
 
@@ -49,6 +50,13 @@ export const choose = (cands: [string, number][], w: number): string => cands.re
   return [next, acc + weight];
 }, ['', 0])[0];
 
+declare global {
+  interface Math {
+    /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sumPrecise */
+    sumPrecise(args: number[]): number;
+  }
+}
+
 const pick = (cands: WeightedCandidates) => {
   const total = Math.sumPrecise(Object.values(cands));
   const rnd = Math.floor(Math.random() * total);
@@ -59,11 +67,6 @@ const split = (text: string) => [...new Intl.Segmenter(new Intl.Locale('ja-JP'),
 
 const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
 
-export const sliceByNumber = <T>(arr: readonly T[], n: number): T[][] =>
-  new Array(Math.ceil(arr.length / n))
-    .keys()
-    .map((_, i) => arr.slice(i * n, i * n + n))
-    .toArray();
 /**
  * Create a word-level Markov chain model.
  * The model provides some helper methods to generate something to talk or replies and learn new sentences.
@@ -95,7 +98,7 @@ export const create = (model: MarkovModel = { '': {} }) => ({
       }
       s.push(w);
     }
-    // console.debug('[DEBUG]', [...s].length, 'words', [...s.join('')].length, 'charas', sliceByNumber(s, 7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join(''));
+    console.debug('[DEBUG]', [...s].length - 1, 'words', [...s.join('')].length - 1, 'charas', s[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join(''));
     return s.join('');
   },
   reply(text: string): string {
@@ -165,9 +168,3 @@ export const fromFile = (path: string): ReturnType<typeof create> => {
   };
 };
 
-declare global {
-  interface Math {
-    /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sumPrecise */
-    sumPrecise(args: number[]): number;
-  }
-}
