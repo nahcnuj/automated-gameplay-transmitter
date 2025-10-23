@@ -1,12 +1,13 @@
-import { readFileSync, writeFileSync } from "node:fs";
 import { sliceByNumber } from "../extensions/Array";
 import { splitIntoWords } from "../extensions/String";
 
 type WeightedCandidates = Record<string, number>;
 
-type MarkovModel = Record<string, WeightedCandidates> & {
+type MarkovModelData = {
   /** initial word candidates */
   '': WeightedCandidates
+
+  [k: string]: WeightedCandidates
 };
 
 /**
@@ -76,19 +77,15 @@ const jaJP = new Intl.Locale('ja-JP');
  * Splitting into words depends on `Intl.Segmenter` and assumes that a sentence written in Japanese.
  *
  * @example
- * ```
- * const model = fromFile('./model.json');
+ * const model = create();
  * 
  * model.learn('こんにちは。');
  * console.log(JSON.stringify(model.json, null, 2));
  * 
  * const reply = model.reply('元気ですか？');
  * console.log(reply);
- * ```
- * 
- * @throws If something went wrong.
  */
-export const create = (model: MarkovModel = { '': {} }) => ({
+export const create = (model: MarkovModelData = { '': {} }) => ({
   gen: (bos = Object.keys(model[''])): string => {
     let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
     while (s.at(-1) !== '。' && s.length < 15 && [...s.join('')].length < 32) {
@@ -134,38 +131,3 @@ export const create = (model: MarkovModel = { '': {} }) => ({
     return { model };
   },
 });
-
-/**
- * Create a word-level Markov chain model.
- * The model provides some helper methods to generate something to talk or replies and learn new sentences.
- * When learned a new sentence, the model is modified itself and writes the modified model out to the given file.
- *
- * @example
- * ```
- * const model = fromFile('./model.json');
- * 
- * model.learn('こんにちは。');
- * console.log(JSON.stringify(model.json, null, 2));
- * 
- * const reply = model.reply('元気ですか？');
- * console.log(reply);
- * ```
- * 
- * @throws If something went wrong.
- */
-export const fromFile = (path: string): ReturnType<typeof create> => {
-  const { model } = JSON.parse(readFileSync(path, 'utf8')) as { model: MarkovModel };
-  const Model = create(model);
-  return {
-    ...Model,
-    learn: (text) => {
-      Model.learn(text);
-      try {
-        writeFileSync(path, JSON.stringify(Model.json, null, 2));
-      } catch (err) {
-        console.warn('[WARN]', 'failed to write file', path, err);
-      }
-    },
-  };
-};
-
