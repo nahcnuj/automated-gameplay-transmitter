@@ -89,7 +89,9 @@ const server = serve({
           }
 
           if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
-            const reply = model.reply(comment);
+            const m = data.no ? model : model.toLearned(comment);
+
+            const reply = m.reply(comment);
             console.log(`reply: ${reply} << ${comment}`);
             if (data.comment.normalize('NFKC') === reply.normalize('NFKC')) {
               talkQueue.push(`「${comment}」ってなんですか？`);

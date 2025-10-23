@@ -127,6 +127,11 @@ export const create = (model: MarkovModelData = { '': {} }) => ({
       return next;
     }, '');
   },
+  toLearned: (text: `${string}。`) => {
+    const m = create(model);
+    m.learn(text);
+    return m;
+  },
   get json() {
     return { model };
   },
