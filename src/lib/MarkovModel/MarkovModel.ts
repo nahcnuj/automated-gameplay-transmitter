@@ -96,7 +96,7 @@ export const create = (model: MarkovModelData = { '': {} }) => ({
       }
       s.push(w);
     }
-    console.debug('[DEBUG]', [...s].length - 1, 'words', [...s.join('')].length - 1, 'charas', s[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join(''));
+    console.debug('[DEBUG]', [...s].length - 1, 'words', [...s.join('')].length - 1, 'charas', s[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join('/'));
     return s.join('');
   },
   reply(text: string): string {
