@@ -3,7 +3,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import timersPromises from "node:timers/promises";
 import { parseArgs } from "node:util";
-import { type Locator, type Page } from "playwright";
+import type { Locator, Page } from "playwright";
 import { chromium } from "playwright-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 
@@ -37,67 +37,77 @@ const say = async (text: string) => {
   }
 };
 
-const tickMs = 250;
-const timeoutMs = 600_000_000;
-const ticksToSave = Math.floor(600_000 / tickMs);
-const ticksToPledge = Math.floor(1_000_000 / tickMs);
-
 const CookieClicker = async (page: Page) => {
   await page.goto('https://orteil.dashnet.org/cookieclicker/', { timeout: 300_000 });
 
   await page.getByText('日本語').click({ timeout: 300_000 });
-  console.debug(`日本語`);
-
-  // await timersPromises.setTimeout(300_000);
+  // console.debug(`日本語`);
 
   await page.getByText('Got it').click({ timeout: 300_000 });
-  console.debug(`Got it!`);
+  // console.debug(`Got it!`);
 
   await page.getByText('次回から表示しない').click({ timeout: 300_000 });
-  console.debug(`Do not show again`);
+  // console.debug(`Do not show again`);
 
   const withOptionMenu = async (callback: (menu: Locator) => Promise<void>) => {
+    console.debug('[DEBUG]', new Date().toISOString(), 'withOptionMenu');
+
     const menu = page.locator('#menu');
     if (!await menu.isVisible()) {
       const options = page.locator('.subButton', { hasText: 'オプション' });
-      await options.click({ timeout: 30_000 });
+      await options.click({ timeout: 60_000 });
       console.debug(`Clicked the option button.`);
 
-      await menu.waitFor({ state: 'visible' });
+      await menu.waitFor({ state: 'visible', timeout: 60_000 });
       console.debug(`Opened the menu.`);
     }
 
     await callback(menu);
 
-    await menu.locator('.close').click();
+    await menu.locator('.close').click({ timeout: 60_000 });
     console.debug(`Clicked the close button.`);
-    await menu.waitFor({ state: 'hidden' });
+    await menu.waitFor({ state: 'hidden', timeout: 60_000 });
     console.debug(`Closed the menu.`);
   };
 
   const cookie = page.locator('#bigCookie');
-
   const tooltip = page.locator('#tooltipAnchor');
-
   const store = page.locator('#store');
 
   const switches = store.locator('#toggleUpgrades');
   const enableSwitches = switches.locator('.enabled');
 
   const products = store.locator('#products');
+  const availableProducts = products.locator('.enabled');
 
   return {
     withOptionMenu,
-    clickCookie: async () => {
+    clickCookie: async (timeout: number = 250) => {
       try {
-        await cookie.click({ timeout: tickMs });
+        await cookie.click({ timeout });
+        console.debug('[DEBUG]', new Date().toISOString(), 'clicked the big cookie');
+      } catch {
+        /* do nothing */
+      }
+    },
+    buyProduct: async () => {
+      console.debug('[DEBUG]', new Date().toISOString(), 'buyProduct');
+      const product = availableProducts.last();
+      try {
+        if (await product.count() > 0) {
+          console.debug('[DEBUG]', 'buyProduct', await product.count(), await availableProducts.count());
+          const name = await product.locator('.productName').textContent();
+          await say(`${name}を買います。`);
+          await product.click({ trial: true });
+        }
       } catch {
         /* do nothing */
       }
     },
     pledgeElder: async () => {
+      console.debug('[DEBUG]', new Date().toISOString(), 'pledgeElder');
+      const elderPledger = enableSwitches.first();
       try {
-        const elderPledger = enableSwitches.first();
         await elderPledger.hover();
 
         if ('エルダー宣誓' === await tooltip.locator('.name').innerText()) {
@@ -110,7 +120,8 @@ const CookieClicker = async (page: Page) => {
       }
     },
     importData: async (data: string) => {
-      console.debug(`Importing data...`);
+      console.debug('[DEBUG]', new Date().toISOString(), 'importData');
+      // console.debug(`Importing data...`);
 
       await page.locator('#game').press('Control+O');
       console.debug(`Pressed Ctrl+O.`);
@@ -120,11 +131,12 @@ const CookieClicker = async (page: Page) => {
       await prompt.getByRole('textbox').fill(data);
       await prompt.getByText('ロード').click();
 
-      await prompt.waitFor({ state: 'hidden' });
+      await prompt.waitFor({ state: 'hidden', timeout: 60_000 });
       console.debug(`Imported!`);
     },
     exportData: async () => {
-      console.debug(`Exporting data...`);
+      console.debug('[DEBUG]', new Date().toISOString(), 'exportData');
+      // console.debug(`Exporting data...`);
 
       let data: string | undefined;
       await withOptionMenu(async (menu) => {
@@ -136,8 +148,8 @@ const CookieClicker = async (page: Page) => {
 
         data = await prompt.getByRole('textbox').inputValue();
 
-        await prompt.getByText('完了').click();
-        await prompt.waitFor({ state: 'hidden' });
+        await prompt.getByText('完了').click({ timeout: 60_000 });
+        await prompt.waitFor({ state: 'hidden', timeout: 60_000 });
         console.debug(`Exported!`);
       });
       return data;
@@ -200,7 +212,7 @@ const shopper = setInterval(async () => {
       return;
     }
 
-    const purchasable = shop.locator('#products').locator('.enabled');
+    /*const purchasable = shop.locator('#products').locator('.enabled');
     if (await purchasable.count() > 0) {
       const mostExpensive = purchasable.last();
 
@@ -209,7 +221,7 @@ const shopper = setInterval(async () => {
       await mostExpensive.click();
 
       console.debug(`Bought a product, ${name}`);
-    }
+    }*/
   } catch (err) {
     console.warn(err);
   }
@@ -266,6 +278,13 @@ let intervals: NodeJS.Timeout[] = [
   notifier,
 ];
 
+const msPerTick = 250;
+const ticksToSave = Math.floor(600_000 / msPerTick);
+const ticksToBuyProduct = Math.floor(10_000 / msPerTick);
+const ticksToPledge = Math.floor(1_000_000 / msPerTick);
+
+const timeoutMs = 600_000_000;
+
 try {
   const player = await CookieClicker(page);
 
@@ -278,14 +297,14 @@ try {
     await menu.locator('#volumeSlider').fill('100');
 
     await Promise.all(
-      Object.entries(config).map(async ([text, flag]) => {
-        const link = menu.getByText(`${text} ON`).or(menu.getByText(`${text} OFF`));
-        // console.debug(`${text}, ${flag}, ${await link.innerText()}`);
-        if (await link.innerText().then(async (text) => !text.endsWith(flag ? 'ON' : 'OFF'))) {
+      Object.entries(config).map(async ([key, flag]) => {
+        const link = menu.getByText(`${key} ON`).or(menu.getByText(`${key} OFF`));
+        const text = await link.innerText();
+        if (!text.endsWith(flag ? 'ON' : 'OFF')) {
           await link.click();
-          console.debug(`Clicked "${text}"`);
+          console.debug(`Clicked "${key}"`);
         }
-      })
+      }),
     );
   });
 
@@ -293,14 +312,15 @@ try {
 
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `tickMs` milliseconds.
-  for await (const start of timersPromises.setInterval(tickMs, Date.now())) {
+  for await (const start of timersPromises.setInterval(msPerTick, Date.now())) {
     const elapsed = Date.now() - start;
     if (elapsed > timeoutMs) break;
 
-    const ticks = Math.floor(elapsed / tickMs); // starts from one.
+    const ticks = Math.floor(elapsed / msPerTick); // starts from one.
     // console.debug(`Tick #${ticks}`);
 
-    // Save data regularly
+    const actions: Promise<unknown>[] = [];
+
     if (ticks % ticksToSave === 0) {
       try {
         console.debug(`Saving data to the file "${file}"...`);
@@ -308,23 +328,23 @@ try {
         if (data) {
           writeFileSync(file, data, 'utf8');
         } else {
-          console.warn('Failed to export data.');
+          console.warn('[WARN]', new Date().toISOString(), 'Failed to export data.');
         }
       } catch (err) {
-        console.warn(`Failed to save the data.`, err);
+        console.warn('[WARN]', new Date().toISOString(), `Failed to save the data.`, err);
       }
-      continue;
+    } else if (ticks % ticksToBuyProduct === 0) {
+      actions.push(player.buyProduct());
+    } else if (ticks % ticksToPledge === 0) {
+      actions.push(player.pledgeElder());
+    } else {
+      actions.push(
+        player.keepProductsView(),
+        player.clickCookie(),
+      );
     }
 
-    // Pledge the Elder
-    if (ticks % ticksToPledge === 0) {
-      await player.pledgeElder();
-      continue;
-    }
-
-    // otherwise
-    await player.keepProductsView();
-    await player.clickCookie();
+    await Promise.all(actions);
   }
 } catch (err) {
   console.error(err);
