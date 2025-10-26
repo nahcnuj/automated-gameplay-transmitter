@@ -73,6 +73,7 @@ const CookieClicker = async (page: Page) => {
   const cookie = page.locator('#bigCookie');
   const tooltip = page.locator('#tooltipAnchor');
   const store = page.locator('#store');
+  const prompt = page.locator('#prompt');
 
   const switches = store.locator('#toggleUpgrades');
   const enableSwitches = switches.locator('.enabled');
@@ -91,7 +92,6 @@ const CookieClicker = async (page: Page) => {
       }
     },
     buyProduct: async () => {
-      console.debug('[DEBUG]', new Date().toISOString(), 'buyProduct');
       const product = availableProducts.last();
       try {
         if (await product.count() > 0) {
@@ -99,59 +99,63 @@ const CookieClicker = async (page: Page) => {
           const name = await product.locator('.productName').textContent();
           await say(`${name}を買います。`);
           await product.click();
+          console.debug('[DEBUG]', new Date().toISOString(), 'bought a product', name);
         }
       } catch {
+        console.debug('[DEBUG]', new Date().toISOString(), 'failed to buy a product');
         await say(`やっぱりやめます。`);
       }
     },
     pledgeElder: async () => {
-      console.debug('[DEBUG]', new Date().toISOString(), 'pledgeElder');
       const elderPledger = enableSwitches.first();
       try {
         await elderPledger.hover();
 
         if ('エルダー宣誓' === await tooltip.locator('.name').innerText()) {
-          await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除します。`);
-          await elderPledger.click();
-          console.debug(`Pledged the Elder.`);
+          try {
+            await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除します。`);
+            await elderPledger.click();
+            console.debug('[DEBUG]', new Date().toISOString(), `Pledged the Elder.`);
+          } catch (err) {
+            console.warn('[WARN]', new Date().toISOString(), `Failed to pledge the elder: ${err}`);
+          }
         }
-      } catch (err) {
-        console.warn(`Failed to pledge the elder: ${err}`);
+      } catch {
+        /* do nothing */
       }
     },
     importData: async (data: string) => {
       console.debug('[DEBUG]', new Date().toISOString(), 'importData');
-      // console.debug(`Importing data...`);
 
       await page.locator('#game').press('Control+O');
-      console.debug(`Pressed Ctrl+O.`);
-
-      const prompt = page.locator('#prompt');
+      // console.debug(`Pressed Ctrl+O.`);
 
       await prompt.getByRole('textbox').fill(data);
       await prompt.getByText('ロード').click();
 
       await prompt.waitFor({ state: 'hidden', timeout: 60_000 });
-      console.debug(`Imported!`);
+      console.debug('[DEBUG]', new Date().toISOString(), `Imported!`);
     },
     exportData: async () => {
       console.debug('[DEBUG]', new Date().toISOString(), 'exportData');
       // console.debug(`Exporting data...`);
 
       let data: string | undefined;
-      await withOptionMenu(async (menu) => {
-        await menu.getByText('エクスポート').click();
-        console.debug(`Clicked the exporting button`);
+      do {
+        await withOptionMenu(async (menu) => {
+          try {
+            await menu.getByText('エクスポート').click();
 
-        const prompt = page.locator('#prompt');
-        console.debug(`Popped up the exporting menu.`);
+            data = await prompt.getByRole('textbox').inputValue();
 
-        data = await prompt.getByRole('textbox').inputValue();
-
-        await prompt.getByText('完了').click({ timeout: 60_000 });
-        await prompt.waitFor({ state: 'hidden', timeout: 60_000 });
-        console.debug(`Exported!`);
-      });
+            await prompt.getByText('完了').click({ timeout: 60_000 });
+            await prompt.waitFor({ state: 'hidden', timeout: 60_000 });
+            console.debug('[DEBUG]', new Date().toISOString(), `Exported!`);
+          } catch (err) {
+            console.warn('[WARN]', new Date().toISOString(), 'failed to export the game data', err);
+          }
+        });
+      } while (data === undefined);
       return data;
     },
     keepProductsView: async () => {
@@ -203,11 +207,11 @@ const shopper = setInterval(async () => {
 
       const tooltip = page.locator('#tooltipAnchor');
       const name = await tooltip.locator('.name').innerText();
-      await say(`アップグレード ${name}を 買います`);
+      await say(`アップグレード「${name}」を買います`);
       const description = await tooltip.locator('.description').innerText();
       await say(description);
       await mostExpensive.click();
-      console.debug(`Bought an upgrade, ${name}`);
+      console.debug('[DEBUG]', new Date().toISOString(), `Bought an upgrade, ${name}`);
 
       return;
     }
@@ -223,7 +227,7 @@ const shopper = setInterval(async () => {
       console.debug(`Bought a product, ${name}`);
     }*/
   } catch (err) {
-    console.warn(err);
+    console.warn('[WARN]', new Date().toISOString(), err);
   }
 }, 1_000);
 
@@ -235,10 +239,8 @@ const notifier = setInterval(async () => {
       const title = await l.getByRole('heading', { level: 5 }).textContent();
       await say(`${title} 実績が解除されました！`);
       await l.locator('.close').click();
-
-      console.debug(`Closed a notification about an achievement, ${title}`);
     } catch (err) {
-      console.warn(err);
+      console.warn('[WARN]', new Date().toISOString(), err);
     }
   }
 }, 1_000);
