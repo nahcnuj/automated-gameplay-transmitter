@@ -95,13 +95,13 @@ const CookieClicker = async (page: Page) => {
       const product = availableProducts.last();
       try {
         if (await product.count() > 0) {
-          console.debug('[DEBUG]', 'buyProduct', await product.count(), await availableProducts.count());
+          // console.debug('[DEBUG]', 'buyProduct', await product.count(), await availableProducts.count());
           const name = await product.locator('.productName').textContent();
           await say(`${name}を買います。`);
-          await product.click({ trial: true });
+          await product.click();
         }
       } catch {
-        /* do nothing */
+        await say(`やっぱりやめます。`);
       }
     },
     pledgeElder: async () => {
