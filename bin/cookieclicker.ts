@@ -94,9 +94,8 @@ const CookieClicker = async (page: Page) => {
           await say(`${productName}を買います。`);
           await product.click();
           console.debug('[DEBUG]', new Date().toISOString(), 'bought a product', productName);
-        } catch (err) {
-          console.debug('[DEBUG]', new Date().toISOString(), 'failed to buy a product', err);
-          await say(`やっぱりやめます。`);
+        } catch {
+          await say(`買えませんでした。`);
         }
       }
     },
@@ -110,9 +109,8 @@ const CookieClicker = async (page: Page) => {
           const description = await tooltip.locator('.description').innerText();
           await say(`アップグレード「${name}」…${description}`);
           console.debug('[DEBUG]', new Date().toISOString(), `Bought an upgrade, ${name}`);
-        } catch (err) {
-          console.debug('[DEBUG]', new Date().toISOString(), 'failed to buy an upgrade', err);
-          await say(`やっぱりやめます。`);
+        } catch {
+          await say(`買えませんでした。`);
         }
       }
     },
