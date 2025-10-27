@@ -94,7 +94,7 @@ const server = serve({
             const reply = m.reply(comment);
             console.log(`reply: ${reply} << ${comment}`);
             if (data.comment.normalize('NFKC') === reply.normalize('NFKC')) {
-              talkQueue.push(`「${comment}」ってなんですか？`);
+              talkQueue.push(`「${data.comment}」ってなんですか？`);
             } else {
               talkQueue.push(reply.replace(/。*$/, '').trimEnd());
             }
