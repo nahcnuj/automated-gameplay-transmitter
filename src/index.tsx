@@ -117,6 +117,15 @@ const server = serve({
                 adQueue.push(name);
               }
             }
+
+            if (data.comment === '配信終了1分前です') {
+              talkQueue.push(
+                'そろそろお別れのお時間が近づいてきました。',
+                'ご視聴、コメント、広告、ギフト、皆様ありがとうございました！',
+                'AI VTuber、馬可無序がお送りしました。',
+                '次回の配信もお楽しみに！',
+              );
+            }
           }
 
           if (data.hasGift) {
