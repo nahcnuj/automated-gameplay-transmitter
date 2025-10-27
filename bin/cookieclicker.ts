@@ -293,10 +293,7 @@ try {
 
     const ticks = Math.floor(elapsed / msPerTick) - 1; // `ticks` counts from zero.
 
-    const actions: Promise<void>[] = [
-      player.keepProductsView(),
-      player.clickCookie(),
-    ];
+    const actions: Promise<void>[] = [];
 
     if (ticks % ticksToSave === 0) {
       try {
@@ -321,6 +318,11 @@ try {
     if (ticks % ticksToPledge === 0) {
       actions.push(player.pledgeElder());
     }
+    
+    actions.push(
+      player.keepProductsView(),
+      player.clickCookie(),
+    );
 
     await actions.reduce(async (p, next) => {
       return p.then(async () => await next);
