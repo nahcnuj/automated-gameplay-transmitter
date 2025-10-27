@@ -41,33 +41,25 @@ const CookieClicker = async (page: Page) => {
   await page.goto('https://orteil.dashnet.org/cookieclicker/', { timeout: 300_000 });
 
   await page.getByText('日本語').click({ timeout: 300_000 });
-  // console.debug(`日本語`);
-
   await page.getByText('Got it').click({ timeout: 300_000 });
-  // console.debug(`Got it!`);
-
   await page.getByText('次回から表示しない').click({ timeout: 300_000 });
-  // console.debug(`Do not show again`);
+
+  const menu = page.locator('#menu');
 
   const withOptionMenu = async (callback: (menu: Locator) => Promise<void>) => {
     console.debug('[DEBUG]', new Date().toISOString(), 'withOptionMenu');
 
-    const menu = page.locator('#menu');
     if (!await menu.isVisible()) {
       const options = page.locator('.subButton', { hasText: 'オプション' });
       await options.click({ timeout: 60_000 });
-      console.debug(`Clicked the option button.`);
 
       await menu.waitFor({ state: 'visible', timeout: 60_000 });
-      console.debug(`Opened the menu.`);
     }
 
     await callback(menu);
 
     await menu.locator('.close').click({ timeout: 60_000 });
-    console.debug(`Clicked the close button.`);
     await menu.waitFor({ state: 'hidden', timeout: 60_000 });
-    console.debug(`Closed the menu.`);
   };
 
   const cookie = page.locator('#bigCookie');
@@ -75,11 +67,14 @@ const CookieClicker = async (page: Page) => {
   const store = page.locator('#store');
   const prompt = page.locator('#prompt');
 
-  const switches = store.locator('#toggleUpgrades');
-  const enableSwitches = switches.locator('.enabled');
-
   const products = store.locator('#products');
   const availableProducts = products.locator('.enabled');
+
+  const upgrades = store.locator('#upgrades');
+  const availableUpgrades = upgrades.locator('.enabled');
+
+  const switches = store.locator('#toggleUpgrades');
+  const enableSwitches = switches.locator('.enabled');
 
   return {
     withOptionMenu,
@@ -93,17 +88,32 @@ const CookieClicker = async (page: Page) => {
     },
     buyProduct: async () => {
       const product = availableProducts.last();
-      try {
-        if (await product.count() > 0) {
-          // console.debug('[DEBUG]', 'buyProduct', await product.count(), await availableProducts.count());
-          const name = await product.locator('.productName').textContent();
-          await say(`${name}を買います。`);
+      if (await product.count() > 0) {
+        try {
+          const productName = await product.locator('.productName').textContent();
+          await say(`${productName}を買います。`);
           await product.click();
-          console.debug('[DEBUG]', new Date().toISOString(), 'bought a product', name);
+          console.debug('[DEBUG]', new Date().toISOString(), 'bought a product', productName);
+        } catch (err) {
+          console.debug('[DEBUG]', new Date().toISOString(), 'failed to buy a product', err);
+          await say(`やっぱりやめます。`);
         }
-      } catch {
-        console.debug('[DEBUG]', new Date().toISOString(), 'failed to buy a product');
-        await say(`やっぱりやめます。`);
+      }
+    },
+    buyUpgrade: async () => {
+      const upgrade = availableUpgrades.last();
+      if (await upgrade.count() > 0) {
+        try {
+          const name = await tooltip.locator('.name').innerText();
+          await say(`アップグレード「${name}」を買います`);
+          await upgrade.click();
+          const description = await tooltip.locator('.description').innerText();
+          await say(`アップグレード「${name}」…${description}`);
+          console.debug('[DEBUG]', new Date().toISOString(), `Bought an upgrade, ${name}`);
+        } catch (err) {
+          console.debug('[DEBUG]', new Date().toISOString(), 'failed to buy an upgrade', err);
+          await say(`やっぱりやめます。`);
+        }
       }
     },
     pledgeElder: async () => {
@@ -196,41 +206,6 @@ if (!page) {
   throw new Error('could not create a page');
 }
 
-const shopper = setInterval(async () => {
-  const shop = page.locator('#store');
-
-  try {
-    const upgradable = shop.locator('#upgrades').locator('.enabled');
-    if (await upgradable.count() > 0) {
-      const mostExpensive = upgradable.first();
-      await mostExpensive.hover();
-
-      const tooltip = page.locator('#tooltipAnchor');
-      const name = await tooltip.locator('.name').innerText();
-      await say(`アップグレード「${name}」を買います`);
-      const description = await tooltip.locator('.description').innerText();
-      await say(description);
-      await mostExpensive.click();
-      console.debug('[DEBUG]', new Date().toISOString(), `Bought an upgrade, ${name}`);
-
-      return;
-    }
-
-    /*const purchasable = shop.locator('#products').locator('.enabled');
-    if (await purchasable.count() > 0) {
-      const mostExpensive = purchasable.last();
-
-      const name = await mostExpensive.locator('.productName').textContent();
-      await say(`${name}を買います`);
-      await mostExpensive.click();
-
-      console.debug(`Bought a product, ${name}`);
-    }*/
-  } catch (err) {
-    console.warn('[WARN]', new Date().toISOString(), err);
-  }
-}, 1_000);
-
 const notifier = setInterval(async () => {
   const notes = page.locator('#notes');
 
@@ -276,13 +251,13 @@ const config = {
 
 let exitCode = 0;
 let intervals: NodeJS.Timeout[] = [
-  shopper,
   notifier,
 ];
 
 const msPerTick = 250;
 const ticksToSave = Math.floor(600_000 / msPerTick);
 const ticksToBuyProduct = Math.floor(10_000 / msPerTick);
+const ticksToBuyUpgrade = Math.floor(10_000 / msPerTick);
 const ticksToPledge = Math.floor(1_000_000 / msPerTick);
 
 const timeoutMs = 600_000_000;
@@ -318,10 +293,12 @@ try {
     const elapsed = Date.now() - start;
     if (elapsed > timeoutMs) break;
 
-    const ticks = Math.floor(elapsed / msPerTick); // starts from one.
-    // console.debug(`Tick #${ticks}`);
+    const ticks = Math.floor(elapsed / msPerTick) - 1; // `ticks` counts from zero.
 
-    const actions: Promise<unknown>[] = [];
+    const actions: Promise<void>[] = [
+      player.keepProductsView(),
+      player.clickCookie(),
+    ];
 
     if (ticks % ticksToSave === 0) {
       try {
@@ -335,18 +312,21 @@ try {
       } catch (err) {
         console.warn('[WARN]', new Date().toISOString(), `Failed to save the data.`, err);
       }
-    } else if (ticks % ticksToBuyProduct === 0) {
-      actions.push(player.buyProduct());
-    } else if (ticks % ticksToPledge === 0) {
-      actions.push(player.pledgeElder());
-    } else {
-      actions.push(
-        player.keepProductsView(),
-        player.clickCookie(),
-      );
     }
 
-    await Promise.all(actions);
+    if (ticks % ticksToBuyUpgrade === 0) {
+      actions.push(player.buyUpgrade());
+    }
+    if (ticks % ticksToBuyProduct === 0) {
+      actions.push(player.buyProduct());
+    }
+    if (ticks % ticksToPledge === 0) {
+      actions.push(player.pledgeElder());
+    }
+
+    await actions.reduce(async (p, next) => {
+      return p.then(async () => await next);
+    }, Promise.resolve());
   }
 } catch (err) {
   console.error(err);
