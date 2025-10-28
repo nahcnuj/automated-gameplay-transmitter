@@ -25,7 +25,7 @@ export function App() {
     <ServiceMetaProvider>
       <AIVTuberProvider>
         <CommentProvider>
-          <Layout count={10} span={8} className="bg-emerald-950/30 text-emerald-50 font-[Noto_Sans_CJK_JP] font-bold">
+          <Layout count={10} span={8} className="bg-purple-950/30 text-emerald-50 font-[Noto_Sans_CJK_JP] font-bold">
             <SidePanel />
             <BottomPanel />
           </Layout>
