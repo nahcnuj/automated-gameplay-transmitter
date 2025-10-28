@@ -128,7 +128,7 @@ export const create = (model: MarkovModelData = { '': {} }) => ({
     }, '');
   },
   toLearned: (text: `${string}。`) => {
-    const m = create(model);
+    const m = create(structuredClone(model));
     m.learn(text);
     return m;
   },
