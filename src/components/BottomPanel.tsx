@@ -25,7 +25,7 @@ export function BottomPanel({ }: PanelProps) {
               <div className="flex-none">
                 {/* TODO */}
               </div>
-              <div className="flex-auto h-full p-2 bg-black/30 border-5 border-double border-emerald-300 rounded-xl overflow-hidden text-3xl/10">
+              <div className="flex-auto h-full p-2 bg-black/50 border-5 border-double border-emerald-300 rounded-xl overflow-hidden text-3xl/10">
                 {speech && (
                   <>
                     {speech.icon && <img src={speech.icon} width={100} height={100} className="h-full mr-2 object-contain float-left" />}
