@@ -130,13 +130,15 @@ const server = serve({
 
           if (data.hasGift) {
             const name = (data.origin as any)?.message?.gift?.advertiserName;
-            if (data.anonymity || !giftQueue.map(({ userId }) => userId).includes(data.userId)) {
-              const src = (({ comment }) => {
-                const start = comment.indexOf('https://');
-                return comment.substring(start, comment.indexOf('"', start));
-              })(data);
-              console.log(`[GIFT] ${name} ${src}`);
-              giftQueue.push({ userId: data.userId, name, icon: src });
+            const icon = (({ comment }) => {
+              const start = comment.indexOf('https://');
+              return comment.substring(start, comment.indexOf('"', start));
+            })(data);
+            console.log(`[GIFT] ${name} ${icon}`);
+            if (data.anonymity) {
+              giftQueue.push({ userId: data.userId, icon });
+            } else if (!giftQueue.map(({ userId }) => userId).includes(data.userId)) {
+              giftQueue.push({ userId: data.userId, name, icon });
             }
           }
         };
