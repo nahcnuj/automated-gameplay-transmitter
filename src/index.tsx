@@ -102,6 +102,8 @@ const server = serve({
             }
           }
 
+          let isAd = false; // FIXME
+
           if (data.userId === 'onecomme.system') {
             if (data.comment === '「生放送クルーズさん」が引用を開始しました') {
               talkQueue.push(
@@ -113,6 +115,7 @@ const server = serve({
             }
 
             if (data.comment.endsWith('広告しました')) {
+              isAd = true;
               const name = data.comment.slice(data.comment.indexOf('】') + '】'.length, data.comment.lastIndexOf('さんが'));
               if (!adQueue.includes(name)) {
                 console.log(`[AD] ${name}`);
@@ -130,7 +133,7 @@ const server = serve({
             }
           }
 
-          if (data.hasGift) {
+          if (data.hasGift && !isAd) {
             const name = (data.origin as any)?.message?.gift?.advertiserName;
             const icon = (({ comment }) => {
               const start = comment.indexOf('https://');
