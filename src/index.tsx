@@ -22,7 +22,7 @@ const model = ((path) => {
 const comments: Comment[] = [];
 
 const talkQueue: string[] = [];
-const giftQueue: { name: string; icon: string }[] = [];
+const giftQueue: { userId: string; name?: string; icon: string }[] = [];
 const adQueue: string[] = [];
 
 const talkedHistory: string[] = [];
@@ -130,13 +130,13 @@ const server = serve({
 
           if (data.hasGift) {
             const name = (data.origin as any)?.message?.gift?.advertiserName;
-            if (name && !giftQueue.map(({ name }) => name).includes(name)) {
+            if (data.anonymity || !giftQueue.map(({ userId }) => userId).includes(data.userId)) {
               const src = (({ comment }) => {
                 const start = comment.indexOf('https://');
                 return comment.substring(start, comment.indexOf('"', start));
               })(data);
               console.log(`[GIFT] ${name} ${src}`);
-              giftQueue.push({ name, icon: src });
+              giftQueue.push({ userId: data.userId, name, icon: src });
             }
           }
         };
@@ -187,7 +187,7 @@ const server = serve({
           {
             const gift = giftQueue.shift();
             if (gift) {
-              const text = `${gift.name}さん、ギフトありがとうございます！\n`;
+              const text = `${gift.name ? `${gift.name}さん、` : ''}ギフトありがとうございます！\n`;
               nextSpeech = { text, icon: gift.icon };
               return text;
             }

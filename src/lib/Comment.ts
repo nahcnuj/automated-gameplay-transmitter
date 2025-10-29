@@ -6,8 +6,9 @@ type CommentData = {
   comment: string
   timestamp: string
   isOwner: boolean
-  origin: any
+  anonymity?: boolean
   hasGift: boolean
+  origin: any
 };
 
 export type Comment = {
