@@ -72,7 +72,7 @@ describe.each<[[string, number][], [number, string][]]>([
 
 describe('json', () => {
   test('empty model', () => {
-    expect(create().json).toEqual({ model: { '': {} } });
+    expect(create().json).toEqual({ model: { '': {} }, corpus: [] });
   });
 
   test('a simple model', () => {
@@ -81,6 +81,10 @@ describe('json', () => {
       'こんにち': { 'は': 1 },
       'は': { '。': 1 }
     };
-    expect(create(model).json).toEqual({ model });
+    expect(create(model).json).toEqual({ model, corpus: [] });
+  });
+
+  test('includes corpus', () => {
+    expect(create(undefined, ['こんにちは。']).json).toEqual({ model: { '': {} }, corpus: ['こんにちは。'] });
   });
 });

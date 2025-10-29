@@ -85,7 +85,7 @@ const jaJP = new Intl.Locale('ja-JP');
  * const reply = model.reply('元気ですか？');
  * console.log(reply);
  */
-export const create = (model: MarkovModelData = { '': {} }) => ({
+export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = []) => ({
   gen: (bos = Object.keys(model[''])): string => {
     let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
     while (s.at(-1) !== '。' && s.length < 15 && [...s.join('')].length < 32) {
@@ -112,6 +112,7 @@ export const create = (model: MarkovModelData = { '': {} }) => ({
     return topic ? this.gen([topic]) : '';
   },
   learn: (text: `${string}。`): void => {
+    corpus.push(text);
     console.debug('learn', text);
     text[splitIntoWords](jaJP).reduce<string>((prev, next) => {
       if (prev === '' && !acceptBeginning(next)) {
@@ -133,6 +134,6 @@ export const create = (model: MarkovModelData = { '': {} }) => ({
     return m;
   },
   get json() {
-    return { model };
+    return { model, corpus };
   },
 });

@@ -10,14 +10,16 @@ let latest = Date.now();
 let serviceMeta: LiveInfo = {};
 let client: string | undefined;
 
-const path = './var/model.json';
+const corpusFile = './var/corpus.txt';
+const modelFile = './var/model.json';
 const encoding = 'utf8';
 
+const corpus = readFileSync(corpusFile, { encoding }).split('\n').map((text) => text.replaceAll('\\n', '\n'));
 const model = ((path) => {
   const { model } = JSON.parse(readFileSync(path, { encoding }));
   // TODO verify
-  return MarkovModel.create(model);
-})(path);
+  return MarkovModel.create(model, corpus);
+})(modelFile);
 
 const comments: Comment[] = [];
 
@@ -277,6 +279,12 @@ console.log(`🚀 Server running at ${server.url}`);
 console.debug(new Date().toUTCString());
 for await (const _ of setInterval(3_600_000)) {
   console.debug(`Saving the model...`, new Date().toUTCString());
-  const data = JSON.stringify(model.json, null, 0);
-  writeFileSync(path, data, { encoding });
+  {
+    const data = JSON.stringify({ model: model.json.model }, null, 0);
+    writeFileSync(modelFile, data, { encoding });
+  }
+  {
+    const data = model.json.corpus.map((text) => text.replaceAll('\n', '\\n')).join('\n').concat('\n');
+    writeFileSync(corpusFile, data, { encoding });
+  }
 }
