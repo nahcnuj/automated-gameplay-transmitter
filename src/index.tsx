@@ -91,14 +91,18 @@ const server = serve({
           }
 
           if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
-            const m = data.no ? model : model.toLearned(comment);
-
-            const reply = m.reply(comment);
-            console.log(`reply: ${reply} << ${comment}`);
-            if (data.comment.normalize('NFKC') === reply.normalize('NFKC')) {
-              talkQueue.push(`「${data.comment}」ってなんですか？`);
+            if (data.comment.match(/[?？]$/)) {
+              talkQueue.push(`「${data.comment}」わかりません。`);
             } else {
-              talkQueue.push(reply.replace(/。*$/, '').trimEnd());
+              const m = data.no ? model : model.toLearned(comment);
+
+              const reply = m.reply(comment);
+              console.log(`reply: ${reply} << ${comment}`);
+              if (data.comment.normalize('NFKC') === reply.normalize('NFKC')) {
+                talkQueue.push(`「${data.comment}」ってなんですか？`);
+              } else {
+                talkQueue.push(reply.replace(/。*$/, '').trimEnd());
+              }
             }
           }
 
