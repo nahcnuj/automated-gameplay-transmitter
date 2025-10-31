@@ -264,7 +264,7 @@ const server = serve({
     },
 
     '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes()),
-    '/img/nc436438.png': new Response(await Bun.file('./public/ext/nc436438.png').bytes()),
+    // '/img/nc436438.png': new Response(await Bun.file('./public/ext/nc436438.png').bytes()),
   },
 
   error(error) {

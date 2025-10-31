@@ -34,8 +34,7 @@ export const AIVTuberProvider = ({ children }: PropsWithChildren) => {
     return () => clearInterval(id);
   }, []);
 
-  // const sprite = <CharacterSprite src="/img/nc433974.png" height="50" className="transform-[scale(-1,1)]"/>;
-  const sprite = <CharacterSprite src="/img/nc436438.png" height="50" className="transform-[scale(-1,1)]"/>;
+  const sprite = <CharacterSprite src="/img/nc433974.png" height="50" className="transform-[scale(-1,1)]"/>;
 
   return (
     <AIVTuberContext.Provider value={{ speech, sprite }}>
