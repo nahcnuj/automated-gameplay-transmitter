@@ -153,14 +153,19 @@ const CookieClicker = async (page: Page) => {
         await withOptionMenu(async (menu) => {
           try {
             await menu.getByText('エクスポート').click();
+          } catch (err) {
+            console.warn('[WARN]', new Date().toISOString(), 'failed to export the game data', err);
+            return;
+          }
 
-            data = await prompt.getByRole('textbox').inputValue();
-
-            await prompt.getByText('完了').click({ timeout: 60_000 });
-            await prompt.waitFor({ state: 'hidden', timeout: 60_000 });
+          try {
+            data = await prompt.getByRole('textbox').inputValue({ timeout: 60_000 });
             console.debug('[DEBUG]', new Date().toISOString(), `Exported!`);
           } catch (err) {
             console.warn('[WARN]', new Date().toISOString(), 'failed to export the game data', err);
+          } finally {
+            await prompt.getByText('完了').click({ timeout: 600_000 });
+            await prompt.waitFor({ state: 'hidden', timeout: 600_000 });
           }
         });
       } while (data === undefined);
