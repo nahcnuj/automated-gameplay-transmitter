@@ -67,6 +67,32 @@ const CookieClicker = async (page: Page) => {
   const store = page.locator('#store');
   const prompt = page.locator('#prompt');
 
+  await page.locator('#notes').evaluate(el => {
+    const observer = new MutationObserver(async ([l]) => {
+      if (l?.type !== 'childList') return;
+      console.debug('[DEBUG]', '#notes', l);
+      for (const el of l.addedNodes) {
+        const title = (el as HTMLElement).querySelector('h5')?.textContent;
+        if (title) {
+          await say(title);
+        }
+        console.debug('[DEBUG]', el.textContent);
+        const closeButtons = (el as HTMLElement).querySelector('.close');
+        const rect = closeButtons?.getBoundingClientRect();
+        if (rect) {
+          console.debug('[DEBUG]', 'rect', rect);
+          closeButtons?.dispatchEvent(new PointerEvent('click', {
+            cancelable: true,
+            bubbles: true,
+            screenX: rect.x,
+            screenY: rect.y,
+          }));
+        }
+      }
+    });
+    observer.observe(el, { childList: true });
+  });
+
   const products = store.locator('#products');
   const availableProducts = products.locator('.enabled');
 
@@ -209,20 +235,6 @@ if (!page) {
   throw new Error('could not create a page');
 }
 
-const notifier = setInterval(async () => {
-  const notes = page.locator('#notes');
-
-  for (const l of await notes.locator('.note', { hasText: '実績が解除' }).all()) {
-    try {
-      const title = await l.getByRole('heading', { level: 5 }).textContent();
-      await say(`${title} 実績が解除されました！`);
-      await l.locator('.close').click();
-    } catch (err) {
-      console.warn('[WARN]', new Date().toISOString(), err);
-    }
-  }
-}, 1_000);
-
 let data: string | undefined;
 try {
   data = readFileSync(file, 'utf8');
@@ -253,9 +265,6 @@ const config = {
 };
 
 let exitCode = 0;
-let intervals: NodeJS.Timeout[] = [
-  notifier,
-];
 
 const msPerTick = 250;
 const ticksToSave = Math.floor(600_000 / msPerTick);
@@ -323,7 +332,7 @@ try {
     if (ticks % ticksToPledge === 0) {
       actions.push(player.pledgeElder());
     }
-    
+
     actions.push(
       player.keepProductsView(),
       player.clickCookie(),
@@ -337,8 +346,6 @@ try {
   console.error(err);
   exitCode = 1;
 } finally {
-  intervals.forEach(clearInterval);
-
   await ctx.close();
   await browser.close();
 
