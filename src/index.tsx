@@ -78,25 +78,25 @@ const server = serve({
 
         const latestComment = comments.at(-1);
         const newComments = data.filter(({ data }) => latestComment ? Date.parse(data.timestamp) > Date.parse(latestComment.data.timestamp) : Date.parse(data.timestamp) > latest);
-        console.debug(newComments.map(({ data: { no, comment, timestamp } }) => `${timestamp} #${no} ${comment}`));
+        // console.debug(newComments.map(({ data: { no, comment, timestamp } }) => `${timestamp} #${no} ${comment}`));
         comments.push(...newComments);
-        console.debug(`${comments.length} comments (includes system messages)`);
+        // console.debug(`${comments.length} comments (includes system messages)`);
 
         for (const { data } of newComments) {
-          const comment = `${data.comment.normalize('NFC').trim()}。` as const;
-          console.log(`comment: ${comment}`);
+          const comment = data.comment.normalize('NFC').trim();
+          // console.log(`comment: ${comment}`);
 
           if (data.no || data.isOwner) {
-            model.learn(comment);
+            model.learn(`${comment}。`);
           }
 
           if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
             if (data.comment.match(/[?？]$/)) {
-              talkQueue.push(`「${data.comment}」わかりません。`);
+              talkQueue.push(`「${data.comment}」わかりません`);
             } else {
-              const m = data.no ? model : model.toLearned(comment);
+              const m = data.no ? model : model.toLearned(`${comment}。`);
 
-              const reply = m.reply(comment);
+              const reply = m.reply(data.comment.normalize('NFKC'));
               console.log(`reply: ${reply} << ${comment}`);
               if (data.comment.normalize('NFKC') === reply.normalize('NFKC')) {
                 talkQueue.push(`「${data.comment}」ってなんですか？`);
@@ -111,10 +111,10 @@ const server = serve({
           if (data.userId === 'onecomme.system') {
             if (data.comment === '「生放送クルーズさん」が引用を開始しました') {
               talkQueue.push(
-                '生放送クルーズのみなさん、こんにちは。',
-                'AI Vチューバーの馬可無序です。',
-                'コメントを学習してお話ししています。',
-                'ぜひ上のリンクから遊びに来てね。',
+                '生放送クルーズのみなさん、こんにちは',
+                'AI Vチューバーの馬可無序です',
+                'コメントを学習してお話ししています',
+                'ぜひ上のリンクから遊びに来てね',
               );
             }
 
@@ -129,15 +129,16 @@ const server = serve({
 
             if (data.comment === '配信終了1分前です') {
               talkQueue.push(
-                'そろそろお別れのお時間が近づいてきました。',
+                'そろそろお別れのお時間が近づいてきました',
                 'ご視聴、コメント、広告、ギフト、皆様ありがとうございました！',
-                'AI VTuber、馬可無序がお送りしました。',
+                'AI Vチューバー、馬可無序がお送りしました',
                 '次回の配信もお楽しみに！',
               );
             }
           }
 
           if (data.hasGift && !isAd) {
+            const userId = data.userId;
             const name = (data.origin as any)?.message?.gift?.advertiserName;
             const icon = (({ comment }) => {
               const start = comment.indexOf('https://');
@@ -145,9 +146,9 @@ const server = serve({
             })(data);
             console.log(`[GIFT] ${name} ${icon}`);
             if (data.anonymity) {
-              giftQueue.push({ userId: data.userId, icon });
-            } else if (!giftQueue.map(({ userId }) => userId).includes(data.userId)) {
-              giftQueue.push({ userId: data.userId, name, icon });
+              giftQueue.push({ userId, icon });
+            } else if (!giftQueue.map(({ userId }) => userId).includes(userId)) {
+              giftQueue.push({ userId, name, icon });
             }
           }
         };
