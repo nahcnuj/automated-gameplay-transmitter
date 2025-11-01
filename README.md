@@ -29,8 +29,8 @@ This application relies on the following software.
 ```mermaid
 sequenceDiagram
     participant OBS as OBS Studio
-    participant Server as Bun.serve
     participant React as React App (Browser Source)
+    participant Server as Bun.serve
     participant Markov as Markov Model
     participant Bot as Speech Bot
 
