@@ -4,8 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import timersPromises from "node:timers/promises";
 import { parseArgs } from "node:util";
 import type { Locator, Page } from "playwright";
-import { chromium } from "playwright-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import { chromium } from "../src/lib/chromium";
 
 const { values: {
   file,
@@ -207,8 +206,6 @@ const CookieClicker = async (page: Page) => {
   };
 };
 
-chromium.use(StealthPlugin());
-
 const browser = await chromium.launch({
   executablePath,
   headless: false,
@@ -229,18 +226,6 @@ const ctx = await browser.newContext({
 });
 
 const page = await ctx.newPage();
-if (!page) {
-  await ctx.close();
-  await browser.close();
-  throw new Error('could not create a page');
-}
-
-let data: string | undefined;
-try {
-  data = readFileSync(file, 'utf8');
-} catch (err) {
-  console.warn(err);
-}
 
 const config = {
   '高品質で描画': false,
@@ -277,8 +262,11 @@ const timeoutMs = 600_000_000;
 try {
   const player = await CookieClicker(page);
 
-  if (data) {
+  try {
+    const data = readFileSync(file, 'utf8');
     player.importData(data);
+  } catch (err) {
+    console.warn('[WARN]', 'failed to load data', err);
   }
 
   // make sure that options are expected
@@ -343,7 +331,7 @@ try {
     }, Promise.resolve());
   }
 } catch (err) {
-  console.error(err);
+  console.error('[ERROR]', err);
   exitCode = 1;
 } finally {
   await ctx.close();
