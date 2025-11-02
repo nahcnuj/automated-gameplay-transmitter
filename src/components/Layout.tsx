@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
-type LayoutProps<S, B> = {
+type LayoutProps<M, S, B> = {
   count: keyof typeof gridTemplateClass,
   span: keyof typeof screenClass,
   className: string,
-  children: readonly [S, B],
+  children: readonly [M, S, B],
 };
 
 const gridTemplateClass = {
@@ -33,7 +33,7 @@ const bottomClass: Record<string, string> = {
   '10_8': 'col-span-10 row-span-2',
 };
 
-export const Layout = <SideComponent extends ReactNode, BottomComponent extends ReactNode>({ count, span, className, children: [sideComponent, bottomComponent] }: LayoutProps<SideComponent, BottomComponent>) => {
+export const Layout = <MainComponent extends ReactNode, SideComponent extends ReactNode, BottomComponent extends ReactNode>({ count, span, className, children: [mainPanel, sidePanel, bottomPanel] }: LayoutProps<MainComponent, SideComponent, BottomComponent>) => {
   const count_span = `${count}_${span}`;
 
   // TODO type restriction
@@ -43,15 +43,19 @@ export const Layout = <SideComponent extends ReactNode, BottomComponent extends 
   return (
     <div className={`w-screen h-screen content-center`}>
       <div className={`grid ${gridTemplateClass[count]} max-w-full max-h-full aspect-video`}>
-        <div className={screenClass[span]} />
+        <div className={screenClass[span]}>
+          <div className={`w-full h-full ${className}`}>
+            {mainPanel}
+          </div>
+        </div>
         <div className={sideClass[count_span]}>
           <div className={`w-full h-full ${className}`}>
-            {sideComponent}
+            {sidePanel}
           </div>
         </div>
         <div className={bottomClass[count_span]}>
           <div className={`w-full h-full ${className}`}>
-            {bottomComponent}
+            {bottomPanel}
           </div>
         </div>
       </div>

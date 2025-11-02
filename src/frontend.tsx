@@ -13,7 +13,9 @@ function start() {
   const root = createRoot(document.getElementById("root")!);
   root.render(
     <StrictMode>
-      <App />
+      <App>
+        <span className="text-xs font-normal opacity-10">Version: {new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}</span>
+      </App>
     </StrictMode>
   );
 }

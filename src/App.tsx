@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from "react";
 import { BottomPanel } from "./components/BottomPanel";
 import { Layout } from "./components/Layout";
 import { SidePanel } from "./components/SidePanel";
@@ -6,7 +7,7 @@ import { CommentProvider } from "./contexts/CommentContext";
 import { ServiceMetaProvider } from "./contexts/ServiceMetaContext";
 import "./index.css";
 
-export function App() {
+export function App({ children }: PropsWithChildren) {
   // const { url, startTime, total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
   // const { comments: allComments } = useCommentContext();
   // const { speech, sprite } = useAIVTuberContext();
@@ -26,6 +27,9 @@ export function App() {
       <AIVTuberProvider>
         <CommentProvider>
           <Layout count={10} span={8} className="bg-emerald-950/30 text-emerald-50 font-[Noto_Sans_CJK_JP] font-bold">
+            <>
+              {children}
+            </>
             <SidePanel />
             <BottomPanel />
           </Layout>
