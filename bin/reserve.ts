@@ -2,7 +2,7 @@
 
 import { statSync } from "node:fs";
 import { parseArgs } from "node:util";
-import { chromium } from "playwright";
+import { chromium } from "../src/lib/chromium";
 
 const { values: {
   'user-data-dir': userDataDir,
