@@ -1,10 +1,12 @@
+#!/usr/bin/env bun
+
 import { serve, type BunRequest } from "bun";
 import { readFileSync, writeFileSync } from "node:fs";
 import { setInterval, setTimeout } from "node:timers/promises";
-import type { LiveInfo } from "./contexts/ServiceMetaContext";
-import index from "./index.html";
-import type { Comment } from "./lib/Comment";
-import * as MarkovModel from "./lib/MarkovModel";
+import type { LiveInfo } from "../src/contexts/ServiceMetaContext";
+import type { Comment } from "../src/lib/Comment";
+import * as MarkovModel from "../src/lib/MarkovModel";
+import index from "../index.html";
 
 let latest = Date.now();
 let serviceMeta: LiveInfo = {};

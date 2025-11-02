@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun --hot --port=7777 src/index.tsx",
-    "start": "NODE_ENV=production bun --port=7777 src/index.tsx",
+    "dev": "bun --hot --port=7777 bin/server.ts",
+    "start": "NODE_ENV=production bun --port=7777 bin/server.ts",
     "build": "bun run build.ts"
   },
   "dependencies": {
