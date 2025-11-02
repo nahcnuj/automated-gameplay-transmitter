@@ -1,4 +1,5 @@
 import { createServer } from "node:net";
+import type { Data } from "./player";
 
 const server = createServer((conn) => {
   console.debug('[DEBUG]', 'socket connected');
@@ -6,8 +7,9 @@ const server = createServer((conn) => {
   conn.on('close', () => {
     console.debug('[DEBUG]', 'socket closed');
   });
-  conn.on('data', (data) => {
-    console.debug('[DEBUG]', data.toString());
+  conn.on('data', (buf) => {
+    const data: Data = JSON.parse(buf.toString());
+    console.debug('[DEBUG]', data);
   });
   conn.on('error', (err) => {
     console.error('[ERROR]', err);

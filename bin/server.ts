@@ -3,29 +3,11 @@
 import { serve, type BunRequest } from "bun";
 import { readFileSync, writeFileSync } from "node:fs";
 import { setInterval, setTimeout } from "node:timers/promises";
+import index from "../index.html";
 import type { LiveInfo } from "../src/contexts/ServiceMetaContext";
+import { createReceiver } from "../src/games/cookieclicker";
 import type { Comment } from "../src/lib/Comment";
 import * as MarkovModel from "../src/lib/MarkovModel";
-import index from "../index.html";
-// import { createServer } from "node:net";
-import { createReceiver } from "src/games/cookieclicker";
-
-// const sockFile = '\0./var/unix.sock';
-// const socketServer = createServer((conn) => {
-//   console.debug('[DEBUG]', 'socket connected');
-//   conn.on('close', () => {
-//     console.debug('[DEBUG]', 'socket closed');
-//   });
-//   conn.on('data', (data) => {
-//     console.debug('[DEBUG]', data.toString());
-//   });
-//   conn.on('error', (err) => {
-//     console.error('[ERROR]', err);
-//   });
-//   // conn.write('unix domain socket test');
-//   // conn.end();
-// });
-// socketServer.listen(sockFile);
 
 createReceiver();
 

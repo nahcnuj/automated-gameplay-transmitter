@@ -1,4 +1,5 @@
 import { createConnection } from "node:net";
+import type { Data } from "./player";
 
 export default function (sock: `\0${string}`) {
   console.debug('[DEBUG]', 'create socket connection', sock.substring(1));
@@ -14,5 +15,5 @@ export default function (sock: `\0${string}`) {
     console.error('[ERROR]', err);
   });
 
-  return (data: unknown) => { conn.write(JSON.stringify(data, null, 0)) };
+  return (data: Data) => { conn.write(JSON.stringify(data, null, 0)) };
 };
