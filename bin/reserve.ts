@@ -7,6 +7,7 @@ import { chromium } from "playwright";
 const { values: {
   'user-data-dir': userDataDir,
   'exec-path': executablePath,
+  auto,
 } } = parseArgs({
   options: {
     'user-data-dir': {
@@ -16,6 +17,11 @@ const { values: {
     'exec-path': {
       type: 'string',
       default: '/usr/bin/chromium',
+    },
+    auto: {
+      short: 'a',
+      type: 'boolean',
+      default: false,
     },
   },
 });
@@ -148,12 +154,15 @@ do {
     console.debug(`Selected comment filtering strength: ${selected}`);
   }
 
-  // wait for submitting by human
   {
-    const btn = page.getByRole('button', { name: '予約する' });
-    await btn.focus();
-    console.debug(`Waiting for submitting by human...`);
-    await btn.waitFor({ state: 'detached', timeout: 600_000 });
+    const submit = page.getByRole('button', { name: '予約する' });
+    if (auto) {
+      await submit.click();
+    } else {
+      await submit.focus();
+      console.debug(`Waiting for submitting by human...`);
+    }
+    await submit.waitFor({ state: 'detached', timeout: 600_000 });
     console.debug(`Reserved!`);
   }
 
