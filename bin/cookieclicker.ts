@@ -5,6 +5,22 @@ import timersPromises from "node:timers/promises";
 import { parseArgs } from "node:util";
 import type { Locator, Page } from "playwright";
 import { chromium } from "../src/lib/chromium";
+// import { createConnection } from "node:net";
+import { createSender } from "src/games/cookieclicker";
+
+// const client = createConnection('\0./var/unix.sock');
+// client.on('connect', () => {
+//   console.debug('[DEBUG]', 'socket connected');
+// });
+// client.on('end', () => {
+//   console.debug('[DEBUG]', 'socket closed');
+// });
+// client.on('error', (err) => {
+//   console.error('[ERROR]', err);
+// });
+
+const send = createSender();
+send('Hello');
 
 const { values: {
   file,
@@ -294,6 +310,8 @@ try {
     if (elapsed > timeoutMs) break;
 
     const ticks = Math.floor(elapsed / msPerTick) - 1; // `ticks` counts from zero.
+
+    send(ticks.toString());
 
     const actions: Promise<void>[] = [];
 
