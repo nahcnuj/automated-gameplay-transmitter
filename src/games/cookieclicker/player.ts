@@ -1,5 +1,7 @@
 type Product = {
   name: string
+  mult: number
+  price: number
   enabled: boolean
 };
 

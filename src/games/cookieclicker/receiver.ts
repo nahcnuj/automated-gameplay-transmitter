@@ -10,7 +10,7 @@ const server = createServer((conn) => {
   });
   conn.on('data', (buf) => {
     const data: State = JSON.parse(buf.toString());
-    console.debug('[DEBUG]', JSON.stringify(data, null, 1));
+    console.debug('[DEBUG]', JSON.stringify(data, null, 0));
   });
   conn.on('error', (err) => {
     console.error('[ERROR]', err);

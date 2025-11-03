@@ -120,6 +120,11 @@ const CookieClicker = async (page: Page) => {
     get products() {
       return products.getByRole('button').all().then(ls => ls.map(async (l) => ({
         name: await l.locator('.productName').innerText(),
+        mult: await l.locator('.priceMult').innerText().then(s => {
+          const parsed = Number.parseInt(s.substring(1));
+          return Number.isNaN(parsed) ? 1 : parsed;
+        }),
+        price: await l.locator('.price').innerText().then(Number.parseFloat),
         enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
       })))
     },
