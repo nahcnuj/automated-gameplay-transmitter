@@ -67,6 +67,8 @@ const CookieClicker = async (page: Page) => {
   const cookies = page.locator('#cookies');
   const cookiesPerSecond = page.locator('#cookiesPerSecond');
 
+  const commentsText = page.locator('#commentsText');
+
   const cookie = page.locator('#bigCookie');
   const tooltip = page.locator('#tooltipAnchor');
   const store = page.locator('#store');
@@ -100,6 +102,7 @@ const CookieClicker = async (page: Page) => {
 
   const products = store.locator('#products');
   const availableProducts = products.locator('.enabled');
+  const bulkMode = products.locator('.storeBulkMode.selected');
 
   const upgrades = store.locator('#upgrades');
   const availableUpgrades = upgrades.locator('.enabled');
@@ -112,6 +115,14 @@ const CookieClicker = async (page: Page) => {
     get cookies() { return cookies.innerText().then(Number.parseFloat) },
     get cookiesPerSecond() { return cookiesPerSecond.innerText().then(s => s.replaceAll(/[^0-9.e+]/g, '')).then(Number.parseFloat) },
     get isWrinkled() { return cookiesPerSecond.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('wrinkled')) },
+    get commentsText() { return commentsText.innerText() },
+    get bulkMode() { return bulkMode.getAttribute('id').then(id => id?.substring('storeBulk'.length).toLowerCase()) },
+    get products() {
+      return products.getByRole('button').all().then(ls => ls.map(async (l) => ({
+        name: await l.locator('.productName').innerText(),
+        enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
+      })))
+    },
     clickCookie: async (timeout: number = 250) => {
       try {
         await cookie.click({ timeout });
@@ -312,6 +323,13 @@ try {
             cookies: await player.cookies,
             cps: await player.cookiesPerSecond,
             isWrinkled: await player.isWrinkled,
+            commentsText: await player.commentsText,
+            store: {
+              products: {
+                bulkMode: await player.bulkMode !== 'sell' ? 'buy' : 'sell',
+                items: await Promise.all(await player.products),
+              },
+            },
           });
         })(),
         player.keepProductsView(),
