@@ -27,7 +27,7 @@ export function App() {
         <CommentProvider>
           <Layout count={10} span={8} className="bg-emerald-950/30 text-emerald-50 font-[Noto_Sans_CJK_JP] font-bold">
             <>
-              <span className="text-xs font-normal opacity-10">Version: {new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}</span>
+              <span className="text-xs opacity-25">{new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}</span>
             </>
             <SidePanel />
             <BottomPanel />
