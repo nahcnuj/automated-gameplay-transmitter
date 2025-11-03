@@ -64,6 +64,9 @@ const CookieClicker = async (page: Page) => {
     await menu.waitFor({ state: 'hidden', timeout: 60_000 });
   };
 
+  const cookies = page.locator('#cookies');
+  const cookiesPerSecond = page.locator('#cookiesPerSecond');
+
   const cookie = page.locator('#bigCookie');
   const tooltip = page.locator('#tooltipAnchor');
   const store = page.locator('#store');
@@ -106,6 +109,9 @@ const CookieClicker = async (page: Page) => {
 
   return {
     withOptionMenu,
+    get cookies() { return cookies.innerText().then(Number.parseFloat) },
+    get cookiesPerSecond() { return cookiesPerSecond.innerText().then(s => s.replaceAll(/[^0-9.e+]/g, '')).then(Number.parseFloat) },
+    get isWrinkled() { return cookiesPerSecond.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('wrinkled')) },
     clickCookie: async (timeout: number = 250) => {
       try {
         await cookie.click({ timeout });
@@ -298,40 +304,47 @@ try {
 
     const ticks = Math.floor(elapsed / msPerTick) - 1; // `ticks` counts from zero.
 
-    send(ticks.toString());
-
-    const actions: Promise<void>[] = [];
+    const seq: Promise<unknown>[] = [
+      Promise.all([
+        (async () => {
+          send({
+            ticks,
+            cookies: await player.cookies,
+            cps: await player.cookiesPerSecond,
+            isWrinkled: await player.isWrinkled,
+          });
+        })(),
+        player.keepProductsView(),
+        player.clickCookie(),
+      ]),
+    ];
 
     if (ticks % ticksToSave === 0) {
-      try {
-        console.debug(`Saving data to the file "${file}"...`);
-        const data = await player.exportData();
-        if (data) {
-          writeFileSync(file, data, 'utf8');
-        } else {
-          console.warn('[WARN]', new Date().toISOString(), 'Failed to export data.');
+      seq.push((async () => {
+        try {
+          const data = await player.exportData();
+          if (data) {
+            writeFileSync(file, data, 'utf8');
+            console.log('[INFO]', `Saved data to the file "${file}"`);
+          } else {
+            console.warn('[WARN]', new Date().toISOString(), 'Failed to export data.');
+          }
+        } catch (err) {
+          console.warn('[WARN]', new Date().toISOString(), `Failed to save the data.`, err);
         }
-      } catch (err) {
-        console.warn('[WARN]', new Date().toISOString(), `Failed to save the data.`, err);
-      }
-    }
-
-    if (ticks % ticksToBuyUpgrade === 0) {
-      actions.push(player.buyUpgrade());
-    }
-    if (ticks % ticksToBuyProduct === 0) {
-      actions.push(player.buyProduct());
+      })());
     }
     if (ticks % ticksToPledge === 0) {
-      actions.push(player.pledgeElder());
+      seq.push(player.pledgeElder());
+    }
+    if (ticks % ticksToBuyUpgrade === 0) {
+      seq.push(player.buyUpgrade());
+    }
+    if (ticks % ticksToBuyProduct === 0) {
+      seq.push(player.buyProduct());
     }
 
-    actions.push(
-      player.keepProductsView(),
-      player.clickCookie(),
-    );
-
-    await actions.reduce(async (p, next) => {
+    await seq.reduce(async (p, next) => {
       return p.then(async () => await next);
     }, Promise.resolve());
   }
