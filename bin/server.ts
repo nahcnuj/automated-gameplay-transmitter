@@ -97,7 +97,7 @@ const server = serve({
 
           if (data.no || (data.userId === 'onecomme.system' && data.name === '生放送クルーズ')) {
             if (data.comment.match(/[?？]$/)) {
-              talkQueue.push(`「${data.comment}」わかりません`);
+              talkQueue.push(`${data.comment}教えて！`);
             } else {
               const m = data.no ? model : model.toLearned(`${comment}。`);
 
