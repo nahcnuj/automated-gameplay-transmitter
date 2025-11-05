@@ -9,8 +9,6 @@ import { createReceiver } from "../src/games/cookieclicker";
 import type { Comment } from "../src/lib/Comment";
 import * as MarkovModel from "../src/lib/MarkovModel";
 
-createReceiver();
-
 let latest = Date.now();
 let serviceMeta: LiveInfo = {};
 let client: string | undefined;
@@ -289,15 +287,20 @@ const server = serve({
 
 console.log(`🚀 Server running at ${server.url}`);
 
-console.debug(new Date().toUTCString());
-for await (const _ of setInterval(3_600_000)) {
-  console.debug(`Saving the model...`, new Date().toUTCString());
-  {
-    const data = JSON.stringify({ model: model.json.model }, null, 0);
-    writeFileSync(modelFile, data, { encoding });
+createReceiver((s) => {
+  console.debug('[DEBUG]', new Date().toISOString(), s.ticks);
+});
+
+(async () => {
+  for await (const _ of setInterval(3_600_000)) {
+    console.debug('[DEBUG]', `Saving the model...`, new Date().toISOString());
+    {
+      const data = JSON.stringify({ model: model.json.model }, null, 0);
+      writeFileSync(modelFile, data, { encoding });
+    }
+    {
+      const data = model.json.corpus.map((text) => text.replaceAll('\n', '\\n')).join('\n').concat('\n');
+      writeFileSync(corpusFile, data, { encoding });
+    }
   }
-  {
-    const data = model.json.corpus.map((text) => text.replaceAll('\n', '\\n')).join('\n').concat('\n');
-    writeFileSync(corpusFile, data, { encoding });
-  }
-}
+})();
