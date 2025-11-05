@@ -1,7 +1,7 @@
 import createServer from "./receiver";
 import createClient from "./sender";
 
-const sock = `\0${__filename}` as const;
+const sock = '\0work.nahcnuj.automated-gameplay-transmitter.cookieclicker.sock';
 
 export const createReceiver = createServer(sock);
-export const createSender = () => createClient(sock);
+export const createSender = createClient(sock);

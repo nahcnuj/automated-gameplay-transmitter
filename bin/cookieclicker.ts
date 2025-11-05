@@ -7,7 +7,7 @@ import type { Locator, Page } from "playwright";
 import { createSender } from "../src/games/cookieclicker";
 import { chromium } from "../src/lib/chromium";
 
-const send = createSender();
+console.debug = console.log;
 
 const { values: {
   file,
@@ -304,13 +304,27 @@ try {
         const text = await link.innerText();
         if (!text.endsWith(flag ? 'ON' : 'OFF')) {
           await link.click();
-          console.debug(`Clicked "${key}"`);
+          console.log(`Clicked "${key}"`);
         }
       }),
     );
   });
 
   ctx.setDefaultTimeout(1_000);
+
+  const send = createSender(async ({ action }) => {
+    console.log('[DEBUG]', action);
+    switch (action) {
+      case 'click': {
+        await player.clickCookie();
+        break;
+      }
+      default: {
+        console.warn('[WARN]', 'unknown action:', action);
+        break;
+      }
+    }
+  });
 
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `tickMs` milliseconds.
@@ -338,7 +352,7 @@ try {
           });
         })(),
         player.keepProductsView(),
-        player.clickCookie(),
+        // player.clickCookie(),
       ]),
     ];
 

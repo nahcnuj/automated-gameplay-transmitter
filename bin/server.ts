@@ -289,6 +289,9 @@ console.log(`🚀 Server running at ${server.url}`);
 
 createReceiver((s) => {
   console.debug('[DEBUG]', new Date().toISOString(), s.ticks);
+  return {
+    action: 'click',
+  };
 });
 
 (async () => {
