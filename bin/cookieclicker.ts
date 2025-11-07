@@ -313,10 +313,10 @@ try {
   ctx.setDefaultTimeout(1_000);
 
   const send = createSender(async ({ action }) => {
-    console.log('[DEBUG]', action);
+    console.log('[DEBUG]', 'action', action);
     switch (action) {
       case 'click': {
-        await player.clickCookie();
+        await player.clickCookie(1_000);
         break;
       }
       default: {

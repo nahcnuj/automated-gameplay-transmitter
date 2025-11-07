@@ -18,9 +18,11 @@ export default function (path: `\0${string}`) {
     });
 
     conn.on('data', async (buf) => {
-      const action: Action = JSON.parse(buf.toString());
-      console.debug('[DEBUG]', JSON.stringify(action, null, 0));
-      await f(action);
+      const action = JSON.parse(buf.toString());
+      // console.debug('[DEBUG]', 'sender', JSON.stringify(action, null, 0));
+      if (action) {
+        await f(action);
+      }
     });
 
     return (state: State) => { conn.write(JSON.stringify(state, null, 0)) };
