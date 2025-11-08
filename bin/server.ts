@@ -292,6 +292,7 @@ createReceiver(({ ticks, store }) => {
 
   {
     console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches.filter(({ enabled }) => enabled), null, 0));
+    // TODO
     const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));
     if (btns.length > 0) {
       return {
@@ -303,13 +304,14 @@ createReceiver(({ ticks, store }) => {
 
   {
     console.debug('[DEBUG]', 'upgrades', JSON.stringify(store.upgrades.filter(({ enabled }) => enabled), null, 0));
-    const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));
-    if (btns.length > 0) {
-      return {
-        action: 'buyUpgrade',
-        name: '',
-      };
-    }
+    // TODO
+    // const btns = store.upgrades.filter(({ enabled }) => enabled);
+    // if (btns.length > 0) {
+    //   return {
+    //     action: 'buyUpgrade',
+    //     name: '',
+    //   };
+    // }
   }
 
   {

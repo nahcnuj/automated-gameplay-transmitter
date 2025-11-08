@@ -155,16 +155,12 @@ const CookieClicker = async (page: Page) => {
     },
     buyProduct: async (name: string) => {
       console.debug('[DEBUG]', new Date().toISOString(), 'buy', name);
-      // const product = availableProducts.last();
-      // if (await product.count() > 0) {
       try {
-        // const productName = await product.locator('.productName').textContent();
         await say(`${name}を買います`);
-        await products.getByText(name, { exact: true }).click({ timeout: 10_000 });
+        await products.getByRole('button', { name, exact: true }).click({ timeout: 1_000 });
       } catch {
         await say(`買えませんでした`);
       }
-      // }
     },
     buyUpgrade: async () => {
       const upgrade = availableUpgrades.last();
@@ -294,9 +290,6 @@ let exitCode = 0;
 
 const msPerTick = 250;
 const ticksToSave = Math.floor(600_000 / msPerTick);
-const ticksToBuyProduct = Math.floor(10_000 / msPerTick);
-const ticksToBuyUpgrade = Math.floor(10_000 / msPerTick);
-const ticksToPledge = Math.floor(1_000_000 / msPerTick);
 
 const timeoutMs = 600_000_000;
 
@@ -402,15 +395,6 @@ try {
         }
       })());
     }
-    // if (ticks % ticksToPledge === 0) {
-    //   seq.push(player.pledgeElder());
-    // }
-    // if (ticks % ticksToBuyUpgrade === 0) {
-    //   seq.push(player.buyUpgrade());
-    // }
-    // if (ticks % ticksToBuyProduct === 0) {
-    //   seq.push(player.buyProduct());
-    // }
 
     await seq.reduce(async (p, next) => {
       return p.then(async () => await next);
