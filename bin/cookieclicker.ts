@@ -355,7 +355,7 @@ try {
     const elapsed = Date.now() - start;
     if (elapsed > timeoutMs) break;
 
-    const ticks = Math.floor(elapsed / msPerTick) - 1; // `ticks` counts from zero.
+    const ticks = Math.floor(elapsed / msPerTick); // `ticks` counts from one.
 
     const seq: Promise<unknown>[] = [
       Promise.all([
