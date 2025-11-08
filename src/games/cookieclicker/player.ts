@@ -6,7 +6,7 @@ type Product = {
 };
 
 type Switch = {
-  description: string
+  description?: string
   enabled: boolean
 }
 

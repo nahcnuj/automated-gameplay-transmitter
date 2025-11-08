@@ -292,7 +292,7 @@ createReceiver(({ ticks, store: { products, switches } }) => {
 
   {
     console.debug('[DEBUG]', switches.filter(({ enabled }) => enabled));
-    const btn = switches.filter(({ description }) => description.includes('エルダー宣誓'));
+    const btn = switches.filter(({ description }) => description?.includes('エルダー宣誓'));
     if (btn.length > 0) {
       return {
         action: 'pledgeElder',

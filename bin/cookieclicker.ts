@@ -130,9 +130,10 @@ const CookieClicker = async (page: Page) => {
     },
     get switches() {
       return switches.getByRole('button').all().then(ls => ls.map(async (l) => {
-        const description = await page.locator(`#${await l.getAttribute('aria-labelledby')}`).textContent() ?? '';
+        // console.debug('[DEBUG]', await l.getAttribute('aria-labelledby').then(async (s = '') => await page.locator(`#${s}`).innerHTML()));
+        // const description = await page.locator(`#${await l.getAttribute('aria-labelledby')}`).textContent();
         return {
-          description,
+          // description,
           enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
         };
       }));
@@ -146,13 +147,13 @@ const CookieClicker = async (page: Page) => {
       }
     },
     buyProduct: async (name: string) => {
+      console.debug('[DEBUG]', new Date().toISOString(), 'buy', name);
       // const product = availableProducts.last();
       // if (await product.count() > 0) {
       try {
         // const productName = await product.locator('.productName').textContent();
         await say(`${name}を買います。`);
         await products.getByText(name, { exact: true }).click({ timeout: 10_000 });
-        console.debug('[DEBUG]', new Date().toISOString(), 'bought a product', name);
       } catch {
         await say(`買えませんでした。`);
       }
