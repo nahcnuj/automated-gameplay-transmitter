@@ -337,7 +337,7 @@ const config = {
 let exitCode = 0;
 
 const msPerTick = 1_000;
-const ticksToStats = Math.floor(60_000 / msPerTick);
+const ticksToStats = Math.floor(2_000_000 / msPerTick);
 const ticksToSave = Math.floor(600_000 / msPerTick);
 
 const timeoutMs = 600_000_000;
@@ -451,7 +451,7 @@ try {
       })());
     }
 
-    if (ticks % ticksToStats === 0) {
+    if (!statistics || ticks % ticksToStats === 0) {
       seq.push(
         new Promise(async (resolve) => {
           statistics = await player.withStatsMenu(async (menu) => {
