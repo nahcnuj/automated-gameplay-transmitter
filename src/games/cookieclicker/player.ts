@@ -21,4 +21,7 @@ export type State = {
 
 export type Action = {
   action: 'click'
+} | {
+  action: 'buyProduct',
+  name: string,
 };

@@ -312,15 +312,21 @@ try {
 
   ctx.setDefaultTimeout(1_000);
 
-  const send = createSender(async ({ action }) => {
-    console.log('[DEBUG]', 'action', action);
-    switch (action) {
+  const send = createSender(async (data) => {
+    console.log('[DEBUG]', 'action', data);
+    switch (data.action) {
       case 'click': {
         await player.clickCookie(1_000);
         break;
       }
+      case 'buyProduct': {
+        console.debug('[DEBUG]', data.name);
+        // TODO select product by name
+        await player.buyProduct();
+        break;
+      }
       default: {
-        console.warn('[WARN]', 'unknown action:', action);
+        console.warn('[WARN]', 'unknown action');
         break;
       }
     }
@@ -352,7 +358,6 @@ try {
           });
         })(),
         player.keepProductsView(),
-        // player.clickCookie(),
       ]),
     ];
 
@@ -377,9 +382,9 @@ try {
     if (ticks % ticksToBuyUpgrade === 0) {
       seq.push(player.buyUpgrade());
     }
-    if (ticks % ticksToBuyProduct === 0) {
-      seq.push(player.buyProduct());
-    }
+    // if (ticks % ticksToBuyProduct === 0) {
+    //   seq.push(player.buyProduct());
+    // }
 
     await seq.reduce(async (p, next) => {
       return p.then(async () => await next);

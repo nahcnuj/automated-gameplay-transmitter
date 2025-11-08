@@ -287,8 +287,20 @@ const server = serve({
 
 console.log(`🚀 Server running at ${server.url}`);
 
-createReceiver((s) => {
-  console.debug('[DEBUG]', new Date().toISOString(), s.ticks);
+createReceiver(({ ticks, store: { products } }) => {
+  console.debug('[DEBUG]', new Date().toISOString(), ticks);
+
+  {
+    console.debug('[DEBUG]', products.items.filter(({ enabled }) => enabled));
+    const p = products.items.filter(({ enabled }) => enabled).at(-1);
+    if (p) {
+      return {
+        action: 'buyProduct',
+        name: p.name,
+      };
+    }
+  }
+
   return {
     action: 'click',
   };
