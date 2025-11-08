@@ -398,6 +398,8 @@ try {
     }
   });
 
+  let statistics: Statistics | undefined;
+
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `tickMs` milliseconds.
   for await (const start of timersPromises.setInterval(msPerTick, Date.now())) {
@@ -405,8 +407,6 @@ try {
     if (elapsed > timeoutMs) break;
 
     const ticks = Math.floor(elapsed / msPerTick); // `ticks` counts from one.
-
-    let statistics: Statistics | undefined;
 
     const seq: Promise<unknown>[] = [
       player.keepProductsView(),
@@ -457,8 +457,8 @@ try {
           statistics = await player.withStatsMenu(async (menu) => {
             const generalSection = menu.locator('.subsection', { hasText: '全般' });
             const general = await generalSection.locator('.listing').all().then(ls => Promise.all(ls.map(async (l) => {
-              const key = await l.locator('b').innerText();
-              const textContent = await l.innerText().then(s => s.substring(key.length));
+              const key = await l.locator('b').innerText().then(s => s.trim());
+              const textContent = await l.innerText().then(s => s.substring(key.length).trim());
               return [key, {
                 textContent,
               }];
