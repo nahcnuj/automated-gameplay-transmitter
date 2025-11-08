@@ -5,3 +5,5 @@ const sock = '\0work.nahcnuj.automated-gameplay-transmitter.cookieclicker.sock';
 
 export const createReceiver = createServer(sock);
 export const createSender = createClient(sock);
+
+export type { Statistics } from "./player";

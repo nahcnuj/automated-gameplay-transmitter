@@ -8,12 +8,20 @@ type Product = {
 type Upgrade = {
   name?: string
   enabled: boolean
-}
+};
 
 type Switch = {
   description?: string
   enabled: boolean
-}
+};
+
+export type Statistics = {
+  general: {
+    [key: string]: {
+      textContent: string
+    }
+  }
+};
 
 export type State = {
   ticks: number
@@ -29,6 +37,7 @@ export type State = {
     upgrades: Upgrade[]
     switches: Switch[]
   }
+  statistics?: Statistics
 };
 
 export type Action =

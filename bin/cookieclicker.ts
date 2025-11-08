@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import timersPromises from "node:timers/promises";
 import { parseArgs } from "node:util";
 import type { Locator, Page } from "playwright";
-import { createSender } from "../src/games/cookieclicker";
+import { createSender, type Statistics } from "../src/games/cookieclicker";
 import { chromium } from "../src/lib/chromium";
 
 console.debug = console.log;
@@ -46,6 +46,7 @@ const CookieClicker = async (page: Page) => {
   await page.getByText('Got it').click({ timeout: 300_000 });
   await page.getByText('次回から表示しない').click({ timeout: 300_000 });
 
+  const commentsArea = page.locator('#comments');
   const menu = page.locator('#menu');
 
   const withOptionMenu = async (callback: (menu: Locator) => Promise<void>) => {
@@ -62,6 +63,27 @@ const CookieClicker = async (page: Page) => {
 
     await menu.locator('.close').click({ timeout: 60_000 });
     await menu.waitFor({ state: 'hidden', timeout: 60_000 });
+  };
+
+  const withStatsMenu = async <T>(callback: (menu: Locator) => Promise<T>) => {
+    try {
+      console.debug('[DEBUG]', new Date().toISOString(), 'withStatsMenu');
+
+      if (await menu.getByText('記録').count() <= 0) {
+        await commentsArea.getByText('記録').click({ timeout: 60_000 });
+
+        await menu.waitFor({ state: 'visible', timeout: 60_000 });
+      }
+
+      const res = await callback(menu);
+
+      await menu.locator('.close').click({ timeout: 60_000 });
+      await menu.waitFor({ state: 'hidden', timeout: 60_000 });
+
+      return res;
+    } catch (err) {
+      console.warn('[WARN]', 'withStatsMenu', err);
+    }
   };
 
   const cookies = page.locator('#cookies');
@@ -112,6 +134,7 @@ const CookieClicker = async (page: Page) => {
 
   return {
     withOptionMenu,
+    withStatsMenu,
     get cookies() { return cookies.innerText().then(Number.parseFloat) },
     get cookiesPerSecond() { return cookiesPerSecond.innerText().then(s => s.replaceAll(/[^0-9.e+]/g, '')).then(Number.parseFloat) },
     get isWrinkled() { return cookiesPerSecond.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('wrinkled')) },
@@ -154,17 +177,18 @@ const CookieClicker = async (page: Page) => {
       }));
     },
     get elderPledgeSwitch() {
-      const btn = switches.getByRole('button', { name: 'エルダー宣誓' });
+      const name = 'エルダー宣誓';
+      const btn = switches.getByRole('button', { name });
       return Promise.all([
         btn.isEnabled(),
         btn.innerHTML().then(v => console.debug('[DEBUG]', v)),
       ]).then(([
         enabled,
       ]) => ({
-        name: 'エルダー宣誓',
+        name,
         enabled,
       })).catch(() => ({
-        name: 'エルダー宣誓',
+        name,
         enabled: false,
       }));
     },
@@ -313,6 +337,7 @@ const config = {
 let exitCode = 0;
 
 const msPerTick = 1_000;
+const ticksToStats = Math.floor(60_000 / msPerTick);
 const ticksToSave = Math.floor(600_000 / msPerTick);
 
 const timeoutMs = 600_000_000;
@@ -381,30 +406,34 @@ try {
 
     const ticks = Math.floor(elapsed / msPerTick); // `ticks` counts from one.
 
+    let statistics: Statistics | undefined;
+
     const seq: Promise<unknown>[] = [
-      Promise.all([
-        (async () => {
-          send({
-            ticks,
-            cookies: await player.cookies,
-            cps: await player.cookiesPerSecond,
-            isWrinkled: await player.isWrinkled,
-            commentsText: await player.commentsText,
-            store: {
-              products: {
-                bulkMode: await player.bulkMode !== 'sell' ? 'buy' : 'sell',
-                items: await Promise.all(await player.products),
-              },
-              upgrades: await Promise.all(await player.upgrades),
-              switches: [
-                await player.elderPledgeSwitch,
-              ],
-            },
-          });
-        })(),
-        player.keepProductsView(),
-      ]),
+      player.keepProductsView(),
     ];
+
+    seq.push(Promise.all([
+      (async () => {
+        send({
+          ticks,
+          cookies: await player.cookies,
+          cps: await player.cookiesPerSecond,
+          isWrinkled: await player.isWrinkled,
+          commentsText: await player.commentsText,
+          store: {
+            products: {
+              bulkMode: await player.bulkMode !== 'sell' ? 'buy' : 'sell',
+              items: await Promise.all(await player.products),
+            },
+            upgrades: await Promise.all(await player.upgrades),
+            switches: [
+              await player.elderPledgeSwitch,
+            ],
+          },
+          statistics,
+        });
+      })(),
+    ]));
 
     if (ticks % ticksToSave === 0) {
       seq.push((async () => {
@@ -420,6 +449,28 @@ try {
           console.warn('[WARN]', new Date().toISOString(), `Failed to save the data.`, err);
         }
       })());
+    }
+
+    if (ticks % ticksToStats === 0) {
+      seq.push(
+        new Promise(async (resolve) => {
+          statistics = await player.withStatsMenu(async (menu) => {
+            const generalSection = menu.locator('.subsection', { hasText: '全般' });
+            const general = await generalSection.locator('.listing').all().then(ls => Promise.all(ls.map(async (l) => {
+              const key = await l.locator('b').innerText();
+              const textContent = await l.innerText().then(s => s.substring(key.length));
+              return [key, {
+                textContent,
+              }];
+            }))).then(Object.fromEntries);
+            console.log('[DEBUG]', general);
+            return {
+              general,
+            };
+          });
+          resolve(null);
+        }),
+      );
     }
 
     await seq.reduce(async (p, next) => {
