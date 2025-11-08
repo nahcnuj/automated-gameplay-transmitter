@@ -128,6 +128,15 @@ const CookieClicker = async (page: Page) => {
         enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
       })))
     },
+    get switches() {
+      return switches.getByRole('button').all().then(ls => ls.map(async (l) => {
+        const description = await page.locator(`#${l.getAttribute('aria-labelledby')}`).textContent() ?? '';
+        return {
+          description,
+          enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
+        };
+      }));
+    },
     clickCookie: async (timeout: number = 250) => {
       try {
         await cookie.click({ timeout });
@@ -139,14 +148,14 @@ const CookieClicker = async (page: Page) => {
     buyProduct: async (name: string) => {
       // const product = availableProducts.last();
       // if (await product.count() > 0) {
-        try {
-          // const productName = await product.locator('.productName').textContent();
-          await say(`${name}を買います。`);
-          await products.getByText(name, { exact: true }).click({ timeout: 10_000 });
-          console.debug('[DEBUG]', new Date().toISOString(), 'bought a product', name);
-        } catch {
-          await say(`買えませんでした。`);
-        }
+      try {
+        // const productName = await product.locator('.productName').textContent();
+        await say(`${name}を買います。`);
+        await products.getByText(name, { exact: true }).click({ timeout: 10_000 });
+        console.debug('[DEBUG]', new Date().toISOString(), 'bought a product', name);
+      } catch {
+        await say(`買えませんでした。`);
+      }
       // }
     },
     buyUpgrade: async () => {
@@ -352,6 +361,7 @@ try {
                 bulkMode: await player.bulkMode !== 'sell' ? 'buy' : 'sell',
                 items: await Promise.all(await player.products),
               },
+              switches: await Promise.all(await player.switches),
             },
           });
         })(),
@@ -374,9 +384,9 @@ try {
         }
       })());
     }
-    if (ticks % ticksToPledge === 0) {
-      seq.push(player.pledgeElder());
-    }
+    // if (ticks % ticksToPledge === 0) {
+    //   seq.push(player.pledgeElder());
+    // }
     if (ticks % ticksToBuyUpgrade === 0) {
       seq.push(player.buyUpgrade());
     }

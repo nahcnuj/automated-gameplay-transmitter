@@ -5,6 +5,11 @@ type Product = {
   enabled: boolean
 };
 
+type Switch = {
+  description: string
+  enabled: boolean
+}
+
 export type State = {
   ticks: number
   cookies: number
@@ -16,12 +21,15 @@ export type State = {
       bulkMode: 'buy' | 'sell'
       items: Product[]
     }
+    switches: Switch[]
   }
 };
 
 export type Action = {
   action: 'click'
 } | {
-  action: 'buyProduct',
-  name: string,
+  action: 'buyProduct'
+  name: string
+} | {
+  action: 'pledgeElder'
 };

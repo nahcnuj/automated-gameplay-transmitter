@@ -11,7 +11,6 @@ export default function (path: `\0${string}`) {
         console.debug('[DEBUG]', 'socket closed');
       });
       conn.on('end', () => {
-        console.debug('[DEBUG]', 'socket closed');
         console.debug('[DEBUG]', 'socket closed, reconnecting...');
         conn.connect({ path });
       });
@@ -20,7 +19,8 @@ export default function (path: `\0${string}`) {
       });
 
       conn.on('data', (buf) => {
-        const state = JSON.parse(buf.toString());
+        const state: State = JSON.parse(buf.toString());
+        console.debug('[DEBUG]', 'receiver', 'switches:', JSON.stringify(state.store.switches, null, 0));
         const action = onData(state);
         // console.debug('[DEBUG]', 'receiver', JSON.stringify(action, null, 0));
         conn.write(JSON.stringify(action, null, 0));

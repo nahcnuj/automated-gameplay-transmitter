@@ -287,8 +287,18 @@ const server = serve({
 
 console.log(`🚀 Server running at ${server.url}`);
 
-createReceiver(({ ticks, store: { products } }) => {
+createReceiver(({ ticks, store: { products, switches } }) => {
   console.debug('[DEBUG]', new Date().toISOString(), ticks);
+
+  {
+    console.debug('[DEBUG]', switches.filter(({ enabled }) => enabled));
+    const btn = switches.filter(({ description }) => description.includes('エルダー宣誓'));
+    if (btn.length > 0) {
+      return {
+        action: 'pledgeElder',
+      };
+    }
+  }
 
   {
     console.debug('[DEBUG]', products.items.filter(({ enabled }) => enabled));
