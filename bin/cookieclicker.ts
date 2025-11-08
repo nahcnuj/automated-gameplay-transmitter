@@ -130,19 +130,46 @@ const CookieClicker = async (page: Page) => {
     },
     get upgrades() {
       return upgrades.getByRole('button').all().then(ls => ls.map(async (l) => {
-        return {
-          enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
-        };
-      }))
+        const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
+        if (enabled) {
+          try {
+            await l.hover();
+            return {
+              description: await l.innerText(),
+              enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
+            };
+          } catch {
+            return {
+              enabled: false,
+            };
+          }
+        } else {
+          return {
+            enabled: false,
+          };
+        }
+      }));
     },
     get switches() {
       return switches.getByRole('button').all().then(ls => ls.map(async (l) => {
-        // console.debug('[DEBUG]', await l.getAttribute('aria-labelledby').then(async (s = '') => await page.locator(`#${s}`).innerHTML()));
-        // const description = await page.locator(`#${await l.getAttribute('aria-labelledby')}`).textContent();
-        return {
-          // description,
-          enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
-        };
+        const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
+        if (enabled) {
+          try {
+            await l.hover();
+            return {
+              description: await l.innerText(),
+              enabled,
+            };
+          } catch {
+            return {
+              enabled: false,
+            };
+          }
+        } else {
+          return {
+            enabled: false,
+          };
+        }
       }));
     },
     clickCookie: async (timeout: number = 250) => {
