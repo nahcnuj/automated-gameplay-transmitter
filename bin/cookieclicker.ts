@@ -184,8 +184,9 @@ const CookieClicker = async (page: Page) => {
       console.debug('[DEBUG]', new Date().toISOString(), 'buy', name);
       try {
         await say(`${name}を買います`);
-        await products.getByRole('button', { name, exact: true }).click({ timeout: 1_000 });
-      } catch {
+        await products.getByRole('button', { name, exact: true }).click({ timeout: 5_000 });
+      } catch (err) {
+        console.warn('[WARN]', `could not buy ${name}`, err);
         await say(`買えませんでした`);
       }
     },
