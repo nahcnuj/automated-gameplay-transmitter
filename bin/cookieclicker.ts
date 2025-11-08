@@ -129,7 +129,7 @@ const CookieClicker = async (page: Page) => {
       })))
     },
     get upgrades() {
-      return upgrades.getByRole('button').all().then(ls => ls.map(async (l) => {
+      return upgrades.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l) => {
         const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
         if (enabled) {
           try {
@@ -151,7 +151,7 @@ const CookieClicker = async (page: Page) => {
       }));
     },
     get switches() {
-      return switches.getByRole('button').all().then(ls => ls.map(async (l) => {
+      return switches.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l) => {
         const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
         if (enabled) {
           try {
@@ -316,7 +316,7 @@ const config = {
 
 let exitCode = 0;
 
-const msPerTick = 250;
+const msPerTick = 1_000;
 const ticksToSave = Math.floor(600_000 / msPerTick);
 
 const timeoutMs = 600_000_000;
