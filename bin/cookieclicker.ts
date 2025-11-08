@@ -136,18 +136,18 @@ const CookieClicker = async (page: Page) => {
         /* do nothing */
       }
     },
-    buyProduct: async () => {
-      const product = availableProducts.last();
-      if (await product.count() > 0) {
+    buyProduct: async (name: string) => {
+      // const product = availableProducts.last();
+      // if (await product.count() > 0) {
         try {
-          const productName = await product.locator('.productName').textContent();
-          await say(`${productName}を買います。`);
-          await product.click();
-          console.debug('[DEBUG]', new Date().toISOString(), 'bought a product', productName);
+          // const productName = await product.locator('.productName').textContent();
+          await say(`${name}を買います。`);
+          await products.getByText(name, { exact: true }).click({ timeout: 10_000 });
+          console.debug('[DEBUG]', new Date().toISOString(), 'bought a product', name);
         } catch {
           await say(`買えませんでした。`);
         }
-      }
+      // }
     },
     buyUpgrade: async () => {
       const upgrade = availableUpgrades.last();
@@ -320,9 +320,7 @@ try {
         break;
       }
       case 'buyProduct': {
-        console.debug('[DEBUG]', data.name);
-        // TODO select product by name
-        await player.buyProduct();
+        await player.buyProduct(data.name);
         break;
       }
       default: {
