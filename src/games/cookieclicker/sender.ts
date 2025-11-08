@@ -1,7 +1,7 @@
 import { createConnection } from "node:net";
 import type { Action, State } from "./player";
 
-export default function (path: `\0${string}`) {
+export default function createSender(path: `\0${string}`) {
   return (f: (action: Action) => Promise<void>) => {
     console.debug('[DEBUG]', 'create socket connection', path.substring(1));
     let conn = createConnection(path);
@@ -10,8 +10,7 @@ export default function (path: `\0${string}`) {
       console.debug('[DEBUG]', 'socket connected');
     });
     conn.on('end', () => {
-      console.debug('[DEBUG]', 'socket closed, reconnecting...');
-      conn.connect({ path });
+      console.debug('[DEBUG]', 'socket closed');
     });
     conn.on('error', (err) => {
       console.error('[ERROR]', err);
