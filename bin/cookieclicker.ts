@@ -129,30 +129,9 @@ const CookieClicker = async (page: Page) => {
       })))
     },
     get upgrades() {
-      return upgrades.getByRole('button').all().then(ls => ls.slice(0, 1).map(async (l) => {
-        const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
-        if (enabled) {
-          try {
-            await l.hover({ timeout: msPerTick });
-            return {
-              description: await l.innerText(),
-              enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
-            };
-          } catch (err) {
-            console.warn('[WARN]', err);
-            return {
-              enabled: false,
-            };
-          }
-        } else {
-          return {
-            enabled: false,
-          };
-        }
-      }));
-    },
-    get switches() {
-      return switches.getByRole('button').all().then(ls => ls.slice(0, 1).map(async (l) => {
+      return upgrades.getByRole('button', { disabled: false }).all().then(ls => ls.slice(0, 1).map(async (l, i) => {
+        await timersPromises.setTimeout(i * msPerTick);
+
         const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
         if (enabled) {
           try {
@@ -164,7 +143,7 @@ const CookieClicker = async (page: Page) => {
           } catch (err) {
             console.warn('[WARN]', err);
             return {
-              enabled: false,
+              enabled,
             };
           }
         } else {
@@ -172,6 +151,21 @@ const CookieClicker = async (page: Page) => {
             enabled: false,
           };
         }
+      }));
+    },
+    get elderPledgeSwitch() {
+      const btn = switches.getByRole('button', { name: 'エルダー宣誓' });
+      return Promise.all([
+        btn.isEnabled(),
+        btn.innerHTML().then(v => console.debug('[DEBUG]', v)),
+      ]).then(([
+        enabled,
+      ]) => ({
+        name: 'エルダー宣誓',
+        enabled,
+      })).catch(() => ({
+        name: 'エルダー宣誓',
+        enabled: false,
       }));
     },
     clickCookie: async (timeout: number = 250) => {
@@ -402,7 +396,9 @@ try {
                 items: await Promise.all(await player.products),
               },
               upgrades: await Promise.all(await player.upgrades),
-              switches: await Promise.all(await player.switches),
+              switches: [
+                await player.elderPledgeSwitch,
+              ],
             },
           });
         })(),
