@@ -128,6 +128,13 @@ const CookieClicker = async (page: Page) => {
         enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
       })))
     },
+    get upgrades() {
+      return upgrades.getByRole('button').all().then(ls => ls.map(async (l) => {
+        return {
+          enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
+        };
+      }))
+    },
     get switches() {
       return switches.getByRole('button').all().then(ls => ls.map(async (l) => {
         // console.debug('[DEBUG]', await l.getAttribute('aria-labelledby').then(async (s = '') => await page.locator(`#${s}`).innerHTML()));
@@ -152,10 +159,10 @@ const CookieClicker = async (page: Page) => {
       // if (await product.count() > 0) {
       try {
         // const productName = await product.locator('.productName').textContent();
-        await say(`${name}を買います。`);
+        await say(`${name}を買います`);
         await products.getByText(name, { exact: true }).click({ timeout: 10_000 });
       } catch {
-        await say(`買えませんでした。`);
+        await say(`買えませんでした`);
       }
       // }
     },
@@ -164,13 +171,12 @@ const CookieClicker = async (page: Page) => {
       if (await upgrade.count() > 0) {
         try {
           const name = await tooltip.locator('.name').innerText();
-          await say(`アップグレード「${name}」を買います`);
-          await upgrade.click();
           const description = await tooltip.locator('.description').innerText();
-          await say(`アップグレード「${name}」…${description}`);
-          console.debug('[DEBUG]', new Date().toISOString(), `Bought an upgrade, ${name}`);
+          console.debug('[DEBUG]', new Date().toISOString(), `buy an upgrade, ${name}`);
+          await say(`アップグレード「${name}」を買います。${description}`);
+          await upgrade.click();
         } catch {
-          await say(`買えませんでした。`);
+          await say(`買えませんでした`);
         }
       }
     },
@@ -333,6 +339,16 @@ try {
         await player.buyProduct(data.name);
         break;
       }
+      case 'toggleSwitch': {
+        // TODO
+        await player.pledgeElder();
+        break;
+      }
+      case 'buyUpgrade': {
+        // TODO
+        await player.buyUpgrade();
+        break;
+      }
       default: {
         console.warn('[WARN]', 'unknown action');
         break;
@@ -362,6 +378,7 @@ try {
                 bulkMode: await player.bulkMode !== 'sell' ? 'buy' : 'sell',
                 items: await Promise.all(await player.products),
               },
+              upgrades: await Promise.all(await player.upgrades),
               switches: await Promise.all(await player.switches),
             },
           });
@@ -388,9 +405,9 @@ try {
     // if (ticks % ticksToPledge === 0) {
     //   seq.push(player.pledgeElder());
     // }
-    if (ticks % ticksToBuyUpgrade === 0) {
-      seq.push(player.buyUpgrade());
-    }
+    // if (ticks % ticksToBuyUpgrade === 0) {
+    //   seq.push(player.buyUpgrade());
+    // }
     // if (ticks % ticksToBuyProduct === 0) {
     //   seq.push(player.buyProduct());
     // }

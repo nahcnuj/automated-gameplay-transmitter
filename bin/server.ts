@@ -287,22 +287,34 @@ const server = serve({
 
 console.log(`🚀 Server running at ${server.url}`);
 
-createReceiver(({ ticks, store: { products, switches } }) => {
+createReceiver(({ ticks, store }) => {
   console.debug('[DEBUG]', new Date().toISOString(), ticks);
 
   {
-    console.debug('[DEBUG]', switches.filter(({ enabled }) => enabled));
-    const btn = switches.filter(({ description }) => description?.includes('エルダー宣誓'));
-    if (btn.length > 0) {
+    console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches.filter(({ enabled }) => enabled), null, 0));
+    const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));
+    if (btns.length > 0) {
       return {
-        action: 'pledgeElder',
+        action: 'toggleSwitch',
+        name: 'エルダー宣誓',
       };
     }
   }
 
   {
-    console.debug('[DEBUG]', products.items.filter(({ enabled }) => enabled));
-    const p = products.items.filter(({ enabled }) => enabled).at(-1);
+    console.debug('[DEBUG]', 'upgrades', JSON.stringify(store.upgrades.filter(({ enabled }) => enabled), null, 0));
+    const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));
+    if (btns.length > 0) {
+      return {
+        action: 'buyUpgrade',
+        name: '',
+      };
+    }
+  }
+
+  {
+    console.debug('[DEBUG]', 'products', JSON.stringify(store.products.items.filter(({ enabled }) => enabled), null, 0));
+    const p = store.products.items.filter(({ enabled }) => enabled).at(-1);
     if (p) {
       return {
         action: 'buyProduct',

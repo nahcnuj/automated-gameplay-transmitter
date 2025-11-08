@@ -5,6 +5,11 @@ type Product = {
   enabled: boolean
 };
 
+type Upgrade = {
+  name?: string
+  enabled: boolean
+}
+
 type Switch = {
   description?: string
   enabled: boolean
@@ -21,15 +26,24 @@ export type State = {
       bulkMode: 'buy' | 'sell'
       items: Product[]
     }
+    upgrades: Upgrade[]
     switches: Switch[]
   }
 };
 
-export type Action = {
-  action: 'click'
-} | {
-  action: 'buyProduct'
-  name: string
-} | {
-  action: 'pledgeElder'
-};
+export type Action =
+  | {
+    action: 'click'
+  }
+  | {
+    action: 'buyProduct'
+    name: string
+  }
+  | {
+    action: 'buyUpgrade'
+    name: string
+  }
+  | {
+    action: 'toggleSwitch'
+    name: string
+  };
