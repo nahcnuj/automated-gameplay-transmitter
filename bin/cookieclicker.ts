@@ -129,11 +129,11 @@ const CookieClicker = async (page: Page) => {
       })))
     },
     get upgrades() {
-      return upgrades.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l) => {
+      return upgrades.getByRole('button').first().all().then(ls => ls.map(async (l) => {
         const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
         if (enabled) {
           try {
-            await l.hover();
+            await l.hover({ timeout: 10 });
             return {
               description: await l.innerText(),
               enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
@@ -151,11 +151,11 @@ const CookieClicker = async (page: Page) => {
       }));
     },
     get switches() {
-      return switches.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l) => {
+      return switches.getByRole('button').first().all().then(ls => ls.map(async (l) => {
         const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
         if (enabled) {
           try {
-            await l.hover();
+            await l.hover({ timeout: 10 });
             return {
               description: await l.innerText(),
               enabled,
