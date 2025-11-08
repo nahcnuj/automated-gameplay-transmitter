@@ -186,7 +186,7 @@ const CookieClicker = async (page: Page) => {
       console.debug('[DEBUG]', new Date().toISOString(), 'buy', name);
       try {
         await say(`${name}を買います`);
-        await products.getByRole('button', { name, exact: true }).click({ timeout: 5_000 });
+        await products.getByRole('button', { name }).click();
       } catch (err) {
         console.warn('[WARN]', `could not buy ${name}`, err);
         await say(`買えませんでした`);
@@ -349,7 +349,7 @@ try {
     );
   });
 
-  ctx.setDefaultTimeout(1_000);
+  ctx.setDefaultTimeout(msPerTick);
 
   const send = createSender(async (data) => {
     console.log('[DEBUG]', 'action', data);
