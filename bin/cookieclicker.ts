@@ -130,7 +130,7 @@ const CookieClicker = async (page: Page) => {
     },
     get switches() {
       return switches.getByRole('button').all().then(ls => ls.map(async (l) => {
-        const description = await page.locator(`#${l.getAttribute('aria-labelledby')}`).textContent() ?? '';
+        const description = await page.locator(`#${await l.getAttribute('aria-labelledby')}`).textContent() ?? '';
         return {
           description,
           enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
