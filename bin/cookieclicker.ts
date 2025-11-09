@@ -216,18 +216,11 @@ const CookieClicker = async (page: Page) => {
       }
     },
     pledgeElder: async () => {
-      const elderPledger = enableSwitches.first();
+      const btn = switches.getByRole('button', { name: 'エルダー宣誓' });
       try {
-        await elderPledger.hover();
-
-        if ('エルダー宣誓' === await tooltip.locator('.name').innerText()) {
-          try {
-            await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除します。`);
-            await elderPledger.click();
-            console.debug('[DEBUG]', new Date().toISOString(), `Pledged the Elder.`);
-          } catch (err) {
-            console.warn('[WARN]', new Date().toISOString(), `Failed to pledge the elder: ${err}`);
-          }
+        if (await btn.isEnabled()) {
+          await btn.click();
+          await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除しました`);
         }
       } catch {
         /* do nothing */
