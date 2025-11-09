@@ -218,7 +218,7 @@ const CookieClicker = async (page: Page) => {
     pledgeElder: async () => {
       const btn = switches.getByRole('button', { name: 'エルダー宣誓' });
       try {
-        if (await btn.isEnabled()) {
+        if (await btn.getAttribute('class').then((c) => c?.split(' ').includes('enabled')).catch(() => false)) {
           await btn.click();
           await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除しました`);
         }
