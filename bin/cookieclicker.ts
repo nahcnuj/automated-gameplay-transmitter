@@ -178,7 +178,7 @@ const CookieClicker = async (page: Page) => {
     },
     get elderPledgeSwitch() {
       const btn = switches.getByRole('button').first();
-      return btn.isEnabled().then(async (enabled) => ({
+      return btn.getAttribute('class').then(c => c?.split(' ').includes('enabled')).catch(() => false).then(async (enabled = false) => ({
         enabled,
         description: enabled ? await btn.hover({ timeout: msPerTick / 2 }).then(async () => await btn.innerText()).catch(() => undefined) : undefined,
       }));
