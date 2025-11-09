@@ -7,7 +7,7 @@ import { chromium } from "../src/lib/chromium";
 const { values: {
   'user-data-dir': userDataDir,
   'exec-path': executablePath,
-  auto,
+  headless,
 } } = parseArgs({
   options: {
     'user-data-dir': {
@@ -18,8 +18,8 @@ const { values: {
       type: 'string',
       default: '/usr/bin/chromium',
     },
-    auto: {
-      short: 'a',
+    headless: {
+      short: 'y',
       type: 'boolean',
       default: false,
     },
@@ -32,7 +32,7 @@ if (!statSync(userDataDir).isDirectory()) {
 
 const ctx = await chromium.launchPersistentContext(userDataDir, {
   executablePath,
-  headless: false,
+  headless,
 });
 
 const page = ctx.pages()[0] ?? await ctx.newPage();
@@ -156,7 +156,7 @@ do {
 
   {
     const submit = page.getByRole('button', { name: '予約する' });
-    if (auto) {
+    if (headless) {
       await submit.click();
     } else {
       await submit.focus();
