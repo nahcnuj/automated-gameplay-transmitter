@@ -177,19 +177,10 @@ const CookieClicker = async (page: Page) => {
       }));
     },
     get elderPledgeSwitch() {
-      const name = 'エルダー宣誓';
-      const btn = switches.getByRole('button', { name });
-      return Promise.all([
-        btn.isEnabled(),
-        btn.innerHTML().then(v => console.debug('[DEBUG]', v)),
-      ]).then(([
+      const btn = switches.getByRole('button').first();
+      return btn.isEnabled().then(async (enabled) => ({
         enabled,
-      ]) => ({
-        name,
-        enabled,
-      })).catch(() => ({
-        name,
-        enabled: false,
+        description: enabled ? await btn.hover({ timeout: msPerTick / 2 }).then(async () => await btn.innerText()).catch(() => undefined) : undefined,
       }));
     },
     clickCookie: async (timeout: number = 250) => {
@@ -458,9 +449,9 @@ try {
             const generalSection = menu.locator('.subsection', { hasText: '全般' });
             const general = await generalSection.locator('.listing').all().then(ls => Promise.all(ls.map(async (l) => {
               const key = await l.locator('b').innerText().then(s => s.trim());
-              const textContent = await l.innerText().then(s => s.substring(key.length).trim());
+              const innerText = await l.innerText().then(s => s.substring(key.length).trim());
               return [key, {
-                textContent,
+                innerText,
               }];
             }))).then(Object.fromEntries);
             console.log('[DEBUG]', general);

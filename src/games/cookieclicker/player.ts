@@ -18,7 +18,7 @@ type Switch = {
 export type Statistics = {
   general: {
     [key: string]: {
-      textContent: string
+      innerText: string
     }
   }
 };
