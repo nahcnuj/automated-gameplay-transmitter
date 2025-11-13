@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { readFileSync, writeFileSync } from "node:fs";
-import timersPromises from "node:timers/promises";
+import { setInterval, setTimeout } from "node:timers/promises";
 import { parseArgs } from "node:util";
 import type { Locator, Page } from "playwright";
 import { createSender, type Statistics } from "../src/games/cookieclicker";
@@ -33,7 +33,7 @@ const say = async (text: string) => {
       method: 'POST',
       body: text,
     });
-    await page.waitForTimeout(50 * text.length);
+    await setTimeout(50 * text.length);
   } catch (err) {
     console.warn(err);
   }
@@ -153,7 +153,7 @@ const CookieClicker = async (page: Page) => {
     },
     get upgrades() {
       return upgrades.getByRole('button', { disabled: false }).all().then(ls => ls.slice(0, 1).map(async (l, i) => {
-        await timersPromises.setTimeout(i * msPerTick);
+        await setTimeout(i * msPerTick);
 
         const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
         if (enabled) {
@@ -386,7 +386,7 @@ try {
 
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `tickMs` milliseconds.
-  for await (const start of timersPromises.setInterval(msPerTick, Date.now())) {
+  for await (const start of setInterval(msPerTick, Date.now())) {
     const elapsed = Date.now() - start;
     if (elapsed > timeoutMs) break;
 
