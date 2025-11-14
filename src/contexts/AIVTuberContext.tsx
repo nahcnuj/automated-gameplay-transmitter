@@ -3,22 +3,28 @@
 import { createContext, useContext, useEffect, useState, type JSX, type PropsWithChildren } from "react";
 import { CharacterSprite } from "../components/CharacterSprite";
 
+type Props = {
+  game: 'cookieclicker'
+};
+
 type Speech = {
   text: string
-  icon?: string,
+  icon?: string
 };
 
 type T = {
-  speech?: Speech,
-  sprite?: JSX.Element,
+  speech?: Speech
+  sprite?: JSX.Element
+  gameState?: unknown
 };
 
 const AIVTuberContext = createContext<T>({});
 
 export const useAIVTuberContext = () => useContext(AIVTuberContext);
 
-export const AIVTuberProvider = ({ children }: PropsWithChildren) => {
+export const AIVTuberProvider = ({ game, children }: PropsWithChildren<Props>) => {
   const [speech, setSpeech] = useState<Speech>();
+  const [gameState, setGameState] = useState<unknown>();
   // const [value, setValue] = useState<T>({});
 
   useEffect(() => {
@@ -34,10 +40,21 @@ export const AIVTuberProvider = ({ children }: PropsWithChildren) => {
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    const id = setInterval(async () => {
+      await fetch('http://localhost:7777/api/game')
+        .then((res) => res.json())
+        .then((state) => setGameState((prev: any) => ({...prev, ...state})));
+      console.log('[DEBUG]', 'game', JSON.stringify(gameState, null, 0));
+    }, 1_000);
+
+    return () => clearInterval(id);
+  }, [game]);
+
   const sprite = <CharacterSprite src="/img/nc433974.png" height="50" className="transform-[scale(-1,1)]"/>;
 
   return (
-    <AIVTuberContext.Provider value={{ speech, sprite }}>
+    <AIVTuberContext.Provider value={{ speech, sprite, gameState }}>
       {children}
     </AIVTuberContext.Provider>
   );

@@ -39,6 +39,8 @@ let nextSpeech: {
   text: '',
 };
 
+let gameState: unknown;
+
 const server = serve({
   idleTimeout: 60,
 
@@ -267,6 +269,8 @@ const server = serve({
       },
     },
 
+    '/api/game': () => Response.json(gameState),
+
     '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes()),
     // '/img/nc436438.png': new Response(await Bun.file('./public/ext/nc436438.png').bytes()),
   },
@@ -287,7 +291,7 @@ const server = serve({
 
 console.log(`🚀 Server running at ${server.url}`);
 
-createReceiver(({ ticks, store }) => {
+createReceiver(({ ticks, store, statistics }) => {
   console.debug('[DEBUG]', new Date().toISOString(), ticks);
 
   {
