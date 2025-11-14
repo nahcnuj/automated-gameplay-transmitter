@@ -269,7 +269,10 @@ const server = serve({
       },
     },
 
-    '/api/game': () => Response.json(gameState),
+    '/api/game': () => {
+      console.log('[DEBUG]', '/api/game', JSON.stringify(gameState));
+      return Response.json(gameState)
+    },
 
     '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes()),
     // '/img/nc436438.png': new Response(await Bun.file('./public/ext/nc436438.png').bytes()),

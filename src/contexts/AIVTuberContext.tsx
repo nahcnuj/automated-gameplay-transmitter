@@ -42,14 +42,14 @@ export const AIVTuberProvider = ({ game, children }: PropsWithChildren<Props>) =
 
   useEffect(() => {
     const id = setInterval(async () => {
-      await fetch('http://localhost:7777/api/game')
-        .then((res) => res.ok ? res.json() : null)
-        .catch((err) => {
-          console.warn('[WARN]', 'failed to fetch /api/game', err);
-          return null;
-        })
-        .then((state) => setGameState((prev: any) => ({ ...prev, ...state })));
-      console.log('[DEBUG]', 'game', JSON.stringify(gameState, null, 0));
+      try {
+        await fetch('http://localhost:7777/api/game')
+          .then((res) => res.ok ? res.json() : null)
+          .then((state) => setGameState((prev: any) => ({ ...prev, ...state })));
+      } catch (err) {
+        console.warn('[WARN]', 'failed to fetch /api/game', err);
+        return null;
+      }
     }, 1_000);
 
     return () => clearInterval(id);
