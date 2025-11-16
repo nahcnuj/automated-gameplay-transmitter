@@ -300,6 +300,11 @@ createReceiver(({ ticks, store, statistics }) => {
   console.debug('[DEBUG]', new Date().toISOString(), ticks);
 
   {
+    const d = statistics?.general.runStarted?.innerText.match(/^(\d+)日前$/)?.[1] ?? 0;
+    console.debug('[DEBUG]', d, '日前');
+  }
+
+  {
     console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches.filter(({ enabled }) => enabled), null, 0));
     // TODO
     const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));

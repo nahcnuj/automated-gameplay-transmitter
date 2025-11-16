@@ -56,6 +56,7 @@ export type State = {
   cookies: number
   cps: number
   isWrinkled: boolean
+  ascendNumber: number
   commentsText: string
   store: {
     products: {
