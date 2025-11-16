@@ -30,6 +30,21 @@ export type Statistics = {
     cookiesBakedInTotal: {
       value: number
     }
+    cookiesForfeitedByAscending: {
+      value: number
+    }
+    buildingsOwned: {
+      value: number
+    }
+    cookiesPerClick: {
+      value: number
+    }
+    cookieClicks: {
+      value: number
+    }
+    handmadeCookies: {
+      value: number
+    }
   }
 };
 

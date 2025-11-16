@@ -7,6 +7,12 @@ const dict = {
     '貯まったクッキー：': 'cookiesInBank',
     'クッキー生産数（今回の昇天）：': 'cookiesBakedInThisAscension',
     'クッキー生産数（全期間）：': 'cookiesBakedInTotal',
+    '昇天で失ったクッキー：': 'cookiesForfeitedByAscending',
+    '所有建物：': 'buildingsOwned',
+    '1クリックあたりの生産数：': 'cookiesPerClick',
+    'クリック回数：': 'cookieClicks',
+    '手作りクッキー：': 'handmadeCookies',
+    '実行中のバージョン：': 'runningVersion',
   },
 } satisfies Record<string, Dict>;
 
@@ -22,9 +28,17 @@ export const dictOf = (lang: string) => {
         {
           innerText,
           ...(
-            ['cookiesInBank', 'cookiesBakedInThisAscension', 'cookiesBakedInTotal']
-              .includes(k)
-              ? { value: Number.parseFloat(innerText) }
+            [
+              'cookiesInBank',
+              'cookiesBakedInThisAscension',
+              'cookiesBakedInTotal',
+              'cookiesForfeitedByAscending',
+              'buildingsOwned',
+              'cookiesPerClick',
+              'cookieClicks',
+              'handmadeCookies',
+            ].includes(k)
+              ? { value: Number.parseFloat(innerText.replaceAll(',', '')) }
               : {}
           ),
         },
