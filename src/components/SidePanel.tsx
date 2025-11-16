@@ -71,9 +71,7 @@ export function SidePanel({ }: PanelProps) {
           <div className="flex-none">
             <div>
               {statistics?.general?.legacyStarted?.ascensions?.toString().concat('回目の昇天') ?? null}
-            </div>
-            <div>
-              {statistics?.general.runStarted?.innerText ?? null}
+              {statistics?.general?.runStarted?.innerText ?? null}
             </div>
             <div>
               延べ🍪 {statistics?.general?.cookiesBakedInThisAscension?.value.toString().concat('枚') ?? 'N/A'}
