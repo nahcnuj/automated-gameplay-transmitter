@@ -17,8 +17,18 @@ type Switch = {
 
 export type Statistics = {
   general: {
-    [key: string]: {
+    [key in string]: {
       innerText: string
+    }
+  } & {
+    cookiesInBank: {
+      value: number
+    }
+    cookiesBakedInThisAscension: {
+      value: number
+    }
+    cookiesBakedInTotal: {
+      value: number
     }
   }
 };

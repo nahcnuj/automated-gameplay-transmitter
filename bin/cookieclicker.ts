@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { setInterval, setTimeout } from "node:timers/promises";
 import { parseArgs } from "node:util";
 import type { Locator, Page } from "playwright";
-import { createSender, type Statistics } from "../src/games/cookieclicker";
+import { createSender, dictOf, type Statistics } from "../src/games/cookieclicker";
 import { chromium } from "../src/lib/chromium";
 
 console.debug = console.log;
@@ -31,16 +31,7 @@ const { values: {
   },
 });
 
-const dict = {
-  '日本語': {
-    '貯まったクッキー：': 'cookiesInBank',
-  },
-} as const;
-
-const translate = ((lang) => {
-  const d = dict[lang] as Record<string, string> | undefined;
-  return (key: string) => d?.[key] ?? key;
-})(lang as keyof typeof dict);
+const parse = dictOf(lang);
 
 const say = async (text: string) => {
   try {
@@ -457,11 +448,9 @@ try {
           statistics = await player.withStatsMenu(async (menu) => {
             const generalSection = menu.locator('.subsection', { hasText: '全般' });
             const general = await generalSection.locator('.listing').all().then(ls => Promise.all(ls.map(async (l) => {
-              const key = await l.locator('b').innerText().then(s => s.trim()).then(translate);
+              const key = await l.locator('b').innerText().then(s => s.trim());
               const innerText = await l.innerText().then(s => s.substring(key.length).trim());
-              return [key, {
-                innerText,
-              }];
+              return parse(key, innerText);
             }))).then(Object.fromEntries);
             console.log('[DEBUG]', general);
             return {
