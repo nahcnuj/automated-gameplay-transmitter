@@ -12,6 +12,7 @@ console.debug = console.log;
 const { values: {
   file,
   browser: executablePath,
+  lang,
 } } = parseArgs({
   options: {
     file: {
@@ -23,8 +24,23 @@ const { values: {
       type: 'string',
       default: '/usr/bin/chromium',
     },
+    lang: {
+      type: 'string',
+      default: '日本語',
+    },
   },
 });
+
+const dict = {
+  '日本語': {
+    '貯まったクッキー：': 'cookiesInBank',
+  },
+} as const;
+
+const translate = ((lang) => {
+  const d = dict[lang] as Record<string, string> | undefined;
+  return (key: string) => d?.[key] ?? key;
+})(lang as keyof typeof dict);
 
 const say = async (text: string) => {
   try {
@@ -42,7 +58,7 @@ const say = async (text: string) => {
 const CookieClicker = async (page: Page) => {
   await page.goto('https://orteil.dashnet.org/cookieclicker/', { timeout: 300_000 });
 
-  await page.getByText('日本語').click({ timeout: 300_000 });
+  await page.getByText(lang).click({ timeout: 300_000 });
   await page.getByText('Got it').click({ timeout: 300_000 });
   await page.getByText('次回から表示しない').click({ timeout: 300_000 });
 
@@ -441,7 +457,7 @@ try {
           statistics = await player.withStatsMenu(async (menu) => {
             const generalSection = menu.locator('.subsection', { hasText: '全般' });
             const general = await generalSection.locator('.listing').all().then(ls => Promise.all(ls.map(async (l) => {
-              const key = await l.locator('b').innerText().then(s => s.trim());
+              const key = await l.locator('b').innerText().then(s => s.trim()).then(translate);
               const innerText = await l.innerText().then(s => s.substring(key.length).trim());
               return [key, {
                 innerText,
