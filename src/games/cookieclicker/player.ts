@@ -33,6 +33,9 @@ export type Statistics = {
     cookiesForfeitedByAscending: {
       value: number
     }
+    legacyStarted: {
+      ascensions: number
+    }
     buildingsOwned: {
       value: number
     }
