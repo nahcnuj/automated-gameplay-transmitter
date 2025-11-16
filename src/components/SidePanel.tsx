@@ -1,3 +1,4 @@
+import { useAIVTuberContext } from "src/contexts/AIVTuberContext";
 import { useServiceMetaContext } from "../contexts/ServiceMetaContext";
 import { HighlightOnChange } from "./HighlightOnChange";
 
@@ -40,6 +41,7 @@ const formatDuration = (d: Date) =>
 const formatNumber = (n: number) => new Intl.NumberFormat('ja-JP').format(n);
 
 export function SidePanel({ }: PanelProps) {
+  const { gameState: { statistics } } = useAIVTuberContext();
   const { startTime = new Date(0).getTime(), total = 0, points: { ad = 0, gift = 0 } = { ad: 0, gift: 0 } } = useServiceMetaContext();
 
   const now = new Date();
@@ -72,7 +74,11 @@ export function SidePanel({ }: PanelProps) {
             </div>
             <div>
               {getClockEmoji(now)}
-              {formatTime(now)}</div>
+              {formatTime(now)}
+            </div>
+            <div>
+              {statistics?.general?.cookiesBakedInThisAscension?.value.toString().concat('🍪') ?? null}
+            </div>
           </div>
           <div className="flex-none">
             {total > 0 && (

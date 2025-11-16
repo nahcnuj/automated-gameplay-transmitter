@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type JSX, type PropsWithChildren } from "react";
 import { CharacterSprite } from "../components/CharacterSprite";
+import type { Statistics } from "src/games/cookieclicker";
 
 type Props = {
   game: 'cookieclicker'
@@ -15,17 +16,20 @@ type Speech = {
 type T = {
   speech?: Speech
   sprite?: JSX.Element
-  gameState?: unknown
+  gameState: { // TODO
+    statistics?: Statistics
+  }
 };
 
-const AIVTuberContext = createContext<T>({});
+const AIVTuberContext = createContext<T>({
+  gameState: {},
+});
 
 export const useAIVTuberContext = () => useContext(AIVTuberContext);
 
 export const AIVTuberProvider = ({ game, children }: PropsWithChildren<Props>) => {
   const [speech, setSpeech] = useState<Speech>();
-  const [gameState, setGameState] = useState<unknown>();
-  // const [value, setValue] = useState<T>({});
+  const [gameState, setGameState] = useState<T['gameState']>({});
 
   useEffect(() => {
     const id = setInterval(async () => {
