@@ -295,7 +295,7 @@ const server = serve({
 console.log(`🚀 Server running at ${server.url}`);
 
 createReceiver(({ ticks, store, statistics }) => {
-  gameState = statistics;
+  gameState = { statistics };
 
   console.debug('[DEBUG]', new Date().toISOString(), ticks);
 
