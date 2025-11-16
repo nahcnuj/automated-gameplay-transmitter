@@ -8,7 +8,7 @@ const dict = {
     'クッキー生産数（今回の昇天）：': 'cookiesBakedInThisAscension',
     'クッキー生産数（全期間）：': 'cookiesBakedInTotal',
     '昇天で失ったクッキー：': 'cookiesForfeitedByAscending',
-    'この回の始まり：': 'legacyStarted',
+    '遺産の始まり：': 'legacyStarted',
     '所有建物：': 'buildingsOwned',
     '1クリックあたりの生産数：': 'cookiesPerClick',
     'クリック回数：': 'cookieClicks',
