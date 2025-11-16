@@ -67,14 +67,10 @@ export function SidePanel({ }: PanelProps) {
         </div>
       </div>
       <div className="flex-auto w-full p-1">
-        <div className="h-full flex flex-col justify-between p-1 bg-black/50 border-5 border-double border-emerald-300 rounded-xl text-xl/8">
+        <div className="h-full flex flex-col justify-between p-1 bg-black/50 border-5 border-double border-emerald-300 rounded-xl text-2xl/10">
           <div className="flex-none">
             <div>
-              📆{formatDate(now)}
-            </div>
-            <div>
-              {getClockEmoji(now)}
-              {formatTime(now)}
+              {statistics?.general?.legacyStarted?.ascensions?.toString().concat('回昇天') ?? null}
             </div>
             <div>
               {statistics?.general?.cookiesBakedInThisAscension?.value.toString().concat('🍪') ?? null}
