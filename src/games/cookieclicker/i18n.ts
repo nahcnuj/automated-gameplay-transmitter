@@ -9,6 +9,7 @@ const dict = {
     'クッキー生産数（全期間）：': 'cookiesBakedInTotal',
     '昇天で失ったクッキー：': 'cookiesForfeitedByAscending',
     '遺産の始まり：': 'legacyStarted',
+    'この回の始まり：': 'runStarted',
     '所有建物：': 'buildingsOwned',
     '1クリックあたりの生産数：': 'cookiesPerClick',
     'クリック回数：': 'cookieClicks',
