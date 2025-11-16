@@ -20,7 +20,7 @@ const dict = {
 const parser = {
   '日本語': {
     legacyStarted: (innerText: string) => ({
-      ascensions: innerText.endsWith('回') ? Number.parseInt(innerText.match(/[0-9,.e+]+回/)?.[0].substring(0, -'回'.length).replaceAll(',', '') ?? 'N/A') : 0,
+      ascensions: innerText.endsWith('回') ? Number.parseInt(innerText.match(/[0-9,.e+]+回/)?.[0].replaceAll(',', '') ?? 'N/A') : 0,
     }),
   },
 };
