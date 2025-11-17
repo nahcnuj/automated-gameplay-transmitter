@@ -70,7 +70,7 @@ export function SidePanel({ }: PanelProps) {
         <div className="h-full flex flex-col justify-between p-1 bg-black/50 border-5 border-double border-emerald-300 rounded-xl text-2xl/10">
           <div className="flex-none">
             <div>
-              {statistics?.general?.legacyStarted?.ascensions?.toString().concat('回目の昇天') ?? null}
+              {statistics?.general?.legacyStarted?.ascensions?.toString().concat('回目の昇天 ') ?? null}
               {statistics?.general?.runStarted?.innerText ?? null}
             </div>
             <div>
