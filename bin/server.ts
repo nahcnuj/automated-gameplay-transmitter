@@ -284,22 +284,17 @@ const server = serve({
 
 console.log(`🚀 Server running at ${server.url}`);
 
-let ascending = false;
-
 createReceiver((state) => {
   gameState = state;
 
   switch (state.modal) {
     case 'ascending': {
-      ascending = false;
       // TODO
       return {
         action: 'reincarnate',
       };
     }
     default: {
-      if (ascending) return { action: undefined };
-
       const { ticks, store, statistics, ascendNumber } = state;
 
       console.debug('[DEBUG]', new Date().toISOString(), ticks);
@@ -309,7 +304,6 @@ createReceiver((state) => {
         console.debug('[DEBUG]', d, '日前');
         if (d >= 7 && ascendNumber > 0) {
           console.debug('[DEBUG]', 'ascending...');
-          ascending = true;
           return {
             action: 'ascend',
           };
