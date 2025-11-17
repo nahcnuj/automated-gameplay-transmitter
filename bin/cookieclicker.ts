@@ -406,6 +406,7 @@ try {
   ctx.setDefaultTimeout(msPerTick);
 
   let ready = true;
+  let statistics: Statistics | undefined;
 
   const send = createSender(async (data) => {
     console.log('[DEBUG]', 'action', data);
@@ -435,6 +436,7 @@ try {
       case 'ascend': {
         console.log('[DEBUG]', 'ascend', 'start');
         await player.ascend();
+        statistics = undefined;
         await setTimeout(10_000);
         console.log('[DEBUG]', 'ascend', 'end');
         return;
@@ -451,8 +453,6 @@ try {
     }
   });
 
-  let statistics: Statistics | undefined;
-
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `tickMs` milliseconds.
   for await (const start of setInterval(msPerTick, Date.now())) {
@@ -468,7 +468,7 @@ try {
 
       seq.push(Promise.all([
         (async () => {
-          send((await player.isAscending) ? {
+          send(player.isAscending ? {
             modal: 'ascending',
             // TODO
           } : {
