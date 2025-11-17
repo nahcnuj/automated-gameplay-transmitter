@@ -90,5 +90,11 @@ export type Action =
     name: string
   }
   | {
+    action: 'ascend'
+  }
+  | {
+    action: 'reincarnate'
+  }
+  | {
     action: undefined
   }

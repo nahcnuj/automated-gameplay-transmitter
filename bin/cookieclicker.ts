@@ -142,7 +142,7 @@ const CookieClicker = async (page: Page) => {
   return {
     withOptionMenu,
     withStatsMenu,
-    get cookies() { return cookies.innerText().then(Number.parseFloat) },
+    get cookies() { return cookies.innerText().then(s => s.replaceAll(',', '')).then(Number.parseFloat) },
     get cookiesPerSecond() { return cookiesPerSecond.innerText().then(s => s.replaceAll(/[^0-9.e+]/g, '')).then(Number.parseFloat) },
     get isWrinkled() { return cookiesPerSecond.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('wrinkled')) },
     get isAscending() { return ascend.isVisible() },
@@ -156,7 +156,7 @@ const CookieClicker = async (page: Page) => {
           const parsed = Number.parseInt(s.substring(1));
           return Number.isNaN(parsed) ? 1 : parsed;
         }),
-        price: await l.locator('.price').innerText().then(Number.parseFloat),
+        price: await l.locator('.price').innerText().then(s => s.replaceAll(',', '')).then(Number.parseFloat),
         enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
       })))
     },
@@ -235,11 +235,30 @@ const CookieClicker = async (page: Page) => {
         /* do nothing */
       }
     },
+    ascend: async () => {
+      console.debug('[DEBUG]', new Date().toISOString(), 'ascend');
+
+      await say('昇天します');
+
+      await page.getByText('遺産').click({ timeout: 30_000 });
+      await prompt.getByRole('link', { name: '昇天する' }).click({ timeout: 30_000 });
+
+      await ascend.waitFor({ state: 'visible', timeout: 60_000 });
+    },
+    reincarnate: async () => {
+      console.debug('[DEBUG]', new Date().toISOString(), 'reincarnate');
+
+      await say('転生します');
+
+      await page.getByRole('link', { name: '転生する' }).click({ timeout: 30_000 });
+      await prompt.getByRole('link', { name: 'はい' }).click({ timeout: 30_000 });
+
+      await ascend.waitFor({ state: 'hidden', timeout: 60_000 });
+    },
     importData: async (data: string) => {
       console.debug('[DEBUG]', new Date().toISOString(), 'importData');
 
       await page.locator('#game').press('Control+O');
-      // console.debug(`Pressed Ctrl+O.`);
 
       await prompt.getByRole('textbox').fill(data);
       await prompt.getByText('ロード').click();
@@ -249,7 +268,6 @@ const CookieClicker = async (page: Page) => {
     },
     exportData: async () => {
       console.debug('[DEBUG]', new Date().toISOString(), 'exportData');
-      // console.debug(`Exporting data...`);
 
       let data: string | undefined;
       do {
@@ -368,29 +386,37 @@ try {
     switch (data.action) {
       case undefined: {
         // do nothing
-        break;
+        return;
       }
       case 'click': {
         await player.clickCookie(1_000);
-        break;
+        return;
       }
       case 'buyProduct': {
         await player.buyProduct(data.name);
-        break;
+        return;
       }
       case 'toggleSwitch': {
         // TODO
         await player.pledgeElder();
-        break;
+        return;
       }
       case 'buyUpgrade': {
         // TODO
         await player.buyUpgrade();
-        break;
+        return;
+      }
+      case 'ascend': {
+        await player.ascend();
+        return;
+      }
+      case 'reincarnate': {
+        await player.reincarnate();
+        return;
       }
       default: {
         console.warn('[WARN]', 'unknown action');
-        break;
+        return;
       }
     }
   });
@@ -413,6 +439,7 @@ try {
       (async () => {
         send(await player.isAscending ? {
           modal: 'ascending',
+          // TODO
         } : {
           ticks,
           cookies: await player.cookies,

@@ -25,18 +25,18 @@ const formatTime = (d: Date) => new Intl.DateTimeFormat('ja-JP', {
 
 const formatDuration = (d: Date) =>
   `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
-  // // Not implemented on an OBS browser...
-  // new Intl.DurationFormat('ja-JP', {
-  //   style: 'digital',
-  //   seconds: '2-digit',
-  //   minutes: '2-digit',
-  //   hours: '2-digit',
-  //   timeZone: 'Asia/Tokyo',
-  // }).format({
-  //   seconds: d.getSeconds(),
-  //   minutes: d.getMinutes(),
-  //   hours: d.getHours(),
-  // });
+// // Not implemented on an OBS browser...
+// new Intl.DurationFormat('ja-JP', {
+//   style: 'digital',
+//   seconds: '2-digit',
+//   minutes: '2-digit',
+//   hours: '2-digit',
+//   timeZone: 'Asia/Tokyo',
+// }).format({
+//   seconds: d.getSeconds(),
+//   minutes: d.getMinutes(),
+//   hours: d.getHours(),
+// });
 
 const formatNumber = (n: number) => new Intl.NumberFormat('ja-JP').format(n);
 
@@ -74,7 +74,10 @@ export function SidePanel({ }: PanelProps) {
               {statistics?.general?.runStarted?.innerText ?? null}
             </div>
             <div>
-              延べ🍪 {statistics?.general?.cookiesBakedInThisAscension?.value.toString().concat('枚') ?? 'N/A'}
+              {'延べ🍪 '}
+              <HighlightOnChange timeout={1_000} classNameOnChanged="text-yellow-300">
+                {statistics?.general?.cookiesBakedInThisAscension?.value.toString().concat('枚') ?? 'N/A'}
+              </HighlightOnChange>
             </div>
           </div>
           <div className="flex-none">

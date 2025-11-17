@@ -49,7 +49,7 @@ const server = serve({
       POST: (req, server) => {
         const ip = server.requestIP(req);
         if (!ip) {
-          console.log(`No IP address is available in the request:`, JSON.stringify(req));
+          console.error('[ERROR]', `No IP address is available in the request:`, JSON.stringify(req));
           return Response.json(undefined, { status: 404 });
         }
 
@@ -57,23 +57,23 @@ const server = serve({
 
         const { address, family } = ip;
         client = `${family}/${address}`;
-        console.log('Connected from', client, 'at', new Date().toUTCString());
+        console.log('[INFO]', 'Connected from', client, 'at', new Date().toISOString());
         return new Response();
       },
       PUT: async (req, server) => {
         if (!client) {
-          console.log('Waiting for the client IP...');
+          console.log('[INFO]', 'Waiting for the client IP...');
           return Response.json(undefined, { status: 404 });
         }
         const ip = server.requestIP(req);
         if (!ip) {
-          console.log(`The request is invalid:`, JSON.stringify(req));
+          console.log('[INFO]', `The request is invalid:`, JSON.stringify(req));
           return Response.json(undefined, { status: 404 });
         }
 
         const got = `${ip.family}/${ip.address}`;
         if (got !== client) {
-          console.log(`got ${got}, want ${client}`);
+          console.error('[ERROR]', `got ${got}, want ${client}`);
           return Response.json(undefined, { status: 404 });
         }
 
@@ -289,8 +289,9 @@ createReceiver((state) => {
 
   switch (state.modal) {
     case 'ascending': {
+      // TODO
       return {
-        action: undefined,
+        action: 'reincarnate',
       };
     }
     default: {
@@ -303,7 +304,9 @@ createReceiver((state) => {
         console.debug('[DEBUG]', d, '日前');
         if (d >= 7 && ascendNumber > 0) {
           console.debug('[DEBUG]', 'ascending...');
-          // TODO
+          return {
+            action: 'ascend',
+          };
         }
       }
 
