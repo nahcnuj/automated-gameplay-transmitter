@@ -430,11 +430,13 @@ try {
       case 'ascend': {
         console.log('[DEBUG]', 'ascend', 'start');
         await player.ascend();
+        await setTimeout(10_000);
         console.log('[DEBUG]', 'ascend', 'end');
         return;
       }
       case 'reincarnate': {
         await player.reincarnate();
+        await setTimeout(10_000);
         return;
       }
       default: {
