@@ -238,22 +238,32 @@ const CookieClicker = async (page: Page) => {
     ascend: async () => {
       console.debug('[DEBUG]', new Date().toISOString(), 'ascend');
 
-      await say('昇天します');
+      try {
+        await say('昇天します');
 
-      await commentsArea.getByText('遺産').click();
-      await prompt.getByRole('link', { name: '昇天する' }).click();
+        await commentsArea.getByText('遺産').click();
+        await prompt.getByRole('link', { name: '昇天する' }).click();
 
-      await ascend.waitFor({ state: 'visible' });
+        await ascend.waitFor({ state: 'visible' });
+      } catch (err) {
+        console.warn('[WARN]', 'failed to ascend', err);
+      } finally {
+        await page.keyboard.press('Escape');
+      }
     },
     reincarnate: async () => {
       console.debug('[DEBUG]', new Date().toISOString(), 'reincarnate');
 
-      await say('転生します');
+      try {
+        await say('転生します');
 
-      await page.getByRole('link', { name: '転生する' }).click({ timeout: 30_000 });
-      await prompt.getByRole('link', { name: 'はい' }).click({ timeout: 30_000 });
+        await page.getByRole('link', { name: '転生する' }).click({ timeout: 30_000 });
+        await prompt.getByRole('link', { name: 'はい' }).click({ timeout: 30_000 });
 
-      await ascend.waitFor({ state: 'hidden', timeout: 60_000 });
+        await ascend.waitFor({ state: 'hidden', timeout: 60_000 });
+      } catch (err) {
+        throw new Error(`failed to reincarnate, ${err}`);
+      }
     },
     importData: async (data: string) => {
       console.debug('[DEBUG]', new Date().toISOString(), 'importData');
