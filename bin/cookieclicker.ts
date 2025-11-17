@@ -240,10 +240,10 @@ const CookieClicker = async (page: Page) => {
 
       await say('昇天します');
 
-      await page.getByText('遺産').click({ timeout: 30_000 });
-      await prompt.getByRole('link', { name: '昇天する' }).click({ timeout: 30_000 });
+      await commentsArea.getByText('遺産').click();
+      await prompt.getByRole('link', { name: '昇天する' }).click();
 
-      await ascend.waitFor({ state: 'visible', timeout: 60_000 });
+      await ascend.waitFor({ state: 'visible' });
     },
     reincarnate: async () => {
       console.debug('[DEBUG]', new Date().toISOString(), 'reincarnate');
@@ -427,86 +427,87 @@ try {
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `tickMs` milliseconds.
   for await (const start of setInterval(msPerTick, Date.now())) {
-    if (!ready) continue;
+    if (ready) {
+      ready = false;
 
-    ready = false;
+      const elapsed = Date.now() - start;
+      if (elapsed > timeoutMs) break;
 
-    const elapsed = Date.now() - start;
-    if (elapsed > timeoutMs) break;
+      const ticks = Math.floor(elapsed / msPerTick); // `ticks` counts from one.
 
-    const ticks = Math.floor(elapsed / msPerTick); // `ticks` counts from one.
+      const seq: Promise<unknown>[] = [
+        player.keepProductsView(),
+      ];
 
-    const seq: Promise<unknown>[] = [
-      player.keepProductsView(),
-    ];
-
-    seq.push(Promise.all([
-      (async () => {
-        send(await player.isAscending ? {
-          modal: 'ascending',
-          // TODO
-        } : {
-          ticks,
-          cookies: await player.cookies,
-          cps: await player.cookiesPerSecond,
-          isWrinkled: await player.isWrinkled,
-          ascendNumber: await player.ascendNumber,
-          commentsText: await player.commentsText,
-          store: {
-            products: {
-              bulkMode: await player.bulkMode !== 'sell' ? 'buy' : 'sell',
-              items: await Promise.all(await player.products),
+      seq.push(Promise.all([
+        (async () => {
+          send(await player.isAscending ? {
+            modal: 'ascending',
+            // TODO
+          } : {
+            ticks,
+            cookies: await player.cookies,
+            cps: await player.cookiesPerSecond,
+            isWrinkled: await player.isWrinkled,
+            ascendNumber: await player.ascendNumber,
+            commentsText: await player.commentsText,
+            store: {
+              products: {
+                bulkMode: await player.bulkMode !== 'sell' ? 'buy' : 'sell',
+                items: await Promise.all(await player.products),
+              },
+              upgrades: await Promise.all(await player.upgrades),
+              switches: [
+                await player.elderPledgeSwitch,
+              ],
             },
-            upgrades: await Promise.all(await player.upgrades),
-            switches: [
-              await player.elderPledgeSwitch,
-            ],
-          },
-          statistics,
-        });
-      })(),
-    ]));
-
-    if (ticks % ticksToSave === 0) {
-      seq.push((async () => {
-        try {
-          const data = await player.exportData();
-          if (data) {
-            writeFileSync(file, data, 'utf8');
-            console.log('[INFO]', `Saved data to the file "${file}"`);
-          } else {
-            console.warn('[WARN]', new Date().toISOString(), 'Failed to export data.');
-          }
-        } catch (err) {
-          console.warn('[WARN]', new Date().toISOString(), `Failed to save the data.`, err);
-        }
-      })());
-    }
-
-    if (!statistics || ticks % ticksToStats === 0) {
-      seq.push(
-        new Promise(async (resolve) => {
-          statistics = await player.withStatsMenu(async (menu) => {
-            const generalSection = menu.locator('.subsection', { hasText: '全般' });
-            const general = await generalSection.locator('.listing').all().then(ls => Promise.all(ls.map(async (l) => {
-              const key = await l.locator('b').innerText().then(s => s.trim());
-              const innerText = await l.innerText().then(s => s.substring(key.length).trim());
-              return parse(key, innerText);
-            }))).then(Object.fromEntries);
-            console.log('[DEBUG]', general);
-            return {
-              general,
-            };
+            statistics,
           });
-          resolve(null);
-        }),
-      );
-    }
+        })(),
+      ]));
 
-    await seq.reduce(async (p, next) => {
-      return p.then(async () => await next);
-    }, Promise.resolve());
-    ready = true;
+      if (ticks % ticksToSave === 0) {
+        seq.push((async () => {
+          try {
+            const data = await player.exportData();
+            if (data) {
+              writeFileSync(file, data, 'utf8');
+              console.log('[INFO]', `Saved data to the file "${file}"`);
+            } else {
+              console.warn('[WARN]', new Date().toISOString(), 'Failed to export data.');
+            }
+          } catch (err) {
+            console.warn('[WARN]', new Date().toISOString(), `Failed to save the data.`, err);
+          }
+        })());
+      }
+
+      if (!statistics || ticks % ticksToStats === 0) {
+        seq.push(
+          new Promise(async (resolve) => {
+            statistics = await player.withStatsMenu(async (menu) => {
+              const generalSection = menu.locator('.subsection', { hasText: '全般' });
+              const general = await generalSection.locator('.listing').all().then(ls => Promise.all(ls.map(async (l) => {
+                const key = await l.locator('b').innerText().then(s => s.trim());
+                const innerText = await l.innerText().then(s => s.substring(key.length).trim());
+                return parse(key, innerText);
+              }))).then(Object.fromEntries);
+              console.log('[DEBUG]', general);
+              return {
+                general,
+              };
+            });
+            resolve(null);
+          }),
+        );
+      }
+
+      await seq.reduce(async (p, next) => {
+        return p.then(async () => await next);
+      }, Promise.resolve());
+
+      ready = true;
+    }
   }
 } catch (err) {
   console.error('[ERROR]', err);
