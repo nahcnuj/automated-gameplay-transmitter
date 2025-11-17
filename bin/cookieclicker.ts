@@ -241,10 +241,13 @@ const CookieClicker = async (page: Page) => {
       try {
         await say('昇天します');
 
-        await commentsArea.getByText('遺産').click();
-        await prompt.getByRole('link', { name: '昇天する' }).click();
+        if (!await prompt.isVisible()) {
+          await commentsArea.getByText('遺産').click({ timeout: 60_000 });
+        }
+        await prompt.waitFor({ state: 'visible', timeout: 60_000 });
+        await prompt.getByRole('link', { name: '昇天する' }).click({ timeout: 60_000 });
 
-        await ascend.waitFor({ state: 'visible' });
+        await ascend.waitFor({ state: 'visible', timeout: 60_000 });
       } catch (err) {
         console.warn('[WARN]', 'failed to ascend', err);
       } finally {
