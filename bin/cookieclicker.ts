@@ -320,7 +320,7 @@ const CookieClicker = async (page: Page) => {
     },
     keepProductsView: async () => {
       try {
-        await products.getByRole('button').nth(2).scrollIntoViewIfNeeded();
+        await products.getByRole('button').nth(2).scrollIntoViewIfNeeded({ timeout: 100 });
       } catch {
         /* nothing */
       }
