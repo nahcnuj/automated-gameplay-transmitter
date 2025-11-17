@@ -276,7 +276,9 @@ const CookieClicker = async (page: Page) => {
         await ascend.waitFor({ state: 'hidden', timeout: 60_000 });
         isAscending = false;
       } catch (err) {
-        throw new Error(`failed to reincarnate, ${err}`);
+        console.warn('[WARN]', 'failed to reincarnate', err);
+      } finally {
+        await page.keyboard.press('Escape');
       }
     },
     importData: async (data: string) => {
