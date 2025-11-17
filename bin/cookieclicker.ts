@@ -373,7 +373,7 @@ const config = {
 
 let exitCode = 0;
 
-const msPerTick = 10_000;
+const msPerTick = 5_000;
 const ticksToStats = Math.floor(2_000_000 / msPerTick);
 const ticksToSave = Math.floor(600_000 / msPerTick);
 

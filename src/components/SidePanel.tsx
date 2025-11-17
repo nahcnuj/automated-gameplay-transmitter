@@ -74,10 +74,8 @@ export function SidePanel({ }: PanelProps) {
               {statistics?.general?.runStarted?.innerText ?? null}
             </div>
             <div>
-              <HighlightOnChange timeout={1_000} classNameOnChanged="text-yellow-300">
-                {'延べ🍪 '}
-                {statistics?.general?.cookiesBakedInTotal?.value.toString().concat('枚') ?? 'N/A'}
-              </HighlightOnChange>
+              {'延べ🍪 '}
+              {statistics?.general?.cookiesBakedInTotal?.value.toString().concat('枚') ?? 'N/A'}
             </div>
           </div>
           <div className="flex-none">
