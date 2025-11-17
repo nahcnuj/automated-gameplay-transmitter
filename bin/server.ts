@@ -289,8 +289,6 @@ let ascending = false;
 createReceiver((state) => {
   gameState = state;
 
-  if (ascending) return { action: undefined };
-
   switch (state.modal) {
     case 'ascending': {
       ascending = false;
@@ -300,6 +298,8 @@ createReceiver((state) => {
       };
     }
     default: {
+      if (ascending) return { action: undefined };
+
       const { ticks, store, statistics, ascendNumber } = state;
 
       console.debug('[DEBUG]', new Date().toISOString(), ticks);
