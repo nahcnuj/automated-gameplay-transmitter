@@ -86,20 +86,24 @@ const jaJP = new Intl.Locale('ja-JP');
  * console.log(reply);
  */
 export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = []) => ({
-  gen: (bos = Object.keys(model[''])): string => {
-    let s = [bos[Math.floor(Math.random() * bos.length)] ?? '。'];
-    while (s.at(-1) !== '。' && s.length < 15 && [...s.join('')].length < 32) {
+  gen: (bos = ''): string => {
+    const words: string[] = [bos];
+    while (words.at(-1) !== '。' && words.length < 15 && [...words.join('')].length < 32) {
       // console.debug('[DEBUG]', s.at(-1), ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));
-      const w = pick(model[s.at(-1) ?? ''] ?? {});
+      const w = pick(model[words.at(-1) ?? ''] ?? {});
       if (w.length <= 0) {
         break;
       }
-      s.push(w);
+      words.push(w);
     }
-    console.debug('[DEBUG]', [...s].length - 1, 'words', [...s.join('')].length - 1, 'charas', s[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join('/'));
-    return s.join('');
+    console.debug('[DEBUG]',
+      [...words].length - 1, 'words',
+      [...words.join('')].length - 1, 'charas',
+      words[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join('/'),
+    );
+    return words.join('');
   },
-  reply(text: string): string {
+  reply(text: string): string | undefined {
     const words = text[splitIntoWords](jaJP);
     const cands = words.reduce<string[]>((prev, s) => {
       const a = [...s].length;
@@ -108,18 +112,20 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
       return a > b ? [s] : a === b ? [...prev, s] : prev;
     }, ['']);
     const topic = cands.at(Math.floor(Math.random() * cands.length));
-    console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
-    return topic ? this.gen([topic]) : '';
+    if (topic) {
+      // console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
+      return this.gen(topic);
+    }
   },
   learn: (text: `${string}。`): void => {
     corpus.push(text);
-    console.debug('learn', text);
+    // console.debug('[DEBUG]', 'learn', text);
     text[splitIntoWords](jaJP).reduce<string>((prev, next) => {
       if (prev === '' && !acceptBeginning(next)) {
         // skip
         return next;
       }
-      console.debug('[DEBUG]', prev, next);
+      // console.debug('[DEBUG]', prev, next);
       model[prev] = {
         [next]: 0,
         ...(model[prev] ?? {}),

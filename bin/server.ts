@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { serve, type BunRequest } from "bun";
+import { serve } from "bun";
 import { readFileSync, writeFileSync } from "node:fs";
 import { setInterval, setTimeout } from "node:timers/promises";
 import index from "../index.html";
@@ -9,7 +9,7 @@ import { createReceiver } from "../src/games/cookieclicker";
 import type { Comment } from "../src/lib/Comment";
 import * as MarkovModel from "../src/lib/MarkovModel";
 
-let latest = Date.now();
+const startDate = Date.now();
 let serviceMeta: LiveInfo = {};
 let client: string | undefined;
 
@@ -29,8 +29,6 @@ const comments: Comment[] = [];
 const talkQueue: string[] = [];
 const giftQueue: { userId: string; name?: string; icon: string }[] = [];
 const adQueue: string[] = [];
-
-const talkedHistory: string[] = [];
 
 let nextSpeech: {
   text: string,
@@ -82,14 +80,12 @@ const server = serve({
         const data: Comment[] = await req.json();
 
         const latestComment = comments.at(-1);
-        const newComments = data.filter(({ data }) => latestComment ? Date.parse(data.timestamp) > Date.parse(latestComment.data.timestamp) : Date.parse(data.timestamp) > latest);
-        // console.debug(newComments.map(({ data: { no, comment, timestamp } }) => `${timestamp} #${no} ${comment}`));
+        const threshold = latestComment ? Date.parse(latestComment.data.timestamp) : startDate;
+        const newComments = data.filter(({ data: { timestamp } }) => Date.parse(timestamp) > threshold);
         comments.push(...newComments);
-        // console.debug(`${comments.length} comments (includes system messages)`);
 
         for (const { data } of newComments) {
           const comment = data.comment.normalize('NFC').trim();
-          // console.log(`comment: ${comment}`);
 
           if (data.no || data.isOwner) {
             model.learn(`${comment}。`);
@@ -102,8 +98,8 @@ const server = serve({
               const m = data.no ? model : model.toLearned(`${comment}。`);
 
               const reply = m.reply(data.comment.normalize('NFKC'));
-              console.log(`reply: ${reply} << ${comment}`);
-              if (data.comment.normalize('NFKC') === reply.normalize('NFKC')) {
+              console.log('[DEBUG]', `reply: ${reply} << ${comment}`);
+              if (!reply || data.comment.normalize('NFKC') === reply.normalize('NFKC')) {
                 talkQueue.push(`「${data.comment}」ってなんですか？`);
               } else {
                 talkQueue.push(reply.replace(/。*$/, '').trimEnd());
@@ -158,8 +154,6 @@ const server = serve({
           }
         };
 
-        latest = Date.now();
-
         return new Response();
       },
       DELETE: (req, server) => {
@@ -188,10 +182,11 @@ const server = serve({
     },
 
     '/api/comments': () => Response.json(comments),
-    '/api/status': () => Response.json({ latest }),
+    '/api/status': () => Response.json({ latest: startDate }),
     '/api/talk': {
+      // returns a speech script giving to Open JTalk
       GET: async () => {
-        const text = await (async () => {
+        const script = await (async () => {
           {
             const ad = adQueue.shift();
             if (ad) {
@@ -242,11 +237,9 @@ const server = serve({
           return text.normalize('NFC');
         })();
 
-        talkedHistory.unshift(text);
-
-        return new Response(`${text}\n`);
+        return new Response(`${script}\n`);
       },
-      POST: async (req: BunRequest) => {
+      POST: async (req) => {
         const text = await req.text();
         if (talkQueue.includes(text)) {
           return new Response();
@@ -256,10 +249,7 @@ const server = serve({
         return Response.json({ text });
       },
     },
-    '/api/told': () => {
-      talkedHistory.splice(10);
-      return Response.json(talkedHistory);
-    },
+    // for React app
     '/api/speech': () => Response.json(nextSpeech),
     '/api/meta': {
       GET: () => Response.json(serviceMeta),
@@ -271,7 +261,7 @@ const server = serve({
 
     '/api/game': () => {
       console.log('[DEBUG]', '/api/game', JSON.stringify(gameState));
-      return Response.json(gameState)
+      return Response.json(gameState);
     },
 
     '/img/nc433974.png': new Response(await Bun.file('./public/ext/nc433974.png').bytes()),
@@ -294,8 +284,10 @@ const server = serve({
 
 console.log(`🚀 Server running at ${server.url}`);
 
-createReceiver(({ ticks, store, statistics }) => {
-  gameState = { statistics };
+createReceiver((state) => {
+  gameState = state;
+
+  const { ticks, store, statistics } = state;
 
   console.debug('[DEBUG]', new Date().toISOString(), ticks);
 
