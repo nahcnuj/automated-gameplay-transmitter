@@ -139,13 +139,15 @@ const CookieClicker = async (page: Page) => {
   const switches = store.locator('#toggleUpgrades');
   const enableSwitches = switches.locator('.enabled');
 
+  let isAscending = false;
+
   return {
     withOptionMenu,
     withStatsMenu,
     get cookies() { return cookies.innerText().then(s => s.replaceAll(',', '')).then(Number.parseFloat) },
     get cookiesPerSecond() { return cookiesPerSecond.innerText().then(s => s.replaceAll(/[^0-9.e+]/g, '')).then(Number.parseFloat) },
     get isWrinkled() { return cookiesPerSecond.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('wrinkled')) },
-    get isAscending() { return ascend.isVisible() },
+    get isAscending() { return isAscending },
     get ascendNumber() { return ascendNumber.innerText().then(s => s.replaceAll(',', '')).then(Number.parseFloat).then(n => Number.isNaN(n) ? 0 : n) },
     get commentsText() { return commentsText.innerText() },
     get bulkMode() { return bulkMode.getAttribute('id').then(id => id?.substring('storeBulk'.length).toLowerCase()) },
@@ -242,6 +244,8 @@ const CookieClicker = async (page: Page) => {
         console.debug('[DEBUG]', 'ascend 100');
         await say('昇天します');
 
+        isAscending = true;
+
         console.debug('[DEBUG]', 'ascend 200');
         if (!await prompt.isVisible()) {
           console.debug('[DEBUG]', 'ascend 210');
@@ -270,6 +274,7 @@ const CookieClicker = async (page: Page) => {
         await prompt.locator('a', { hasText: 'はい' }).click({ timeout: 60_000 });
 
         await ascend.waitFor({ state: 'hidden', timeout: 60_000 });
+        isAscending = false;
       } catch (err) {
         throw new Error(`failed to reincarnate, ${err}`);
       }
