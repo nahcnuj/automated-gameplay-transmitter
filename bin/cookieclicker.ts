@@ -266,8 +266,8 @@ const CookieClicker = async (page: Page) => {
       try {
         await say('転生します');
 
-        await page.getByRole('link', { name: '転生する' }).click({ timeout: 30_000 });
-        await prompt.getByRole('link', { name: 'はい' }).click({ timeout: 30_000 });
+        await prompt.locator('a', { hasText: '転生する' }).click({ timeout: 60_000 });
+        await prompt.locator('a', { hasText: 'はい' }).click({ timeout: 60_000 });
 
         await ascend.waitFor({ state: 'hidden', timeout: 60_000 });
       } catch (err) {
