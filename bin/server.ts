@@ -284,11 +284,16 @@ const server = serve({
 
 console.log(`🚀 Server running at ${server.url}`);
 
+let ascending = false;
+
 createReceiver((state) => {
   gameState = state;
 
+  if (ascending) return { action: undefined };
+
   switch (state.modal) {
     case 'ascending': {
+      ascending = false;
       // TODO
       return {
         action: 'reincarnate',
@@ -304,6 +309,7 @@ createReceiver((state) => {
         console.debug('[DEBUG]', d, '日前');
         if (d >= 7 && ascendNumber > 0) {
           console.debug('[DEBUG]', 'ascending...');
+          ascending = true;
           return {
             action: 'ascend',
           };

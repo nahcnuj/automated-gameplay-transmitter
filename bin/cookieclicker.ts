@@ -239,14 +239,20 @@ const CookieClicker = async (page: Page) => {
       console.debug('[DEBUG]', new Date().toISOString(), 'ascend');
 
       try {
+        console.debug('[DEBUG]', 'ascend 100');
         await say('昇天します');
 
+        console.debug('[DEBUG]', 'ascend 200');
         if (!await prompt.isVisible()) {
+          console.debug('[DEBUG]', 'ascend 210');
           await commentsArea.getByText('遺産').click({ timeout: 60_000 });
         }
+        console.debug('[DEBUG]', 'ascend 300');
         await prompt.waitFor({ state: 'visible', timeout: 60_000 });
+        console.debug('[DEBUG]', 'ascend 400');
         await prompt.getByRole('link', { name: '昇天する' }).click({ timeout: 60_000 });
 
+        console.debug('[DEBUG]', 'ascend 500');
         await ascend.waitFor({ state: 'visible', timeout: 60_000 });
       } catch (err) {
         console.warn('[WARN]', 'failed to ascend', err);
