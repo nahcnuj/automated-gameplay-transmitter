@@ -250,7 +250,7 @@ const CookieClicker = async (page: Page) => {
         console.debug('[DEBUG]', 'ascend 300');
         await prompt.waitFor({ state: 'visible', timeout: 60_000 });
         console.debug('[DEBUG]', 'ascend 400');
-        await prompt.getByText('昇天する').click({ timeout: 60_000 });
+        await prompt.locator('a', { hasText: '昇天する' }).click({ timeout: 60_000 });
 
         console.debug('[DEBUG]', 'ascend 500');
         await ascend.waitFor({ state: 'visible', timeout: 60_000 });
