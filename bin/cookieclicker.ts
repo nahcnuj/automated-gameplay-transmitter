@@ -320,7 +320,7 @@ const CookieClicker = async (page: Page) => {
     },
     keepProductsView: async () => {
       try {
-        await products.getByRole('button').nth(3).scrollIntoViewIfNeeded();
+        await products.getByRole('button').nth(2).scrollIntoViewIfNeeded();
       } catch {
         /* nothing */
       }
@@ -467,7 +467,9 @@ try {
 
       const ticks = Math.floor(elapsed / msPerTick); // `ticks` counts from one.
 
-      const seq: Promise<unknown>[] = [];
+      const seq: Promise<unknown>[] = [
+        player.keepProductsView(),
+      ];
 
       seq.push(Promise.all([
         (async () => {
@@ -531,10 +533,6 @@ try {
           }),
         );
       }
-
-      seq.push(
-        player.keepProductsView(),
-      );
 
       await seq.reduce(async (p, next) => {
         return p.then(async () => await next);
