@@ -458,6 +458,7 @@ try {
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `tickMs` milliseconds.
   for await (const start of setInterval(msPerTick, Date.now())) {
+    ctx.pages().slice(1).forEach(async (p) => await p.close());
     if (ready) {
       ready = false;
 
