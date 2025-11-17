@@ -250,7 +250,7 @@ const CookieClicker = async (page: Page) => {
         console.debug('[DEBUG]', 'ascend 300');
         await prompt.waitFor({ state: 'visible', timeout: 60_000 });
         console.debug('[DEBUG]', 'ascend 400');
-        await prompt.getByRole('link', { name: '昇天する' }).click({ timeout: 60_000 });
+        await prompt.getByText('昇天する').click({ timeout: 60_000 });
 
         console.debug('[DEBUG]', 'ascend 500');
         await ascend.waitFor({ state: 'visible', timeout: 60_000 });
@@ -404,7 +404,6 @@ try {
 
   const send = createSender(async (data) => {
     console.log('[DEBUG]', 'action', data);
-    if (!ready) return;
     switch (data.action) {
       case undefined: {
         // do nothing
@@ -429,7 +428,9 @@ try {
         return;
       }
       case 'ascend': {
+        console.log('[DEBUG]', 'ascend', 'start');
         await player.ascend();
+        console.log('[DEBUG]', 'ascend', 'end');
         return;
       }
       case 'reincarnate': {
