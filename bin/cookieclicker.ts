@@ -461,7 +461,7 @@ try {
 
       seq.push(Promise.all([
         (async () => {
-          send(await player.isAscending ? {
+          send((await player.isAscending) ? {
             modal: 'ascending',
             // TODO
           } : {
