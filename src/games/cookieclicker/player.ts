@@ -52,6 +52,8 @@ export type Statistics = {
 };
 
 export type State = {
+  modal?: undefined
+
   ticks: number
   cookies: number
   cps: number
@@ -67,6 +69,8 @@ export type State = {
     switches: Switch[]
   }
   statistics?: Statistics
+} | {
+  modal: 'ascending'
 };
 
 export type Action =
@@ -84,4 +88,7 @@ export type Action =
   | {
     action: 'toggleSwitch'
     name: string
-  };
+  }
+  | {
+    action: undefined
+  }

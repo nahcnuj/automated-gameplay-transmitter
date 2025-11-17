@@ -101,6 +101,7 @@ const CookieClicker = async (page: Page) => {
   const tooltip = page.locator('#tooltipAnchor');
   const store = page.locator('#store');
   const prompt = page.locator('#prompt');
+  const ascend = page.locator('#ascend');
 
   await page.locator('#notes').evaluate(el => {
     const observer = new MutationObserver(async ([l]) => {
@@ -144,6 +145,7 @@ const CookieClicker = async (page: Page) => {
     get cookies() { return cookies.innerText().then(Number.parseFloat) },
     get cookiesPerSecond() { return cookiesPerSecond.innerText().then(s => s.replaceAll(/[^0-9.e+]/g, '')).then(Number.parseFloat) },
     get isWrinkled() { return cookiesPerSecond.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('wrinkled')) },
+    get isAscending() { return ascend.isVisible() },
     get ascendNumber() { return ascendNumber.innerText().then(s => s.replaceAll(',', '')).then(Number.parseFloat).then(n => Number.isNaN(n) ? 0 : n) },
     get commentsText() { return commentsText.innerText() },
     get bulkMode() { return bulkMode.getAttribute('id').then(id => id?.substring('storeBulk'.length).toLowerCase()) },
@@ -364,6 +366,10 @@ try {
   const send = createSender(async (data) => {
     console.log('[DEBUG]', 'action', data);
     switch (data.action) {
+      case undefined: {
+        // do nothing
+        break;
+      }
       case 'click': {
         await player.clickCookie(1_000);
         break;
@@ -405,7 +411,9 @@ try {
 
     seq.push(Promise.all([
       (async () => {
-        send({
+        send(await player.isAscending ? {
+          modal: 'ascending',
+        } : {
           ticks,
           cookies: await player.cookies,
           cps: await player.cookiesPerSecond,

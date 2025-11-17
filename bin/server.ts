@@ -287,53 +287,66 @@ console.log(`🚀 Server running at ${server.url}`);
 createReceiver((state) => {
   gameState = state;
 
-  const { ticks, store, statistics } = state;
-
-  console.debug('[DEBUG]', new Date().toISOString(), ticks);
-
-  {
-    const d = statistics?.general.runStarted?.innerText.match(/^(\d+)日前$/)?.[1] ?? 0;
-    console.debug('[DEBUG]', d, '日前');
-  }
-
-  {
-    console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches.filter(({ enabled }) => enabled), null, 0));
-    // TODO
-    const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));
-    if (btns.length > 0) {
+  switch (state.modal) {
+    case 'ascending': {
       return {
-        action: 'toggleSwitch',
-        name: 'エルダー宣誓',
+        action: undefined,
+      };
+    }
+    default: {
+      const { ticks, store, statistics, ascendNumber } = state;
+
+      console.debug('[DEBUG]', new Date().toISOString(), ticks);
+
+      {
+        const d = Number.parseFloat(statistics?.general.runStarted?.innerText.match(/^(\d+)日前$/)?.[1] ?? '');
+        console.debug('[DEBUG]', d, '日前');
+        if (d >= 7 && ascendNumber > 0) {
+          console.debug('[DEBUG]', 'ascending...');
+          // TODO
+        }
+      }
+
+      {
+        console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches.filter(({ enabled }) => enabled), null, 0));
+        // TODO
+        const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));
+        if (btns.length > 0) {
+          return {
+            action: 'toggleSwitch',
+            name: 'エルダー宣誓',
+          };
+        }
+      }
+
+      {
+        console.debug('[DEBUG]', 'upgrades', JSON.stringify(store.upgrades.filter(({ enabled }) => enabled), null, 0));
+        // TODO
+        // const btns = store.upgrades.filter(({ enabled }) => enabled);
+        // if (btns.length > 0) {
+        //   return {
+        //     action: 'buyUpgrade',
+        //     name: '',
+        //   };
+        // }
+      }
+
+      {
+        console.debug('[DEBUG]', 'products', JSON.stringify(store.products.items.filter(({ enabled }) => enabled), null, 0));
+        const p = store.products.items.filter(({ enabled }) => enabled).at(-1);
+        if (p) {
+          return {
+            action: 'buyProduct',
+            name: p.name,
+          };
+        }
+      }
+
+      return {
+        action: 'click',
       };
     }
   }
-
-  {
-    console.debug('[DEBUG]', 'upgrades', JSON.stringify(store.upgrades.filter(({ enabled }) => enabled), null, 0));
-    // TODO
-    // const btns = store.upgrades.filter(({ enabled }) => enabled);
-    // if (btns.length > 0) {
-    //   return {
-    //     action: 'buyUpgrade',
-    //     name: '',
-    //   };
-    // }
-  }
-
-  {
-    console.debug('[DEBUG]', 'products', JSON.stringify(store.products.items.filter(({ enabled }) => enabled), null, 0));
-    const p = store.products.items.filter(({ enabled }) => enabled).at(-1);
-    if (p) {
-      return {
-        action: 'buyProduct',
-        name: p.name,
-      };
-    }
-  }
-
-  return {
-    action: 'click',
-  };
 });
 
 (async () => {
