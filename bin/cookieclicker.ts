@@ -381,8 +381,11 @@ try {
 
   ctx.setDefaultTimeout(msPerTick);
 
+  let ready = true;
+
   const send = createSender(async (data) => {
     console.log('[DEBUG]', 'action', data);
+    if (!ready) return;
     switch (data.action) {
       case undefined: {
         // do nothing
@@ -422,7 +425,6 @@ try {
   });
 
   let statistics: Statistics | undefined;
-  let ready = true;
 
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `tickMs` milliseconds.
