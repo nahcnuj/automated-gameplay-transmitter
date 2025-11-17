@@ -1,8 +1,9 @@
 import { createConnection } from "node:net";
+import type { Sender } from "..";
 import type { Action, State } from "./player";
 
-export default function createSender(path: `\0${string}`) {
-  return (f: (action: Action) => Promise<void>) => {
+export default function (path: `\0${string}`): Sender<State, Action> {
+  return (run) => {
     console.debug('[DEBUG]', 'create socket connection', path.substring(1));
     let conn = createConnection(path);
 
@@ -18,12 +19,13 @@ export default function createSender(path: `\0${string}`) {
 
     conn.on('data', async (buf) => {
       const action = JSON.parse(buf.toString());
-      // console.debug('[DEBUG]', 'sender', JSON.stringify(action, null, 0));
       if (action) {
-        await f(action);
+        await run(action);
       }
     });
 
-    return (state: State) => { conn.write(JSON.stringify(state, null, 0)) };
+    return (state: State) => {
+      conn.write(JSON.stringify(state, null, 0));
+    };
   };
 };
