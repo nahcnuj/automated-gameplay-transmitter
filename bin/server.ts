@@ -260,7 +260,7 @@ const server = serve({
     },
 
     '/api/game': () => {
-      console.log('[DEBUG]', '/api/game', JSON.stringify(gameState));
+      // console.log('[DEBUG]', '/api/game', JSON.stringify(gameState));
       return Response.json(gameState);
     },
 
