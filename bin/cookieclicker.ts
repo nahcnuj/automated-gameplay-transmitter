@@ -422,10 +422,15 @@ try {
   });
 
   let statistics: Statistics | undefined;
+  let ready = true;
 
   // `start` is always the first `Date.now()`.
   // The first iteration starts after `tickMs` milliseconds.
   for await (const start of setInterval(msPerTick, Date.now())) {
+    if (!ready) continue;
+
+    ready = false;
+
     const elapsed = Date.now() - start;
     if (elapsed > timeoutMs) break;
 
@@ -501,6 +506,7 @@ try {
     await seq.reduce(async (p, next) => {
       return p.then(async () => await next);
     }, Promise.resolve());
+    ready = true;
   }
 } catch (err) {
   console.error('[ERROR]', err);
