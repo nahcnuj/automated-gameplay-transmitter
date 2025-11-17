@@ -76,7 +76,7 @@ export function SidePanel({ }: PanelProps) {
             <div>
               <HighlightOnChange timeout={1_000} classNameOnChanged="text-yellow-300">
                 {'延べ🍪 '}
-                {statistics?.general?.cookiesBakedInThisAscension?.value.toString().concat('枚') ?? 'N/A'}
+                {statistics?.general?.cookiesBakedInTotal?.value.toString().concat('枚') ?? 'N/A'}
               </HighlightOnChange>
             </div>
           </div>
