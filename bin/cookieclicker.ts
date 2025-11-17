@@ -450,9 +450,7 @@ try {
 
       const ticks = Math.floor(elapsed / msPerTick); // `ticks` counts from one.
 
-      const seq: Promise<unknown>[] = [
-        player.keepProductsView(),
-      ];
+      const seq: Promise<unknown>[] = [];
 
       seq.push(Promise.all([
         (async () => {
@@ -516,6 +514,10 @@ try {
           }),
         );
       }
+
+      seq.push(
+        player.keepProductsView(),
+      );
 
       await seq.reduce(async (p, next) => {
         return p.then(async () => await next);
