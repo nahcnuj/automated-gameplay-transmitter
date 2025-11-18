@@ -179,13 +179,6 @@ const CookieClicker = async (page: Page) => {
         enabled: (await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'))) && (await l.locator('.pieTimer').count() <= 0),
       })));
     },
-    get elderPledgeSwitch() {
-      const btn = switches.getByRole('button').first();
-      return btn.getAttribute('class').then(c => c?.split(' ').includes('enabled')).catch(() => false).then(async (enabled = false) => ({
-        enabled,
-        description: enabled ? await btn.hover({ timeout: msPerTick / 2 }).then(async () => await btn.innerText()).catch(() => undefined) : undefined,
-      }));
-    },
     clickCookie: async (timeout: number = 250) => {
       try {
         await cookie.click({ timeout });
@@ -397,7 +390,7 @@ const config = {
 
 let exitCode = 0;
 
-const msPerTick = 5_000;
+const msPerTick = 1_000;
 const ticksToStats = Math.floor(2_000_000 / msPerTick);
 const ticksToSave = Math.floor(600_000 / msPerTick);
 
@@ -429,7 +422,7 @@ try {
     );
   });
 
-  ctx.setDefaultTimeout(msPerTick);
+  ctx.setDefaultTimeout(msPerTick / 10 * 9);
 
   let ready = true;
   let statistics: Statistics | undefined;
