@@ -69,14 +69,16 @@ export function SidePanel({ }: PanelProps) {
       <div className="flex-auto w-full p-1">
         <div className="h-full flex flex-col justify-between p-1 bg-black/50 border-5 border-double border-emerald-300 rounded-xl text-2xl/10">
           <div className="flex-none">
-            <div className="text-center">
-              {statistics?.general?.legacyStarted?.ascensions?.toString().concat('回目の昇天') ?? null}
-            </div>
-            <div className="text-right">
-              <HighlightOnChange timeout={1_000} classNameOnChanged="text-yellow-300">
-                {statistics?.general?.runStarted?.innerText ?? null}
-              </HighlightOnChange>
-            </div>
+            {statistics?.general &&
+              <div className="text-center">
+                <div>
+                  {`${statistics.general.legacyStarted?.ascensions?.toString() ?? 'N/A'}回目の昇天`}
+                </div>
+                <HighlightOnChange timeout={1_000} classNameOnChanged="text-yellow-300">
+                  {`(${statistics.general.runStarted?.innerText ?? ''})`}
+                </HighlightOnChange>
+              </div>
+            }
             <div>
               {'今世🍪 '}
               {statistics?.general?.cookiesBakedInThisAscension?.value.toExponential(2).concat('枚') ?? 'N/A'}
