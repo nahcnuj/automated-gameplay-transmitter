@@ -422,7 +422,7 @@ try {
     );
   });
 
-  ctx.setDefaultTimeout(msPerTick / 2);
+  ctx.setDefaultTimeout(msPerTick / 4 * 3);
 
   let ready = true;
   let statistics: Statistics | undefined;
