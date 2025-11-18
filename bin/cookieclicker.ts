@@ -163,28 +163,31 @@ const CookieClicker = async (page: Page) => {
       })))
     },
     get upgrades() {
-      return upgrades.getByRole('button', { disabled: false }).all().then(ls => ls.slice(0, 1).map(async (l, i) => {
-        await setTimeout(i * msPerTick);
+      return upgrades.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l, i) => {
+        // await setTimeout(i * msPerTick);
 
         const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
-        if (enabled) {
-          try {
-            await l.hover({ timeout: msPerTick });
-            return {
-              description: await l.innerText(),
-              enabled,
-            };
-          } catch (err) {
-            console.warn('[WARN]', err);
-            return {
-              enabled,
-            };
-          }
-        } else {
-          return {
-            enabled: false,
-          };
-        }
+        return {
+          enabled,
+        };
+        // if (enabled) {
+        //   try {
+        //     await l.hover({ timeout: msPerTick });
+        //     return {
+        //       description: await l.innerText(),
+        //       enabled,
+        //     };
+        //   } catch (err) {
+        //     console.warn('[WARN]', err);
+        //     return {
+        //       enabled,
+        //     };
+        //   }
+        // } else {
+        //   return {
+        //     enabled: false,
+        //   };
+        // }
       }));
     },
     get elderPledgeSwitch() {
