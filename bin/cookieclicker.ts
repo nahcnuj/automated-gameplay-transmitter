@@ -220,6 +220,21 @@ const CookieClicker = async (page: Page) => {
         }
       }
     },
+    toggleSwitch: async (name: string) => {
+      console.debug('[DEBUG]', new Date().toISOString(), 'toggleSwitch', name);
+      try {
+        for (const l of await switches.getByRole('button').all()) {
+          await l.hover();
+          if (name === await tooltip.locator('.name').innerText()) {
+            await say(`${name}を行います`);
+            await l.click();
+            break;
+          }
+        }
+      } catch {
+        /* do nothing */
+      }
+    },
     pledgeElder: async () => {
       const btn = switches.getByRole('button', { name: 'エルダー宣誓' });
       try {
@@ -435,8 +450,7 @@ try {
         return;
       }
       case 'toggleSwitch': {
-        // TODO
-        await player.pledgeElder();
+        await player.toggleSwitch(data.name);
         return;
       }
       case 'buyUpgrade': {
