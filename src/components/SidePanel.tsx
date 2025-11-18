@@ -69,9 +69,13 @@ export function SidePanel({ }: PanelProps) {
       <div className="flex-auto w-full p-1">
         <div className="h-full flex flex-col justify-between p-1 bg-black/50 border-5 border-double border-emerald-300 rounded-xl text-2xl/10">
           <div className="flex-none">
-            <div>
-              {statistics?.general?.legacyStarted?.ascensions?.toString().concat('回目の昇天 ') ?? null}
-              {statistics?.general?.runStarted?.innerText ?? null}
+            <div className="text-center">
+              {statistics?.general?.legacyStarted?.ascensions?.toString().concat('回目の昇天') ?? null}
+            </div>
+            <div className="text-right">
+              <HighlightOnChange timeout={1_000} classNameOnChanged="text-yellow-300">
+                {statistics?.general?.runStarted?.innerText ?? null}
+              </HighlightOnChange>
             </div>
             <div>
               {'今世🍪 '}
@@ -82,31 +86,25 @@ export function SidePanel({ }: PanelProps) {
               {statistics?.general?.cookiesBakedInTotal?.value.toExponential(2).concat('枚') ?? 'N/A'}
             </div>
           </div>
-          <div className="flex-none">
+          <div className="flex-none text-right">
             {total > 0 && (
-              <div>
-                <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
-                  {`🙎${formatNumber(total)}`}
-                </HighlightOnChange>
-              </div>
+              <HighlightOnChange timeout={5_000} classNameOnChanged="text-yellow-300">
+                {`${formatNumber(total)}🙎`}
+              </HighlightOnChange>
             )}
             {ad > 0 && (
-              <div>
-                <HighlightOnChange timeout={60_000} classNameOnChanged="text-yellow-300">
-                  {`📣${formatNumber(ad)}`}
-                </HighlightOnChange>
-              </div>
+              <HighlightOnChange timeout={60_000} classNameOnChanged="text-yellow-300">
+                {`${formatNumber(ad)}📣`}
+              </HighlightOnChange>
             )}
             {gift > 0 && (
-              <div>
-                <HighlightOnChange timeout={30_000} classNameOnChanged="text-yellow-300">
-                  {`🎁${formatNumber(gift)}`}
-                </HighlightOnChange>
-              </div>
+              <HighlightOnChange timeout={30_000} classNameOnChanged="text-yellow-300">
+                {`${formatNumber(gift)}🎁`}
+              </HighlightOnChange>
             )}
             <div>
-              {getClockEmoji(duration)}
               {formatDuration(duration)}
+              {getClockEmoji(duration)}
             </div>
           </div>
         </div>
