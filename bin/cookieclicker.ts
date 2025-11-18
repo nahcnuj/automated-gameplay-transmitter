@@ -176,7 +176,7 @@ const CookieClicker = async (page: Page) => {
     },
     get switches() {
       return switches.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l) => ({
-        enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
+        enabled: await l.locator('.pieTimer').count() <= 0,
       })));
     },
     get elderPledgeSwitch() {
