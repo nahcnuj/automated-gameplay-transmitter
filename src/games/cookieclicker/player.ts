@@ -6,7 +6,6 @@ type Product = {
 };
 
 type Upgrade = {
-  name?: string
   enabled: boolean
 };
 
@@ -83,7 +82,7 @@ export type Action =
   }
   | {
     action: 'buyUpgrade'
-    name: string
+    name?: string
   }
   | {
     action: 'toggleSwitch'

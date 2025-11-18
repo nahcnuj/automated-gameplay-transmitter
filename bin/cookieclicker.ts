@@ -163,32 +163,9 @@ const CookieClicker = async (page: Page) => {
       })))
     },
     get upgrades() {
-      return upgrades.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l, i) => {
-        // await setTimeout(i * msPerTick);
-
-        const enabled = await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'));
-        return {
-          enabled,
-        };
-        // if (enabled) {
-        //   try {
-        //     await l.hover({ timeout: msPerTick });
-        //     return {
-        //       description: await l.innerText(),
-        //       enabled,
-        //     };
-        //   } catch (err) {
-        //     console.warn('[WARN]', err);
-        //     return {
-        //       enabled,
-        //     };
-        //   }
-        // } else {
-        //   return {
-        //     enabled: false,
-        //   };
-        // }
-      }));
+      return upgrades.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l) => ({
+        enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
+      })));
     },
     get elderPledgeSwitch() {
       const btn = switches.getByRole('button').first();
@@ -206,7 +183,7 @@ const CookieClicker = async (page: Page) => {
       }
     },
     buyProduct: async (name: string) => {
-      console.debug('[DEBUG]', new Date().toISOString(), 'buy', name);
+      console.debug('[DEBUG]', new Date().toISOString(), 'buyProduct', name);
       try {
         await say(`${name}を買います`);
         await products.getByRole('button', { name }).click();
@@ -215,9 +192,11 @@ const CookieClicker = async (page: Page) => {
         await say(`買えませんでした`);
       }
     },
-    buyUpgrade: async () => {
+    buyUpgrade: async (name?: string) => {
+      console.debug('[DEBUG]', new Date().toISOString(), 'buyUpgrade', name); // TODO name
       const upgrade = availableUpgrades.last();
       if (await upgrade.count() > 0) {
+        await upgrade.hover();
         try {
           const name = await tooltip.locator('.name').innerText();
           const description = await tooltip.locator('.description').innerText();
@@ -434,8 +413,7 @@ try {
         return;
       }
       case 'buyUpgrade': {
-        // TODO
-        await player.buyUpgrade();
+        await player.buyUpgrade(data.name);
         return;
       }
       case 'ascend': {

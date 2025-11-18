@@ -325,13 +325,12 @@ createReceiver((state) => {
       {
         console.debug('[DEBUG]', 'upgrades', JSON.stringify(store.upgrades.filter(({ enabled }) => enabled), null, 0));
         // TODO
-        // const btns = store.upgrades.filter(({ enabled }) => enabled);
-        // if (btns.length > 0) {
-        //   return {
-        //     action: 'buyUpgrade',
-        //     name: '',
-        //   };
-        // }
+        const upgrades = store.upgrades.filter(({ enabled }) => enabled);
+        if (upgrades.length > 0) {
+          return {
+            action: 'buyUpgrade',
+          };
+        }
       }
 
       {
