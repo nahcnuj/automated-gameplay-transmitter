@@ -320,10 +320,9 @@ createReceiver((state) => {
       }
 
       {
-        console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches.filter(({ enabled }) => enabled), null, 0));
-        const btns = store.switches.filter(({ enabled }) => enabled);
-        if (btns.length > 0) {
-          // TODO other switches
+        console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches, null, 0));
+        // TODO other switches
+        if (store.switches.at(0)?.enabled) {
           return {
             action: 'toggleSwitch',
             name: 'エルダー宣誓',
