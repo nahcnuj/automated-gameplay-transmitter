@@ -3,6 +3,8 @@ import type { Sender } from "..";
 import type { Action, State } from "./player";
 
 export default function (path: `\0${string}`): Sender<State, Action> {
+  let running = false;
+
   return (run) => {
     console.debug('[DEBUG]', 'create socket connection', path.substring(1));
     let conn = createConnection(path);
@@ -18,9 +20,18 @@ export default function (path: `\0${string}`): Sender<State, Action> {
     });
 
     conn.on('data', async (buf) => {
+      if (running) return;
+
       const action = JSON.parse(buf.toString());
       if (action) {
-        await run(action);
+        running = true;
+        try {
+          await run(action);
+        } catch {
+          /* do nothing */
+        } finally {
+          running = false;
+        }
       }
     });
 
