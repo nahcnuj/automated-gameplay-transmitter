@@ -167,6 +167,11 @@ const CookieClicker = async (page: Page) => {
         enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
       })));
     },
+    get switches() {
+      return switches.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l) => ({
+        enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
+      })));
+    },
     get elderPledgeSwitch() {
       const btn = switches.getByRole('button').first();
       return btn.getAttribute('class').then(c => c?.split(' ').includes('enabled')).catch(() => false).then(async (enabled = false) => ({
@@ -470,9 +475,7 @@ try {
                 items: await Promise.all(await player.products),
               },
               upgrades: await Promise.all(await player.upgrades),
-              switches: [
-                await player.elderPledgeSwitch,
-              ],
+              switches: await Promise.all(await player.switches),
             },
             statistics,
           });

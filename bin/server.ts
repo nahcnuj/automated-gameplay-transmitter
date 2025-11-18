@@ -313,13 +313,13 @@ createReceiver((state) => {
       {
         console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches.filter(({ enabled }) => enabled), null, 0));
         // TODO
-        const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));
-        if (btns.length > 0) {
-          return {
-            action: 'toggleSwitch',
-            name: 'エルダー宣誓',
-          };
-        }
+        // const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));
+        // if (btns.length > 0) {
+        //   return {
+        //     action: 'toggleSwitch',
+        //     name: 'エルダー宣誓',
+        //   };
+        // }
       }
 
       {
