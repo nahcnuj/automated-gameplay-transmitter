@@ -9,6 +9,10 @@ type Upgrade = {
   enabled: boolean
 };
 
+type Tech = {
+  enabled: boolean
+};
+
 type Switch = {
   description?: string
   enabled: boolean
@@ -65,6 +69,7 @@ export type State = {
       items: Product[]
     }
     upgrades: Upgrade[]
+    tech: Tech[]
     switches: Switch[]
   }
   statistics?: Statistics
@@ -83,6 +88,9 @@ export type Action =
   | {
     action: 'buyUpgrade'
     name?: string
+  }
+  | {
+    action: 'research'
   }
   | {
     action: 'toggleSwitch'

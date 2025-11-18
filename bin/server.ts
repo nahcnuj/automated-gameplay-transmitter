@@ -311,6 +311,15 @@ createReceiver((state) => {
       }
 
       {
+        console.debug('[DEBUG]', 'research', JSON.stringify(store.tech, null, 0));
+        if (store.tech.filter(({ enabled }) => enabled).length > 0) {
+          return {
+            action: 'research',
+          };
+        }
+      }
+
+      {
         console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches.filter(({ enabled }) => enabled), null, 0));
         // TODO
         // const btns = store.switches.filter(({ description }) => description?.includes('エルダー宣誓'));

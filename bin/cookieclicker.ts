@@ -136,6 +136,8 @@ const CookieClicker = async (page: Page) => {
   const upgrades = store.locator('#upgrades');
   const availableUpgrades = upgrades.locator('.enabled');
 
+  const tech = store.locator('#techUpgrades');
+
   const switches = store.locator('#toggleUpgrades');
   const enableSwitches = switches.locator('.enabled');
 
@@ -164,6 +166,11 @@ const CookieClicker = async (page: Page) => {
     },
     get upgrades() {
       return upgrades.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l) => ({
+        enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
+      })));
+    },
+    get tech() {
+      return tech.getByRole('button').all().then(ls => ls.slice(0, 5).map(async (l) => ({
         enabled: await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled')),
       })));
     },
@@ -219,6 +226,21 @@ const CookieClicker = async (page: Page) => {
         if (await btn.getAttribute('class').then((c) => c?.split(' ').includes('enabled')).catch(() => false)) {
           await btn.click();
           await say(`エルダーの怒りをおさめさせ、シワシワ虫を駆除しました`);
+        }
+      } catch {
+        /* do nothing */
+      }
+    },
+    research: async () => {
+      const btn = tech.getByRole('button').first();
+      try {
+        if (await btn.count() > 0) {
+          await btn.hover();
+          const name = await tooltip.locator('.name').innerText();
+          const description = await tooltip.locator('.description').innerText();
+          console.debug('[DEBUG]', new Date().toISOString(), 'research', name);
+          await btn.click();
+          await say(`${name}を研究します。${description}`);
         }
       } catch {
         /* do nothing */
@@ -421,6 +443,10 @@ try {
         await player.buyUpgrade(data.name);
         return;
       }
+      case 'research': {
+        await player.research();
+        return;
+      }
       case 'ascend': {
         console.log('[DEBUG]', 'ascend', 'start');
         await player.ascend();
@@ -475,6 +501,7 @@ try {
                 items: await Promise.all(await player.products),
               },
               upgrades: await Promise.all(await player.upgrades),
+              tech: await Promise.all(await player.tech),
               switches: await Promise.all(await player.switches),
             },
             statistics,
