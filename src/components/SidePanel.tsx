@@ -74,8 +74,12 @@ export function SidePanel({ }: PanelProps) {
               {statistics?.general?.runStarted?.innerText ?? null}
             </div>
             <div>
+              {'今世🍪 '}
+              {statistics?.general?.cookiesBakedInThisAscension?.value.toExponential(2).concat('枚') ?? 'N/A'}
+            </div>
+            <div>
               {'延べ🍪 '}
-              {statistics?.general?.cookiesBakedInTotal?.value.toString().concat('枚') ?? 'N/A'}
+              {statistics?.general?.cookiesBakedInTotal?.value.toExponential(2).concat('枚') ?? 'N/A'}
             </div>
           </div>
           <div className="flex-none">
