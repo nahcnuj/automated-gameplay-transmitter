@@ -179,7 +179,7 @@ const CookieClicker = async (page: Page) => {
         enabled: (await l.getAttribute('class').then((s = '') => (s ?? '').split(' ').includes('enabled'))) && (await l.locator('.pieTimer').count() <= 0),
       })));
     },
-    clickCookie: async (timeout: number = 250) => {
+    clickCookie: async (timeout?: number) => {
       try {
         await cookie.click({ timeout });
         console.debug('[DEBUG]', new Date().toISOString(), 'clicked the big cookie');
@@ -422,7 +422,7 @@ try {
     );
   });
 
-  ctx.setDefaultTimeout(msPerTick / 10 * 9);
+  ctx.setDefaultTimeout(msPerTick / 2);
 
   let ready = true;
   let statistics: Statistics | undefined;
@@ -435,7 +435,7 @@ try {
         return;
       }
       case 'click': {
-        await player.clickCookie(1_000);
+        await player.clickCookie();
         return;
       }
       case 'buyProduct': {
