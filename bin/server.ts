@@ -295,7 +295,7 @@ createReceiver((state) => {
       };
     }
     default: {
-      const { ticks, store, statistics, ascendNumber } = state;
+      const { ticks, store, statistics, ascendNumber, isWrinkled } = state;
 
       console.debug('[DEBUG]', new Date().toISOString(), ticks);
 
@@ -322,7 +322,7 @@ createReceiver((state) => {
       {
         console.debug('[DEBUG]', 'switches', JSON.stringify(store.switches, null, 0));
         // TODO other switches
-        if (store.switches.at(0)?.enabled) {
+        if (isWrinkled && store.switches.at(0)?.enabled) {
           return {
             action: 'toggleSwitch',
             name: 'エルダー宣誓',
