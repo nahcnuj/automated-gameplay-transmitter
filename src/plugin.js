@@ -7,7 +7,7 @@ const comments = [];
 module.exports = {
   name: 'automated-gameplay-transmitter',
   uid: 'work.nahcnuj.automated-gameplay-transmitter',
-  version: '0.0.4',
+  version: '0.0.5',
   author: 'Junichi Hayashi',
   url: 'https://github.com/nahcnuj/automated-gameplay-transmitter',
   permissions: ['comments', 'meta'],
@@ -15,7 +15,7 @@ module.exports = {
   async subscribe(type, data) {
     switch (type) {
       case 'comments':
-        console.info('[DEBUG]', 'comments', data.comments);
+        // console.debug('comments', data.comments);
         comments.push(...data.comments);
         for (const target of targets) {
           let retry = true;
@@ -27,27 +27,27 @@ module.exports = {
                 headers: { 'Content-Type': 'application/json' },
               });
               if (!res.ok) throw new Error('Not found');
-              console.info(`[DEBUG] put ${comments.length} comments to`, target);
+              // console.debug(`put ${comments.length} comments to`, target);
               break;
             } catch (err) {
-              console.info('[WARN] failed to put comments to', target, err);
+              console.warn('failed to put comments to', target, err);
             }
 
             if (retry) {
               try {
                 const res = await fetch(`http://${target}/`, { method: 'POST' });
                 if (!res.ok) throw new Error('Not found');
-                console.info('[DEBUG] posted to', target);
+                // console.debug('posted to', target);
               } catch (err) {
                 retry = false;
-                console.info('[WARN] failed to post to', target, err);
+                console.warn('failed to post to', target, err);
               }
             }
           } while (retry);
         }
         break;
       case 'meta':
-        console.info('[DEBUG]', 'meta', data.data);
+        // console.debug('meta', data.data);
         for (const target of targets) {
           let retry = true;
           do {
@@ -58,27 +58,27 @@ module.exports = {
                 headers: { 'Content-Type': 'application/json' },
               });
               if (!res.ok) throw new Error('Not found');
-              console.info('[DEBUG] sent the live info to', target);
+              // console.debug('sent the live info to', target);
               break;
             } catch (err) {
-              console.info('[WARN] failed to send the live info to', target, err);
+              console.warn('failed to send the live info to', target, err);
             }
 
             if (retry) {
               try {
                 const res = await fetch(`http://${target}/`, { method: 'POST' });
                 if (!res.ok) throw new Error('Not found');
-                console.info('[DEBUG] posted to', target);
+                // console.debug('posted to', target);
               } catch (err) {
                 retry = false;
-                console.info('[WARN] failed to post to', target, err);
+                console.warn('failed to post to', target, err);
               }
             }
           } while (retry);
         }
         break;
       default:
-        console.info('[INFO]', arguments);
+        console.info(...arguments);
     }
   },
 }
