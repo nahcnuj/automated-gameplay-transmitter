@@ -7,7 +7,7 @@ const comments = [];
 module.exports = {
   name: 'automated-gameplay-transmitter',
   uid: 'work.nahcnuj.automated-gameplay-transmitter',
-  version: '0.0.5',
+  version: '0.1.0',
   author: 'Junichi Hayashi',
   url: 'https://github.com/nahcnuj/automated-gameplay-transmitter',
   permissions: ['comments', 'meta'],
@@ -15,8 +15,7 @@ module.exports = {
   async subscribe(type, data) {
     switch (type) {
       case 'comments':
-        // console.debug('comments', data.comments);
-        comments.push(...data.comments);
+        const comments = data.comments;
         for (const target of targets) {
           let retry = true;
           do {
@@ -27,7 +26,6 @@ module.exports = {
                 headers: { 'Content-Type': 'application/json' },
               });
               if (!res.ok) throw new Error('Not found');
-              // console.debug(`put ${comments.length} comments to`, target);
               break;
             } catch (err) {
               console.warn('failed to put comments to', target, err);
@@ -37,7 +35,6 @@ module.exports = {
               try {
                 const res = await fetch(`http://${target}/`, { method: 'POST' });
                 if (!res.ok) throw new Error('Not found');
-                // console.debug('posted to', target);
               } catch (err) {
                 retry = false;
                 console.warn('failed to post to', target, err);
@@ -47,7 +44,6 @@ module.exports = {
         }
         break;
       case 'meta':
-        // console.debug('meta', data.data);
         for (const target of targets) {
           let retry = true;
           do {
@@ -58,7 +54,6 @@ module.exports = {
                 headers: { 'Content-Type': 'application/json' },
               });
               if (!res.ok) throw new Error('Not found');
-              // console.debug('sent the live info to', target);
               break;
             } catch (err) {
               console.warn('failed to send the live info to', target, err);
@@ -68,7 +63,6 @@ module.exports = {
               try {
                 const res = await fetch(`http://${target}/`, { method: 'POST' });
                 if (!res.ok) throw new Error('Not found');
-                // console.debug('posted to', target);
               } catch (err) {
                 retry = false;
                 console.warn('failed to post to', target, err);
@@ -78,7 +72,7 @@ module.exports = {
         }
         break;
       default:
-        console.info(...arguments);
+        console.debug(JSON.stringify([type, data], null, 2));
     }
   },
 }
