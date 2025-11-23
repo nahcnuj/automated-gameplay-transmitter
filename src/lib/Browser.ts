@@ -1,4 +1,4 @@
-import type { Locator } from "playwright"
+import type { Locator, Page } from "playwright"
 
 export interface Browser {
   open(url: string): Promise<void>
@@ -11,4 +11,5 @@ export interface Browser {
   fillByRole(value: string, role: Parameters<Locator['getByRole']>[0], selector: string): Promise<void>
 
   get url(): string
+  get page(): Page
 };
