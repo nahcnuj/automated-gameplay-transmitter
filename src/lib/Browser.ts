@@ -11,5 +11,5 @@ export interface Browser {
   fillByRole(value: string, role: Parameters<Locator['getByRole']>[0], selector: string): Promise<void>
 
   get url(): string
-  get page(): Page
+  get document(): Document
 };
