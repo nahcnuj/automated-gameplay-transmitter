@@ -1,9 +1,9 @@
 'use server';
 
-import { createServer } from "node:net";
 import type { GameIPC } from "../GameIPC";
 
-export const createReceiver = <S, T>(path: string): GameIPC<S, T>['receiver'] => (solve) => {
+export const createReceiver = <S, T>(path: string): GameIPC<S, T>['receiver'] => async (solve) => {
+  const { createServer } = await import('node:net');
   const server = createServer((conn) => {
     conn.on('connect', () => {
       console.log('[INFO]', 'socket connected', path.replace('\0', ''));
