@@ -23,7 +23,7 @@ export type Statistics = {
     [key in string]: {
       innerText: string
     }
-  } & {
+  } & Partial<{
     cookiesInBank: {
       value: number
     }
@@ -51,18 +51,18 @@ export type Statistics = {
     handmadeCookies: {
       value: number
     }
-  }
+  }>
 };
 
 export type State = {
   modal?: undefined
 
-  ticks: number
+  ticks?: number
   cookies: number
   cps: number
   isWrinkled: boolean
   ascendNumber: number
-  commentsText: string
+  commentsText?: string
   store: {
     products: {
       bulkMode: 'buy' | 'sell'

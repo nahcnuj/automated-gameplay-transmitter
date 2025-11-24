@@ -6,3 +6,4 @@ export { createSocketPair } from "./src/lib/socket";
 
 export type { Browser } from "./src/lib/Browser";
 
+export * as CookieClicker from "./src/games/cookieclicker";

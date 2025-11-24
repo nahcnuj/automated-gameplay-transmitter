@@ -11,3 +11,5 @@ export const {
 } = createSocketPair<State, Action>(sock);
 
 export { dictOf } from "./i18n";
+
+export { sight } from "./sight";

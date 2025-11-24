@@ -29,35 +29,35 @@ const parser = {
 const isKnownLang = (lang: string): lang is keyof typeof dict => Object.hasOwn(dict, lang);
 
 export const dictOf = (lang: string) => {
-  if (isKnownLang(lang)) {
-    const d = dict[lang] as Dict;
-    const parse = parser[lang];
-    return (key: string, innerText: string): [typeof key, Statistics['general'][typeof key]] => {
-      const k = d[key] ?? key;
-      return [
-        k,
-        {
-          innerText,
-          ...(
-            [
-              'cookiesInBank',
-              'cookiesBakedInThisAscension',
-              'cookiesBakedInTotal',
-              'cookiesForfeitedByAscending',
-              'buildingsOwned',
-              'cookiesPerClick',
-              'cookieClicks',
-              'handmadeCookies',
-            ].includes(k)
-              ? { value: Number.parseFloat(innerText.replaceAll(',', '')) }
-              : k === 'legacyStarted'
-                ? parse.legacyStarted(innerText)
-                : {}
-          ),
-        },
-      ] as const;
-    }
-  } else {
+  if (!isKnownLang(lang)) {
     return (key: string, innerText: string) => [key, { innerText }] as const;
   }
+
+  const d: Dict = dict[lang];
+  const parse = parser[lang];
+  return (key: string, innerText: string): [typeof key, Statistics['general'][typeof key]] => {
+    const k = d[key] ?? key;
+    return [
+      k,
+      {
+        innerText,
+        ...(
+          [
+            'cookiesInBank',
+            'cookiesBakedInThisAscension',
+            'cookiesBakedInTotal',
+            'cookiesForfeitedByAscending',
+            'buildingsOwned',
+            'cookiesPerClick',
+            'cookieClicks',
+            'handmadeCookies',
+          ].includes(k)
+            ? { value: Number.parseFloat(innerText.replaceAll(',', '')) }
+            : k === 'legacyStarted'
+              ? parse.legacyStarted(innerText)
+              : {}
+        ),
+      },
+    ] as const;
+  };
 };
