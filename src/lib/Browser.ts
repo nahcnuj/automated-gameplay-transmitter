@@ -3,6 +3,7 @@ export interface Browser {
   close(): Promise<void>
 
   clickByText(text: string): Promise<void>
+  clickByElementId(id: string): Promise<void>
 
   press(key: string, selector: string): Promise<void>
 
