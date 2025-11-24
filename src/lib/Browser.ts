@@ -9,7 +9,7 @@ export interface Browser {
 
   fillByRole(value: string, role: string, selector: string): Promise<void>
 
-  evaluate<T>(f: () => T): T | undefined
+  evaluate<T>(f: () => T): Promise<T | undefined>
 
   get url(): string
 };
