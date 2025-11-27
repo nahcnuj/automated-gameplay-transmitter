@@ -24,33 +24,37 @@ export const sight = (): State => {
 
   const menu = document.getElementById('menu');
   if (!menu) return common;
+  console.debug('[DEBUG]', '#menu', menu);
 
   const sections = Array.from(menu.getElementsByClassName('section'));
+  console.debug('[DEBUG]', '.section', sections);
 
   const statistics = (sections => {
     const section = sections.find(el => el.textContent.includes('記録'));
     if (section === undefined) return;
 
-    const subsections = Array.from(menu.getElementsByClassName('subSection'));
+    const subSections = Array.from(menu.getElementsByClassName('subSection'));
+    console.debug('[DEBUG]', '.subSection', subSections);
 
-    const general = (subsections => {
-      const subsection = subsections.find(el => el.textContent.includes('全般'));
-      if (subsection === undefined) throw new Error('unexpected condition');
+    const general = (subSections => {
+      const subSection = subSections.find(el => el.textContent.includes('全般'));
+      if (subSection === undefined) throw new Error('unexpected condition');
 
       return Object.fromEntries(
-        Array.from(subsection.getElementsByClassName('listing'))
+        Array.from(subSection.getElementsByClassName('listing'))
           .map(el => {
             const key = Array.from(el.getElementsByTagName('b')).map((el) => el.innerText).join('').trim();
             const innerText = el.textContent.substring(key.length);
             return [key, { innerText }] as const;
           }),
       );
-    })(subsections);
+    })(subSections);
 
     return {
       general,
     };
   })(sections);
+  console.debug('[DEBUG]', 'statistics', statistics);
 
   return {
     ...common,
