@@ -33,22 +33,22 @@ export const sight = (): State => {
     const section = sections.find(el => el.textContent.includes('記録'));
     if (section === undefined) return;
 
-    const subSections = Array.from(menu.getElementsByClassName('subSection'));
-    console.debug('[DEBUG]', '.subSection', subSections);
+    const subsections = Array.from(menu.getElementsByClassName('subsection'));
+    console.debug('[DEBUG]', '.subsection', subsections);
 
-    const general = (subSections => {
-      const subSection = subSections.find(el => el.textContent.includes('全般'));
-      if (subSection === undefined) throw new Error('unexpected condition');
+    const general = (subsections => {
+      const subsection = subsections.find(el => el.textContent.includes('全般'));
+      if (subsection === undefined) throw new Error('unexpected condition');
 
       return Object.fromEntries(
-        Array.from(subSection.getElementsByClassName('listing'))
+        Array.from(subsection.getElementsByClassName('listing'))
           .map(el => {
             const key = Array.from(el.getElementsByTagName('b')).map((el) => el.innerText).join('').trim();
             const innerText = el.textContent.substring(key.length);
             return [key, { innerText }] as const;
           }),
       );
-    })(subSections);
+    })(subsections);
 
     return {
       general,
