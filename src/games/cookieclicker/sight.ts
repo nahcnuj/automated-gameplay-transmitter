@@ -1,5 +1,9 @@
 import type { State } from "./player";
 
+if (process.env.NODE_ENV === 'production') {
+  console.debug = () => {};
+}
+
 export const sight = (): State => {
   const parseNumber = (text?: string): number => text ? Number.parseFloat(text.replaceAll(',', '')) : Number.NaN;
 
