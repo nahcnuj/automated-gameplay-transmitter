@@ -7,7 +7,7 @@ const comments = [];
 module.exports = {
   name: 'automated-gameplay-transmitter',
   uid: 'work.nahcnuj.automated-gameplay-transmitter',
-  version: '0.1.0',
+  version: '0.2.0',
   author: 'Junichi Hayashi',
   url: 'https://github.com/nahcnuj/automated-gameplay-transmitter',
   permissions: ['comments', 'meta'],
@@ -50,7 +50,7 @@ module.exports = {
             try {
               const res = await fetch(`http://${target}/api/meta`, {
                 method: 'POST',
-                body: JSON.stringify(data.data),
+                body: JSON.stringify({ data }),
                 headers: { 'Content-Type': 'application/json' },
               });
               if (!res.ok) throw new Error('Not found');
