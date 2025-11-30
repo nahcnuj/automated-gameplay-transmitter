@@ -1,5 +1,5 @@
-export type { Action } from "./Action";
-export type { ActionResult } from "./ActionResult";
+export * as Action from "./Action";
+export { ActionResult } from "./ActionResult";
 export type { State } from "./State";
 
 export interface Browser {
