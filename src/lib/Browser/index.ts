@@ -1,3 +1,7 @@
+export type { Action } from "./Action";
+export type { ActionResult } from "./ActionResult";
+export type { State } from "./State";
+
 export interface Browser {
   open(url: string): Promise<void>
   close(): Promise<void>
