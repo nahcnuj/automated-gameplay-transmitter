@@ -10,6 +10,7 @@ export type State =
   | {
     name: 'idle'
     url: string
+    selectedText?: string
     state?: unknown
   }
   | {
