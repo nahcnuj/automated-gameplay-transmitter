@@ -1,9 +1,5 @@
 import type { State } from "./player";
 
-if (process.env.NODE_ENV === 'production') {
-  console.debug = () => {};
-}
-
 export const sight = (): State => {
   const parseNumber = (text?: string): number => text ? Number.parseFloat(text.replaceAll(',', '')) : Number.NaN;
 
@@ -28,17 +24,17 @@ export const sight = (): State => {
 
   const menu = document.getElementById('menu');
   if (!menu) return common;
-  console.debug('[DEBUG]', '#menu', menu);
+  // console.debug('[DEBUG]', '#menu', menu);
 
   const sections = Array.from(menu.getElementsByClassName('section'));
-  console.debug('[DEBUG]', '.section', sections);
+  // console.debug('[DEBUG]', '.section', sections);
 
   const statistics = (sections => {
     const section = sections.find(el => el.textContent.includes('記録'));
     if (section === undefined) return;
 
     const subsections = Array.from(menu.getElementsByClassName('subsection'));
-    console.debug('[DEBUG]', '.subsection', subsections);
+    // console.debug('[DEBUG]', '.subsection', subsections);
 
     const general = (subsections => {
       const subsection = subsections.find(el => el.textContent.includes('全般'));
@@ -58,7 +54,7 @@ export const sight = (): State => {
       general,
     };
   })(sections);
-  console.debug('[DEBUG]', 'statistics', statistics);
+  // console.debug('[DEBUG]', 'statistics', statistics);
 
   return {
     ...common,
