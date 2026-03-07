@@ -105,6 +105,40 @@ const formatFileSize = (bytes: number): string => {
   return `${size.toFixed(2)} ${units[unitIndex]}`;
 };
 
+if (process.argv.includes("--lib")) {
+  // Library build: bundle index.ts as an ES module with all dependencies external
+  const outdir = path.join(process.cwd(), "dist");
+
+  if (existsSync(outdir)) {
+    console.log(`🗑️ Cleaning previous build at ${outdir}`);
+    await rm(outdir, { recursive: true, force: true });
+  }
+
+  console.log("\n📦 Building library...\n");
+  const start = performance.now();
+
+  const result = await Bun.build({
+    entrypoints: [path.resolve("index.ts")],
+    outdir,
+    target: "bun",
+    format: "esm",
+    packages: "external",
+  });
+
+  const end = performance.now();
+
+  const outputTable = result.outputs.map(output => ({
+    File: path.relative(process.cwd(), output.path),
+    Type: output.kind,
+    Size: formatFileSize(output.size),
+  }));
+
+  console.table(outputTable);
+  console.log(`\n✅ Library build completed in ${(end - start).toFixed(2)}ms\n`);
+
+  process.exit(result.success ? 0 : 1);
+}
+
 console.log("\n🚀 Starting build process...\n");
 
 const cliConfig = parseArgs();
