@@ -1,12 +1,32 @@
 {
   "name": "automated-gameplay-transmitter",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.0.1",
   "type": "module",
+  "exports": {
+    ".": {
+      "bun": "./index.ts",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "index.ts",
+    "src"
+  ],
   "scripts": {
     "dev": "bun --hot --port=7777 bin/server.ts",
     "start": "NODE_ENV=production bun --port=7777 bin/server.ts",
-    "build": "bun run build.ts"
+    "build": "bun run build.ts",
+    "build:lib": "bun run build.ts --lib && tsc --project tsconfig.lib.json",
+    "prepublishOnly": "bun run build:lib"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19"
   },
   "dependencies": {
     "@playwright/browser-chromium": "^1.57.0",
@@ -14,8 +34,6 @@
     "playwright": "^1.57.0",
     "playwright-extra": "^4.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
@@ -25,6 +43,9 @@
     "@types/bun": "latest",
     "@types/node": "^24.10.7",
     "@types/react": "^19.2.8",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "typescript": "^5.9.2"
   }
 }
