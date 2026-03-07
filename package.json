@@ -4,7 +4,6 @@
   "type": "module",
   "exports": {
     ".": {
-      "bun": "./index.ts",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
@@ -13,9 +12,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "index.ts",
-    "src"
+    "dist"
   ],
   "scripts": {
     "dev": "bun --hot --port=7777 bin/server.ts",
