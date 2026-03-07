@@ -106,7 +106,9 @@ const formatFileSize = (bytes: number): string => {
 };
 
 if (process.argv.includes("--lib")) {
-  // Library build: bundle index.ts as an ES module with all dependencies external
+  // Library build:
+  // - index.ts bundled as a browser-targeted ES module for browser-safe exports
+  // - index.node.ts bundled as a node-targeted ES module for server-side exports
   const outdir = path.join(process.cwd(), "dist");
 
   if (existsSync(outdir)) {
@@ -114,29 +116,53 @@ if (process.argv.includes("--lib")) {
     await rm(outdir, { recursive: true, force: true });
   }
 
-  console.log("\n📦 Building library...\n");
-  const start = performance.now();
+  console.log("\n📦 Building library (browser)...\n");
+  const browserStart = performance.now();
 
-  const result = await Bun.build({
+  const browserResult = await Bun.build({
     entrypoints: [path.resolve("index.ts")],
+    outdir,
+    target: "browser",
+    format: "esm",
+    packages: "external",
+  });
+
+  const browserEnd = performance.now();
+
+  const browserOutputTable = browserResult.outputs.map(output => ({
+    File: path.relative(process.cwd(), output.path),
+    Type: output.kind,
+    Size: formatFileSize(output.size),
+  }));
+
+  console.table(browserOutputTable);
+  console.log(`\n✅ Browser library build completed in ${(browserEnd - browserStart).toFixed(2)}ms\n`);
+
+  if (!browserResult.success) process.exit(1);
+
+  console.log("\n📦 Building library (node)...\n");
+  const nodeStart = performance.now();
+
+  const nodeResult = await Bun.build({
+    entrypoints: [path.resolve("index.node.ts")],
     outdir,
     target: "node",
     format: "esm",
     packages: "external",
   });
 
-  const end = performance.now();
+  const nodeEnd = performance.now();
 
-  const outputTable = result.outputs.map(output => ({
+  const nodeOutputTable = nodeResult.outputs.map(output => ({
     File: path.relative(process.cwd(), output.path),
     Type: output.kind,
     Size: formatFileSize(output.size),
   }));
 
-  console.table(outputTable);
-  console.log(`\n✅ Library build completed in ${(end - start).toFixed(2)}ms\n`);
+  console.table(nodeOutputTable);
+  console.log(`\n✅ Node library build completed in ${(nodeEnd - nodeStart).toFixed(2)}ms\n`);
 
-  process.exit(result.success ? 0 : 1);
+  process.exit(browserResult.success && nodeResult.success ? 0 : 1);
 }
 
 console.log("\n🚀 Starting build process...\n");
