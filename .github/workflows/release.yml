@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
   release:
+    if: github.actor == github.repository_owner
     runs-on: ubuntu-latest
     permissions:
       contents: write
