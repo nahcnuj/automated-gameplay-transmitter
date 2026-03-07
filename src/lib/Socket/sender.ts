@@ -1,5 +1,3 @@
-'use server';
-
 import type { GameIPC } from "../GameIPC";
 
 export const createSender = <S, T>(path: string): GameIPC<S, T>['sender'] => async (run) => {

@@ -1,5 +1,3 @@
-'use server';
-
 import type { GameIPC } from "../GameIPC";
 
 export const createReceiver = <S, T>(path: string): GameIPC<S, T>['receiver'] => async (solve) => {

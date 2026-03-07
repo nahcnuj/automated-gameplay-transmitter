@@ -120,7 +120,7 @@ if (process.argv.includes("--lib")) {
   const result = await Bun.build({
     entrypoints: [path.resolve("index.ts")],
     outdir,
-    target: "bun",
+    target: "node",
     format: "esm",
     packages: "external",
   });
