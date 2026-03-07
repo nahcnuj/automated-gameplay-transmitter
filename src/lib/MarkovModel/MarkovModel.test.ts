@@ -2,7 +2,7 @@ import { describe, expect, jest, test } from "bun:test";
 import { choose, create } from "./MarkovModel";
 
 describe('generate', () => {
-  test('An empty model should generate "。".', () => {
+  test('An empty model should always generate "。".', () => {
     const model = create();
     expect(model.gen()).toBe('。');
   });

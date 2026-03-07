@@ -1,5 +1,15 @@
 # Automated Gameplay Transmitter (WIP)
 
+This package provides a **generic automation engine** for browser‑based games and a set of
+shared React components/contexts.
+
+- **Browser and socket interfaces** (`src/lib/Browser`, `src/lib/Socket`)
+- **Game modules** (e.g. `cookieclicker`) exposing state, actions and DOM scrapers
+- **React UI building blocks** (`components/` and `contexts/`) for displaying stream
+  information, comments, speech, etc.
+
+It is intended to be consumed as a dependency via a local `link:` reference in a consumer's `package.json`.
+
 ## Usage
 
 ```sh

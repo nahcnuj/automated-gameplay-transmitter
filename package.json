@@ -19,6 +19,9 @@
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^20.8.3",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.3.2",
     "@types/bun": "latest",
     "@types/node": "^24.10.7",
     "@types/react": "^19.2.8",
