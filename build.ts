@@ -136,9 +136,11 @@ if (process.argv.includes("--lib")) {
   }));
 
   console.table(browserOutputTable);
-  console.log(`\n✅ Browser library build completed in ${(browserEnd - browserStart).toFixed(2)}ms\n`);
-
-  if (!browserResult.success) process.exit(1);
+  if (!browserResult.success) {
+    console.error(`\n❌ Browser library build failed\n`);
+  } else {
+    console.log(`\n✅ Browser library build completed in ${(browserEnd - browserStart).toFixed(2)}ms\n`);
+  }
 
   console.log("\n📦 Building library (node)...\n");
   const nodeStart = performance.now();
@@ -160,7 +162,11 @@ if (process.argv.includes("--lib")) {
   }));
 
   console.table(nodeOutputTable);
-  console.log(`\n✅ Node library build completed in ${(nodeEnd - nodeStart).toFixed(2)}ms\n`);
+  if (!nodeResult.success) {
+    console.error(`\n❌ Node library build failed\n`);
+  } else {
+    console.log(`\n✅ Node library build completed in ${(nodeEnd - nodeStart).toFixed(2)}ms\n`);
+  }
 
   process.exit(browserResult.success && nodeResult.success ? 0 : 1);
 }
