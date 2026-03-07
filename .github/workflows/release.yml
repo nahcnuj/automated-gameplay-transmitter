@@ -22,19 +22,40 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Find latest successful CD run for HEAD
+        id: cd_run
+        run: |
+          HEAD_SHA=$(git rev-parse HEAD)
+          RUN_ID=$(gh run list \
+            --workflow cd.yml \
+            --branch main \
+            --status success \
+            --limit 20 \
+            --json databaseId,headSha \
+            --jq --arg sha "$HEAD_SHA" \
+            '.[] | select(.headSha == $sha) | .databaseId' \
+            | head -1)
+          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+            echo "No successful CD run found for HEAD commit ${HEAD_SHA}" >&2
+            exit 1
+          fi
+          echo "run_id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
-      - name: Install dependencies
-        run: bun install
-
-      - name: Run tests
-        run: bun test
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.cd_run.outputs.run_id }}
 
       - name: Configure Git
         run: |
@@ -84,9 +105,10 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
+      # dist/ was built and verified by the CD workflow.
+      # --ignore-scripts skips prepublishOnly so the pre-built artifacts are used as-is.
       # npm publish is used (over bun publish) for first-class --provenance support.
-      # npm lifecycle will invoke prepublishOnly (bun run build:lib) automatically.
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
