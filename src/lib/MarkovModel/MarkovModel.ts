@@ -92,6 +92,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
       // console.debug('[DEBUG]', s.at(-1), ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));
       const w = pick(model[words.at(-1) ?? ''] ?? {});
       if (w.length <= 0) {
+        words.push('。');
         break;
       }
       words.push(w);

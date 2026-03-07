@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 
-// identical implementation copied from makamujo, now shared
 export const useInterval = (ms: number, f: () => Promise<void>) => {
   const ref = useRef(f);
   useEffect(() => {

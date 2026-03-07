@@ -2,10 +2,9 @@ import { describe, expect, jest, test } from "bun:test";
 import { choose, create } from "./MarkovModel";
 
 describe('generate', () => {
-  test('An empty model should generate an empty string or "。".', () => {
+  test('An empty model should always generate "。".', () => {
     const model = create();
-    const got = model.gen();
-    expect(got).toBeOneOf(['', '。']);
+    expect(model.gen()).toBe('。');
   });
 
   test('a no-branch model', () => {
