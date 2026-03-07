@@ -1,0 +1,8 @@
+import { renderToString } from "react-dom/server";
+import { HighlightOnChange } from "./HighlightOnChange";
+
+test("HighlightOnChange renders children", () => {
+  const html = renderToString(<HighlightOnChange timeout={100}>hi</HighlightOnChange>);
+  expect(html).toContain("hi");
+});
+

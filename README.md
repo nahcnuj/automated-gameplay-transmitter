@@ -1,5 +1,17 @@
 # Automated Gameplay Transmitter (WIP)
 
+This package provides a **generic automation engine** for browser‑based games and a set of
+shared React components/contexts that can be used by applications such as the
+`makamujo` AI‑VTuber.
+
+- **Browser and socket interfaces** (`src/lib/Browser`, `src/lib/Socket`)
+- **Game modules** (e.g. `cookieclicker`) exposing state, actions and DOM scrapers
+- **React UI building blocks** (`components/` and `contexts/`) for displaying stream
+  information, comments, speech, etc.
+
+It is intended to be consumed as a dependency; `makamujo` already imports it via a
+local `link:` reference in its `package.json`.
+
 ## Usage
 
 ```sh
