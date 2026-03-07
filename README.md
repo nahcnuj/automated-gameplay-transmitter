@@ -1,4 +1,4 @@
-# Automated Gameplay Transmitter (WIP)
+# Automated Gameplay Transmitter
 
 This package provides a **generic automation engine** for browser‑based games and a set of
 shared React components/contexts.
