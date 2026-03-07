@@ -54,7 +54,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dist
-          path: dist/
+          path: ./
           github-token: ${{ github.token }}
           run-id: ${{ steps.cd_run.outputs.run_id }}
 
