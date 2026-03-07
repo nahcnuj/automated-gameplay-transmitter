@@ -39,7 +39,7 @@ jobs:
             --status success \
             --limit 20 \
             --json databaseId,headSha \
-            --jq --arg sha "$HEAD_SHA" \
+            | jq -r --arg sha "$HEAD_SHA" \
             '.[] | select(.headSha == $sha) | .databaseId' \
             | head -1)
           if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
