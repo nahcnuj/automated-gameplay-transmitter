@@ -5,7 +5,7 @@ describe('generate', () => {
   test('An empty model should generate an empty string or "。".', () => {
     const model = create();
     const got = model.gen();
-    expect(got === '' || got === '。').toBe(true);
+    expect(got).toBeOneOf(['', '。']);
   });
 
   test('a no-branch model', () => {

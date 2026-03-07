@@ -1,3 +1,4 @@
+import { jest, expect, test } from "bun:test";
 import { renderToString } from "react-dom/server";
 import { HighlightOnChange } from "./HighlightOnChange";
 

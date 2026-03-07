@@ -1,3 +1,4 @@
+import { expect, test } from "bun:test";
 import { renderToString } from "react-dom/server";
 import { CharacterSprite } from "./CharacterSprite";
 
