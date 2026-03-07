@@ -63,7 +63,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Bump version
-        id: version
+        id: bump-version
         run: |
           CURRENT=$(node -p "require('./package.json').version")
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
@@ -79,19 +79,19 @@ jobs:
       - name: Commit version bump
         run: |
           git add package.json
-          git commit -m "Release v${{ steps.version.outputs.version }}"
+          git commit -m "Release v${{ steps.bump-version.outputs.version }}"
           git push origin HEAD:main
 
       - name: Create tag
         run: |
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
+          git tag "v${{ steps.bump-version.outputs.version }}"
+          git push origin "v${{ steps.bump-version.outputs.version }}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ steps.version.outputs.version }}"
-          name: "v${{ steps.version.outputs.version }}"
+          tag_name: "v${{ steps.bump-version.outputs.version }}"
+          name: "v${{ steps.bump-version.outputs.version }}"
           generate_release_notes: true
 
       - name: Setup Node.js for npm publish
