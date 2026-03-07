@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
       actions: read
     steps:
       - uses: actions/checkout@v4
@@ -94,17 +93,3 @@ jobs:
           tag_name: "v${{ steps.bump-version.outputs.version }}"
           name: "v${{ steps.bump-version.outputs.version }}"
           generate_release_notes: true
-
-      - name: Setup Node.js for npm publish
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
-
-      # dist/ was built and verified by the CD workflow.
-      # --ignore-scripts skips prepublishOnly so the pre-built artifacts are used as-is.
-      # npm publish is used (over bun publish) for first-class --provenance support.
-      - name: Publish to npm
-        run: npm publish --provenance --access public --ignore-scripts
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
