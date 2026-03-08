@@ -125,6 +125,9 @@ if (process.argv.includes("--lib")) {
     target: "browser",
     format: "esm",
     packages: "external",
+    define: {
+      "process.env.NODE_ENV": JSON.stringify("production"),
+    },
   });
 
   const browserEnd = performance.now();
