@@ -10,7 +10,7 @@ shared React components/contexts.
 
 ## Layout Example
 
-![Layout Example](docs/layout-example.png)
+![Layout Example](example/layout-example.png)
 
 ## Usage
 

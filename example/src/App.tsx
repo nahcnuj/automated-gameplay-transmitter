@@ -15,8 +15,8 @@ export function App() {
       <Container>
         <Box>
           <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-            <div className="text-6xl">🎮</div>
-            <div className="text-2xl text-slate-300">Game Screen</div>
+            <div className="text-[7.5rem]">🎮</div>
+            <div className="text-[3rem] text-slate-300">Game Screen</div>
           </div>
         </Box>
       </Container>
@@ -24,11 +24,11 @@ export function App() {
       {/* Side panel — stream stats */}
       <Container>
         <div className="h-full flex flex-col justify-between items-center gap-2">
-          <div className="flex-none text-2xl text-slate-300 text-center pt-2">
+          <div className="flex-none text-[3rem] text-slate-300 text-center pt-2">
             Streamer
           </div>
           <div className="flex-auto w-full">
-            <div className="h-full flex flex-col justify-between p-2 bg-black/50 border-2 border-slate-400 rounded-xl text-lg/8">
+            <div className="h-full flex flex-col justify-between p-2 bg-black/50 border-2 border-slate-400 rounded-xl text-[2.25rem]/[4rem]">
               <div className="text-center">
                 <div>Session 1</div>
                 <div className="text-yellow-300">(Day 1)</div>
@@ -49,11 +49,11 @@ export function App() {
       {/* Bottom panel — speech / captions */}
       <Container>
         <div className="flex gap-2 h-full">
-          <div className="flex-none w-32 max-h-full aspect-square flex items-center justify-center bg-black/30 rounded-xl text-5xl">
+          <div className="flex-none w-32 max-h-full aspect-square flex items-center justify-center bg-black/30 rounded-xl text-[6rem]">
             🙂
           </div>
           <div className="flex-auto h-full p-1">
-            <div className="h-full flex items-center p-3 bg-black/50 border-2 border-slate-400 rounded-xl overflow-hidden text-xl/9">
+            <div className="h-full flex items-center p-3 bg-black/50 border-2 border-slate-400 rounded-xl overflow-hidden text-[2.5rem]/[4.5rem]">
               Hello, viewers! Thanks for watching the stream today!
             </div>
           </div>

@@ -7,7 +7,7 @@
     "preview": "bun --port 3000 index.html"
   },
   "dependencies": {
-    "automated-gameplay-transmitter": "link:..",
+    "automated-gameplay-transmitter": "latest",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

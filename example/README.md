@@ -5,11 +5,13 @@ This example demonstrates the three-panel stream overlay layout provided by
 
 ## Layout
 
-| Panel | Grid area | Description |
-|-------|-----------|-------------|
-| Main | `col-span-8 / row-span-8` | Game screen area (largest, top-left) |
-| Side | `col-span-2 / row-span-8` | Stream info and stats (narrow, right side) |
-| Bottom | `col-span-10 / row-span-2` | Speech / captions (full width, bottom strip) |
+![Layout Example](layout-example.png)
+
+| Panel | Grid area | Text shown in the image |
+|-------|-----------|-------------------------|
+| Main | `col-span-8 / row-span-8` | 🎮 **Game Screen** |
+| Side | `col-span-2 / row-span-8` | **Streamer** · Session 1 · (Day 1) · Score: 1.23e+9 · Items: 42 · 1,234 👥 · 00:42:00 🕧 |
+| Bottom | `col-span-10 / row-span-2` | 🙂 *Hello, viewers! Thanks for watching the stream today!* |
 
 ## Requirements
 
