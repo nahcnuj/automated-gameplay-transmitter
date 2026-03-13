@@ -21,27 +21,11 @@ export function App() {
         </Box>
       </Container>
 
-      {/* Side panel — stream stats */}
+      {/* Side panel — sidebar info */}
       <Container>
-        <div className="h-full flex flex-col justify-between items-center gap-2">
-          <div className="flex-none text-[3rem] text-slate-300 text-center pt-2">
-            Streamer
-          </div>
-          <div className="flex-auto w-full">
-            <div className="h-full flex flex-col justify-between p-2 bg-black/50 border-2 border-slate-400 rounded-xl text-[2.25rem]/[4rem]">
-              <div className="text-center">
-                <div>Session 1</div>
-                <div className="text-yellow-300">(Day 1)</div>
-              </div>
-              <div>
-                <div>Score: 1.23e+9</div>
-                <div>Items: 42</div>
-              </div>
-              <div className="text-right">
-                <div className="text-yellow-300">1,234 👥</div>
-                <div>00:42:00 🕧</div>
-              </div>
-            </div>
+        <div className="h-full flex flex-col items-center justify-center">
+          <div className="text-[3rem] text-slate-300 text-center">
+            Side
           </div>
         </div>
       </Container>

@@ -5,13 +5,38 @@ This example demonstrates the three-panel stream overlay layout provided by
 
 ## Layout
 
+Use `<Layout count={10} span={8}>` with three `<Container>` children to produce a
+10×10 grid where the main area spans 8 columns and 8 rows, the side panel takes the
+remaining 2 columns, and the bottom strip spans the full width at the bottom 2 rows:
+
 ![Layout Example](layout-example.png)
 
-| Panel | Grid area | Text shown in the image |
-|-------|-----------|-------------------------|
-| Main | `col-span-8 / row-span-8` | 🎮 **Game Screen** |
-| Side | `col-span-2 / row-span-8` | **Streamer** · Session 1 · (Day 1) · Score: 1.23e+9 · Items: 42 · 1,234 👥 · 00:42:00 🕧 |
-| Bottom | `col-span-10 / row-span-2` | 🙂 *Hello, viewers! Thanks for watching the stream today!* |
+```tsx
+import { Box, Container, Layout } from "automated-gameplay-transmitter";
+
+<Layout count={10} span={8} className="...">
+  {/* Main panel — col-span-8 / row-span-8 */}
+  <Container>
+    <Box>{/* game screen */}</Box>
+  </Container>
+
+  {/* Side panel — col-span-2 / row-span-8 */}
+  <Container>
+    {/* stream info */}
+  </Container>
+
+  {/* Bottom panel — col-span-10 / row-span-2 */}
+  <Container>
+    {/* speech / captions */}
+  </Container>
+</Layout>
+```
+
+| Panel | Grid area | Component |
+|-------|-----------|-----------|
+| Main | `col-span-8 / row-span-8` | `<Container>` + `<Box>` |
+| Side | `col-span-2 / row-span-8` | `<Container>` |
+| Bottom | `col-span-10 / row-span-2` | `<Container>` |
 
 ## Requirements
 
