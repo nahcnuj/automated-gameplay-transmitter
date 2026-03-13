@@ -1,4 +1,14 @@
-import { Box, Container, Layout } from "automated-gameplay-transmitter";
+import { Box, CharacterSprite, Container, Layout } from "automated-gameplay-transmitter";
+
+// Placeholder character image (generic silhouette)
+const characterSrc =
+  "data:image/svg+xml;charset=utf-8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 960" fill="#94a3b8">' +
+      '<circle cx="360" cy="200" r="130"/>' +
+      '<ellipse cx="360" cy="660" rx="240" ry="300"/>' +
+    '</svg>'
+  );
 
 /**
  * Example application demonstrating the three-panel stream overlay layout
@@ -6,7 +16,7 @@ import { Box, Container, Layout } from "automated-gameplay-transmitter";
  *
  * - Main panel  : game screen area (largest, top-left)
  * - Side panel  : stream info / stats (narrow, right side)
- * - Bottom panel: speech / captions (full width, bottom strip)
+ * - Bottom panel: character sprite + speech / script text (full width, bottom strip)
  */
 export function App() {
   return (
@@ -30,12 +40,10 @@ export function App() {
         </div>
       </Container>
 
-      {/* Bottom panel — speech / captions */}
+      {/* Bottom panel — character sprite + speech text */}
       <Container>
         <div className="flex gap-2 h-full">
-          <div className="flex-none w-32 max-h-full aspect-square flex items-center justify-center bg-black/30 rounded-xl text-[6rem]">
-            🙂
-          </div>
+          <CharacterSprite src={characterSrc} className="flex-none" />
           <div className="flex-auto h-full p-1">
             <div className="h-full flex items-center p-3 bg-black/50 border-2 border-slate-400 rounded-xl overflow-hidden text-[2.5rem]/[4.5rem]">
               Hello, viewers! Thanks for watching the stream today!
