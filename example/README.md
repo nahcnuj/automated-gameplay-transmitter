@@ -7,36 +7,32 @@ This example demonstrates the three-panel stream overlay layout provided by
 
 Use `<Layout count={10} span={8}>` with three `<Container>` children to produce a
 10×10 grid where the main area spans 8 columns and 8 rows, the side panel takes the
-remaining 2 columns, and the bottom strip spans the full width at the bottom 2 rows:
+remaining 2 columns, and the bottom strip spans the full width at the bottom 2 rows.
+Place a `<CharacterSprite>` and a speech text in the bottom panel:
 
 ![Layout Example](layout-example.png)
 
 ```tsx
-import { Box, Container, Layout } from "automated-gameplay-transmitter";
+import { Box, CharacterSprite, Container, Layout } from "automated-gameplay-transmitter";
 
 <Layout count={10} span={8} className="...">
   {/* Main panel — col-span-8 / row-span-8 */}
   <Container>
-    <Box>{/* game screen */}</Box>
+    <Box>{/* main content */}</Box>
   </Container>
 
   {/* Side panel — col-span-2 / row-span-8 */}
   <Container>
-    {/* stream info */}
+    {/* side content */}
   </Container>
 
   {/* Bottom panel — col-span-10 / row-span-2 */}
   <Container>
-    {/* speech / captions */}
+    <CharacterSprite src="/character.png" />
+    <p>{/* speech / script text */}</p>
   </Container>
 </Layout>
 ```
-
-| Panel | Grid area | Component |
-|-------|-----------|-----------|
-| Main | `col-span-8 / row-span-8` | `<Container>` + `<Box>` |
-| Side | `col-span-2 / row-span-8` | `<Container>` |
-| Bottom | `col-span-10 / row-span-2` | `<Container>` |
 
 ## Requirements
 
