@@ -33,11 +33,13 @@ export function App() {
 
       {/* Side panel — sidebar info */}
       <Container>
-        <div className="h-full flex flex-col items-center justify-center">
-          <div className="text-[3rem] text-slate-300 text-center">
-            Side
+        <Box>
+          <div className="h-full flex flex-col items-center justify-center">
+            <div className="text-[3rem] text-slate-300 text-center">
+              Side
+            </div>
           </div>
-        </div>
+        </Box>
       </Container>
 
       {/* Bottom panel — character sprite + speech text */}
@@ -47,9 +49,11 @@ export function App() {
             <CharacterSprite src={characterSrc} className="h-full w-full" />
           </div>
           <div className="flex-auto h-full min-h-0 p-1">
-            <div className="h-full flex items-center p-3 bg-black/50 border-2 border-slate-400 rounded-xl overflow-hidden text-[2rem]/[3rem]">
-              Hello, viewers! Thanks for watching the stream today!
-            </div>
+            <Box>
+              <div className="h-full flex items-center overflow-hidden text-[2rem]/[3rem]">
+                Hello, viewers! Thanks for watching the stream today!
+              </div>
+            </Box>
           </div>
         </div>
       </Container>
