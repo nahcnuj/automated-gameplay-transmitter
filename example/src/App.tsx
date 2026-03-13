@@ -42,10 +42,12 @@ export function App() {
 
       {/* Bottom panel — character sprite + speech text */}
       <Container>
-        <div className="flex gap-2 h-full">
-          <CharacterSprite src={characterSrc} className="flex-none" />
-          <div className="flex-auto h-full p-1">
-            <div className="h-full flex items-center p-3 bg-black/50 border-2 border-slate-400 rounded-xl overflow-hidden text-[2.5rem]/[4.5rem]">
+        <div className="flex gap-2 h-full min-h-0">
+          <div className="h-full shrink-0 overflow-hidden aspect-[3/4]">
+            <CharacterSprite src={characterSrc} className="h-full w-full" />
+          </div>
+          <div className="flex-auto h-full min-h-0 p-1">
+            <div className="h-full flex items-center p-3 bg-black/50 border-2 border-slate-400 rounded-xl overflow-hidden text-[2rem]/[3rem]">
               Hello, viewers! Thanks for watching the stream today!
             </div>
           </div>
