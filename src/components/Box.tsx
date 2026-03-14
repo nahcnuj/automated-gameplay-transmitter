@@ -1,10 +1,21 @@
 import type { PropsWithChildren } from "react";
 
-type Props = {};
+type Props = {
+  bgColor?: string;
+  borderColor?: string;
+  borderStyle?: string;
+  borderWidth?: string;
+};
 
-export function Box({ children }: PropsWithChildren<Props>) {
+export function Box({
+  bgColor = "bg-black",
+  borderColor = "border-white",
+  borderStyle = "border-solid",
+  borderWidth = "border",
+  children,
+}: PropsWithChildren<Props>) {
   return (
-    <div className="w-full h-full bg-black/50 border-5 border-double border-emerald-300 rounded-xl">
+    <div className={`w-full h-full rounded-xl ${bgColor} ${borderColor} ${borderStyle} ${borderWidth}`}>
       {children}
     </div>
   );
