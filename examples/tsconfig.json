@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "automated-gameplay-transmitter": ["../index.ts"],
+      "react": ["node_modules/@types/react"],
+      "react/jsx-runtime": ["node_modules/@types/react/jsx-runtime"],
+      "react-dom": ["node_modules/@types/react-dom"]
+    }
+  },
+  "include": ["."],
+  "exclude": ["screenshot.ts", "node_modules", "dist"]
+}

@@ -1,4 +1,4 @@
-import { Box, Container, Layout } from "../index";
+import { Box, Container, Layout } from "automated-gameplay-transmitter";
 
 export function App() {
   return (
