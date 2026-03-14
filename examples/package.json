@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "automated-gameplay-transmitter": "file:..",
+    "automated-gameplay-transmitter": "latest",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
