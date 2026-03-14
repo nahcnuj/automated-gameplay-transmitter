@@ -25,8 +25,6 @@
     "url": "https://github.com/nahcnuj/automated-gameplay-transmitter"
   },
   "scripts": {
-    "dev": "bun --hot --port=7777 bin/server.ts",
-    "start": "NODE_ENV=production bun --port=7777 bin/server.ts",
     "build": "bun run build.ts",
     "build:lib": "bun run build.ts --lib && tsc --project tsconfig.lib.json",
     "prepublishOnly": "bun run build:lib"
