@@ -11,23 +11,24 @@ shared React components/contexts.
 ## Layout Example
 
 The `Layout` component arranges three panels — main, side, and bottom — in a 16:9 grid.
-Each panel can be wrapped with a `Box` component for a styled container.
+Each panel can be wrapped with a `Container` and `Box` component for a styled container.
+([source](examples/App.tsx))
 
 ```tsx
-import { Box, Layout } from "automated-gameplay-transmitter";
+import { Box, Container, Layout } from "automated-gameplay-transmitter";
 
 export function App() {
   return (
     <Layout count={10} span={8} className="text-white">
-      <Box>Main Panel</Box>
-      <Box>Side Panel</Box>
-      <Box>Bottom Panel</Box>
+      <Container><Box>Main Panel</Box></Container>
+      <Container><Box>Side Panel</Box></Container>
+      <Container><Box>Bottom Panel</Box></Container>
     </Layout>
   );
 }
 ```
 
-![Layout example](docs/layout.png)
+![Layout example](examples/layout.png)
 
 The `Box` component defaults to a black background with a white solid border.
 Style props (`bgColor`, `borderColor`, `borderStyle`, `borderWidth`, `rounded`) can be used to customize the appearance:
