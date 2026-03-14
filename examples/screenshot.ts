@@ -8,7 +8,7 @@
 import { serve } from "bun";
 import { chromium } from "playwright";
 import { mkdir } from "node:fs/promises";
-import exampleHtml from "./layout/index.html";
+import exampleHtml from "./index.html";
 
 const port = 7779;
 
