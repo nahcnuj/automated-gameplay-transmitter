@@ -10,14 +10,7 @@
     "moduleDetection": "force",
     "strict": true,
     "skipLibCheck": true,
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "automated-gameplay-transmitter": ["node_modules/automated-gameplay-transmitter/dist"],
-      "react": ["node_modules/@types/react"],
-      "react/jsx-runtime": ["node_modules/@types/react/jsx-runtime"],
-      "react-dom": ["node_modules/@types/react-dom"]
-    }
+    "noEmit": true
   },
   "include": ["."],
   "exclude": ["screenshot.ts", "node_modules", "dist"]
