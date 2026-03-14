@@ -58,6 +58,16 @@ jobs:
           github-token: ${{ github.token }}
           run-id: ${{ steps.cd_run.outputs.run_id }}
 
+      - name: Setup Node.js for npm publish
+        uses: actions/setup-node@v6
+        with:
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify npm token
+        run: npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
@@ -94,11 +104,6 @@ jobs:
           tag_name: "v${{ steps.bump-version.outputs.version }}"
           name: "v${{ steps.bump-version.outputs.version }}"
           generate_release_notes: true
-
-      - name: Setup Node.js for npm publish
-        uses: actions/setup-node@v6
-        with:
-          registry-url: 'https://registry.npmjs.org'
 
       # dist/ was built and verified by the CD workflow.
       # --ignore-scripts skips prepublishOnly so the pre-built artifacts are used as-is.
