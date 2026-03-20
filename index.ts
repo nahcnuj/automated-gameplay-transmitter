@@ -5,5 +5,5 @@ export { HighlightOnChange } from "./src/components/HighlightOnChange";
 export { CharacterSprite } from "./src/components/CharacterSprite";
 export { useInterval } from "./src/hooks/useInterval";
 export * from "./src/lib/Browser";
-export * from "./src/lib/Agent";
+export type * from "./src/lib/Agent";
 

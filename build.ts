@@ -171,7 +171,33 @@ if (process.argv.includes("--lib")) {
     console.log(`\n✅ Node library build completed in ${(nodeEnd - nodeStart).toFixed(2)}ms\n`);
   }
 
-  process.exit(browserResult.success && nodeResult.success ? 0 : 1);
+  console.log("\n📦 Building library (agent)...\n");
+  const agentStart = performance.now();
+
+  const agentResult = await Bun.build({
+    entrypoints: [path.resolve("index.agent.ts")],
+    outdir,
+    target: "browser",
+    format: "esm",
+    packages: "external",
+  });
+
+  const agentEnd = performance.now();
+
+  const agentOutputTable = agentResult.outputs.map(output => ({
+    File: path.relative(process.cwd(), output.path),
+    Type: output.kind,
+    Size: formatFileSize(output.size),
+  }));
+
+  console.table(agentOutputTable);
+  if (!agentResult.success) {
+    console.error(`\n❌ Agent library build failed\n`);
+  } else {
+    console.log(`\n✅ Agent library build completed in ${(agentEnd - agentStart).toFixed(2)}ms\n`);
+  }
+
+  process.exit(browserResult.success && nodeResult.success && agentResult.success ? 0 : 1);
 }
 
 console.log("\n🚀 Starting build process...\n");

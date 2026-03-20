@@ -8,6 +8,11 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./agent": {
+      "source": "./index.agent.ts",
+      "import": "./dist/index.agent.js",
+      "types": "./dist/index.agent.d.ts"
+    },
     "./server": {
       "import": "./dist/index.node.js",
       "types": "./dist/index.node.d.ts"
