@@ -1,16 +1,16 @@
 import { describe, expect, it } from "bun:test";
-import { createAgentApi } from "./Api";
+import { createAgentApi, type AgentComment } from "./Api";
 
 const createAgent = () => {
   const onAirCalls: unknown[] = [];
-  const listenCalls: unknown[] = [];
+  const listenCalls: AgentComment[][] = [];
 
   return {
     canSpeak: true,
     currentGame: { name: "game1", state: { x: 1 } },
     streamState: { type: "live" },
     onAir: (payload: unknown) => onAirCalls.push(payload),
-    listen: (comments: unknown) => listenCalls.push(comments),
+    listen: (comments: AgentComment[]) => listenCalls.push(comments),
     _onAirCalls: onAirCalls,
     _listenCalls: listenCalls,
   };
@@ -27,10 +27,17 @@ describe("Agent API", () => {
 
   it("should update and get speech state via setSpeech/getSpeech", () => {
     const agent = createAgent();
-    const api = createAgentApi(agent, { speech: "", silent: true });
+    const api = createAgentApi(agent, "");
 
     api.setSpeech("hello");
     expect(api.getSpeech()).toEqual({ speech: "hello", silent: false });
+  });
+
+  it("should set silent to true in initial state when agent cannot speak", () => {
+    const agent = { ...createAgent(), canSpeak: false };
+    const api = createAgentApi(agent);
+
+    expect(api.getSpeech()).toEqual({ speech: "", silent: true });
   });
 
   it("should forward postComments to agent.listen", () => {
