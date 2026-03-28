@@ -15,13 +15,11 @@ export type CLIOpts = {
   help: boolean;
 };
 
-export function parseMarkovModelData(raw: { model: unknown }): MarkovModelData {
+export function parseMarkovModelData({ model }: { model: unknown }): MarkovModelData {
   const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-  // Expect callers to pass a wrapper object `{ model: unknown }`.
-  const m = raw.model;
-  if (!isRecord(m)) throw new Error('Invalid model format');
-  const extractedModel: Record<string, unknown> = m;
+  if (!isRecord(model)) throw new Error('Invalid model format');
+  const extractedModel: Record<string, unknown> = model;
 
   const isWeightedCandidates = (v: unknown): v is WeightedCandidates => {
     if (!isRecord(v)) return false;
@@ -49,7 +47,7 @@ export async function loadModelFromFile(filePath: string): Promise<MarkovModelDa
   const resolved = path.resolve(process.cwd(), filePath);
   const txt = await fs.readFile(resolved, 'utf8');
   const raw = JSON.parse(txt);
-  return parseMarkovModelData(raw);
+  return parseMarkovModelData({ model: raw });
 }
 
 export function printUsage() {
