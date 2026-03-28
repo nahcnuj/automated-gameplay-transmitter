@@ -3,23 +3,26 @@ import path from 'path';
 import type { MarkovModelData } from './MarkovModel';
 import { generateSamples, inspectToken } from './MarkovModel';
 
-function isWeightedCandidates(obj: any): obj is Record<string, number> {
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
-  return Object.keys(obj).every(k => typeof k === 'string' && typeof obj[k] === 'number');
+function isWeightedCandidates(obj: unknown): obj is Record<string, number> {
+  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return false;
+  const rec = obj as Record<string, unknown>;
+  return Object.keys(rec).every(k => typeof k === 'string' && typeof rec[k] === 'number');
 }
 
-function isMarkovModelData(obj: any): obj is MarkovModelData {
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
-  return Object.keys(obj).every(k => typeof k === 'string' && isWeightedCandidates(obj[k]));
+function isMarkovModelData(obj: unknown): obj is MarkovModelData {
+  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return false;
+  const rec = obj as Record<string, unknown>;
+  return Object.keys(rec).every(k => typeof k === 'string' && isWeightedCandidates(rec[k]));
 }
 
-export function normalizeRawModel(raw: any): MarkovModelData {
-  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-    if ('model' in raw) {
-      if (!isMarkovModelData(raw.model)) throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
-      return raw.model as MarkovModelData;
+export function normalizeRawModel(raw: unknown): MarkovModelData {
+  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) {
+    const rec = raw as Record<string, unknown>;
+    if ('model' in rec) {
+      if (!isMarkovModelData(rec.model)) throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
+      return rec.model as MarkovModelData;
     }
-    if (isMarkovModelData(raw)) return raw as MarkovModelData;
+    if (isMarkovModelData(rec)) return rec as MarkovModelData;
     throw new Error('Invalid model format: expected MarkovModelData or { model: MarkovModelData }');
   }
   throw new Error('Invalid model format: expected an object');
@@ -39,9 +42,10 @@ export async function writeModelToFile(filePath: string, model: MarkovModelData,
     const bak = `${resolved}.bak.${Date.now()}`;
     try {
       await fs.copyFile(resolved, bak);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Ignore if file doesn't exist; rethrow other errors
-      if (err?.code !== 'ENOENT') throw err;
+      const e = err as { code?: string };
+      if (e.code !== 'ENOENT') throw err;
     }
   }
   const content = { model };
