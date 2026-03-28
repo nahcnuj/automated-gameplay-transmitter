@@ -85,7 +85,7 @@ export function printSubcommandHelp(command: string) {
   }
 }
 
-export function parseAndGetCommand(argv: string[]) {
+export async function parseAndGetCommand(argv: string[]) {
   try {
     const { values: optsValues, positionals } = parseArgs({
       args: argv,
@@ -134,30 +134,27 @@ export function parseAndGetCommand(argv: string[]) {
       process.exit(1);
     }
 
-    // Return an async runner that executes the selected subcommand.
-    return (async () => {
-      const file = merged.file ?? './var/model.json';
-      if (cmdLocal === 'inspect') {
-        const word = merged._rest?.[0];
-        if (!word) { console.error('inspect <word>'); process.exit(1); }
-        const model = await loadModelFromFile(file);
-        const rows = inspectToken(model, word, Number(merged.top ?? '10'));
-        console.log(`Top ${rows.length} for word: ${word}`);
-        for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
-        return;
-      }
-      if (cmdLocal === 'generate') {
-        const n = Number(merged.n ?? '1');
-        const start = merged.start ?? '';
-        const model = await loadModelFromFile(file);
-        const out = generateSamples(model, start, n);
-        out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
-        return;
-      }
+    const file = merged.file ?? './var/model.json';
+    if (cmdLocal === 'inspect') {
+      const word = merged._rest?.[0];
+      if (!word) { console.error('inspect <word>'); process.exit(1); }
+      const model = await loadModelFromFile(file);
+      const rows = inspectToken(model, word, Number(merged.top ?? '10'));
+      console.log(`Top ${rows.length} for word: ${word}`);
+      for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
+      return;
+    }
+    if (cmdLocal === 'generate') {
+      const n = Number(merged.n ?? '1');
+      const start = merged.start ?? '';
+      const model = await loadModelFromFile(file);
+      const out = generateSamples(model, start, n);
+      out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
+      return;
+    }
 
-      console.error('Unknown command', cmdLocal);
-      process.exit(1);
-    }) as const;
+    console.error('Unknown command', cmdLocal);
+    process.exit(1);
   } catch (err: any) {
     console.error('Argument parse error:', err?.message ?? String(err));
     console.error('Use --help for usage.');
