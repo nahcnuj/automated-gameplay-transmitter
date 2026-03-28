@@ -42,12 +42,18 @@ try {
     strict: true,
   });
   cmd = positionals[0];
-  const optsValuesTyped = optsValues as Partial<CLIOpts>;
-  opts = { ...opts, ...optsValuesTyped, _rest: positionals.slice(1) } as CLIOpts;
-  // normalize booleans
-  opts.commit = Boolean(opts.commit);
-  opts.backup = opts.backup === undefined ? true : Boolean(opts.backup);
-  opts.help = Boolean(opts.help);
+  const parsedValues = optsValues as Record<string, unknown>;
+  opts = {
+    ...opts,
+    _rest: positionals.slice(1),
+    file: typeof parsedValues.file === 'string' ? parsedValues.file : opts.file,
+    start: typeof parsedValues.start === 'string' ? parsedValues.start : opts.start,
+    n: typeof parsedValues.n === 'string' ? parsedValues.n : opts.n,
+    top: typeof parsedValues.top === 'string' ? parsedValues.top : opts.top,
+    commit: typeof parsedValues.commit === 'boolean' ? parsedValues.commit : opts.commit,
+    backup: typeof parsedValues.backup === 'boolean' ? parsedValues.backup : opts.backup,
+    help: typeof parsedValues.help === 'boolean' ? parsedValues.help : opts.help,
+  };
   if (opts.help) {
     printUsage();
     process.exit(0);
