@@ -59,6 +59,19 @@ declare global {
   }
 }
 
+if (!(Math as any).sumPrecise) {
+  (Math as any).sumPrecise = (arr: number[]) => {
+    let sum = 0;
+    let c = 0;
+    for (const v of arr) {
+      const y = v - c;
+      const t = sum + y;
+      c = (t - sum) - y;
+      sum = t;
+    }
+    return sum;
+  };
+}
 const pick = (cands: WeightedCandidates) => {
   const total = Math.sumPrecise(Object.values(cands));
   const rnd = Math.floor(Math.random() * total);
