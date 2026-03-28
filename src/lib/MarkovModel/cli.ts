@@ -27,7 +27,7 @@ export function parseMarkovModelData(raw: unknown): MarkovModelData {
   const inner: Record<string, unknown> = (() => {
     if (hadModel) {
       const m = topLevel['model'];
-      if (!isRecord(m)) throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
+        if (!isRecord(m)) throw new Error('Invalid model format');
       return m;
     }
     return topLevel;
@@ -42,16 +42,14 @@ export function parseMarkovModelData(raw: unknown): MarkovModelData {
   for (const key of Object.keys(inner)) {
     const group = inner[key];
     if (!isWeightedCandidates(group)) {
-      if (hadModel) throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
-      throw new Error(`Invalid model format: value for key ${JSON.stringify(key)} is not a valid weighted-candidates object`);
+      throw new Error('Invalid model format');
     }
     validated[key] = group;
   }
 
   const isMarkovModelData = (o: Record<string, Record<string, number>>): o is MarkovModelData => '' in o;
   if (!isMarkovModelData(validated)) {
-    if (hadModel) throw new Error('Invalid model format: "model" is not a valid MarkovModelData (missing "")');
-    throw new Error('Invalid model format: missing required "" key');
+    throw new Error('Invalid model format');
   }
 
   return validated satisfies MarkovModelData;
