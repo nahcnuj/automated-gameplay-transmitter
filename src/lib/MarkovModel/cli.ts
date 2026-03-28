@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { parseArgs } from 'util';
-import type { MarkovModelData } from './MarkovModel';
+import type { MarkovModelData, WeightedCandidates } from './MarkovModel';
 import { generateSamples, inspectToken } from './MarkovModel';
 
 export type CLIOpts = {
@@ -33,7 +33,7 @@ export function parseMarkovModelData(raw: unknown): MarkovModelData {
     return topLevel;
   })();
 
-  const isWeightedCandidates = (v: unknown): v is Record<string, number> => {
+  const isWeightedCandidates = (v: unknown): v is WeightedCandidates => {
     if (!isRecord(v)) return false;
     return Object.values(v).every((x) => typeof x === 'number');
   };
