@@ -4,15 +4,15 @@ import type { MarkovModelData } from './MarkovModel';
 import { generateSamples, inspectToken } from './MarkovModel';
 
 export type CLIOpts = {
-  _rest?: string[];
+  _rest: string[];
   file?: string;
   start?: string;
   n?: string;
   top?: string;
-  commit?: boolean;
-  backup?: boolean;
-  help?: boolean;
-  h?: boolean;
+  commit: boolean;
+  backup: boolean;
+  help: boolean;
+  h: boolean;
 };
 
 function isWeightedCandidates(obj: unknown): obj is Record<string, number> {

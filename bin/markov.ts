@@ -39,7 +39,13 @@ try {
   });
   cmd = positionals[0];
   opts = { ...optsValues } as CLIOpts;
+  // initialize defaults so callers need not check for undefined
   opts._rest = positionals.slice(1);
+  opts.commit = Boolean(opts.commit ?? false);
+  // default to true for backup to preserve previous behavior when committing
+  opts.backup = opts.backup === undefined ? true : Boolean(opts.backup);
+  opts.help = Boolean(opts.help ?? false);
+  opts.h = Boolean(opts.h ?? false);
   if (opts.help || opts.h) {
     printUsage();
     process.exit(0);
