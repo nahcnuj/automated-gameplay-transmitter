@@ -27,8 +27,8 @@ try {
     options: {
       file: { type: 'string' },
       start: { type: 'string' },
-      n: { type: 'number' },
-      top: { type: 'number' },
+      n: { type: 'string' },
+      top: { type: 'string' },
       commit: { type: 'boolean' },
       backup: { type: 'boolean' },
       help: { type: 'boolean' },
