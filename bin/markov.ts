@@ -3,8 +3,20 @@ import { loadModelFromFile, writeModelToFile } from '../src/lib/MarkovModel/cli.
 import { generateSamples, inspectToken, create } from '../src/lib/MarkovModel/MarkovModel.ts';
 import { parseArgs } from 'util';
 
+type CLIOpts = Record<string, unknown> & {
+  _rest?: string[];
+  file?: string;
+  start?: string;
+  n?: string;
+  top?: string;
+  commit?: boolean;
+  backup?: boolean;
+  help?: boolean;
+  h?: boolean;
+};
+
 let cmd: string | undefined;
-let opts: Record<string, unknown> = {};
+let opts: CLIOpts = {};
 
 function printUsage() {
   console.log('Usage: markov <inspect|generate> [options]');
@@ -38,8 +50,8 @@ try {
     strict: true,
   });
   cmd = positionals[0];
-  opts = { ...optsValues } as Record<string, unknown>;
-  (opts as Record<string, unknown>)._rest = positionals.slice(1) as unknown;
+  opts = { ...optsValues } as CLIOpts;
+  opts._rest = positionals.slice(1);
   if (opts.help || opts.h) {
     printUsage();
     process.exit(0);
@@ -57,18 +69,17 @@ try {
 (async () => {
   const file = opts.file ?? './var/model.json';
   if (cmd === 'inspect') {
-    const rest = opts._rest as unknown as string[] | undefined;
-    const word = rest?.[0];
+    const word = opts._rest?.[0];
     if (!word) { console.error('inspect <word>'); process.exit(1); }
     const model = await loadModelFromFile(file);
-    const rows = inspectToken(model, word, Number((opts.top as unknown as string) ?? '10'));
+    const rows = inspectToken(model, word, Number(opts.top ?? '10'));
     console.log(`Top ${rows.length} for word: ${word}`);
     for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
     return;
   }
   if (cmd === 'generate') {
-    const n = Number((opts.n as unknown as string) ?? '1');
-    const start = (opts.start as unknown as string) ?? '';
+    const n = Number(opts.n ?? '1');
+    const start = opts.start ?? '';
     const model = await loadModelFromFile(file);
     const out = generateSamples(model, start, n);
     out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
@@ -78,8 +89,8 @@ try {
   if (cmd === 'learn') {
     // inputs: positional sentences OR stdin
     let inputs: string[] = [];
-    if ((opts as any)._rest && ((opts as any)._rest as string[]).length > 0) {
-      inputs = ((opts as any)._rest) as string[];
+    if (opts._rest && opts._rest.length > 0) {
+      inputs = opts._rest;
     } else {
       // read stdin
       const chunks: Uint8Array[] = [];
@@ -96,8 +107,8 @@ try {
       m.learn(line as `${string}。`);
     }
 
-    if (opts.commit as unknown as boolean) {
-      await writeModelToFile(file, m.json.model, { backup: Boolean((opts.backup as unknown as boolean) ?? true) });
+    if (opts.commit) {
+      await writeModelToFile(file, m.json.model, { backup: Boolean(opts.backup ?? true) });
       console.log('Committed learned changes to', file);
     } else {
       console.log('Dry-run: resulting model JSON:');
