@@ -46,20 +46,4 @@ export async function loadModelFromFile(filePath: string): Promise<MarkovModelDa
   return normalizeRawModel(raw);
 }
 
-export async function writeModelToFile(filePath: string, model: MarkovModelData, opts: { backup?: boolean } = {}) {
-  const resolved = path.resolve(process.cwd(), filePath);
-  const { backup = true } = opts;
-  if (backup) {
-    const bak = `${resolved}.bak.${Date.now()}`;
-    try {
-      await fs.copyFile(resolved, bak);
-    } catch (err: unknown) {
-      // Ignore if file doesn't exist; rethrow other errors
-      const e = err as { code?: string };
-      if (e.code !== 'ENOENT') throw err;
-    }
-  }
-  const content = { model };
-  await fs.writeFile(resolved, JSON.stringify(content, null, 2), 'utf8');
-}
 
