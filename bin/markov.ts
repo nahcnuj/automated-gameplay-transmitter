@@ -4,7 +4,12 @@ import { generateSamples, inspectToken } from '../src/lib/MarkovModel/MarkovMode
 import { parseArgs } from 'util';
 
 let cmd: string | undefined;
-let opts: Partial<CLIOpts> = {};
+let opts: CLIOpts = {
+  _rest: [],
+  commit: false,
+  backup: true,
+  help: false,
+};
 
 function printUsage() {
   console.log('Usage: markov <inspect|generate> [options]');
@@ -37,13 +42,12 @@ try {
     strict: true,
   });
   cmd = positionals[0];
-  opts = { ...optsValues } as CLIOpts;
-  // initialize defaults so callers need not check for undefined
-  opts._rest = positionals.slice(1);
-  opts.commit = Boolean(opts.commit ?? false);
-  // default to true for backup to preserve previous behavior when committing
+  const parsed = optsValues as Partial<CLIOpts>;
+  opts = { ...opts, ...parsed, _rest: positionals.slice(1) } as CLIOpts;
+  // normalize booleans
+  opts.commit = Boolean(opts.commit);
   opts.backup = opts.backup === undefined ? true : Boolean(opts.backup);
-  opts.help = Boolean(opts.help ?? false);
+  opts.help = Boolean(opts.help);
   if (opts.help) {
     printUsage();
     process.exit(0);
