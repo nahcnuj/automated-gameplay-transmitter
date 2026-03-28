@@ -24,10 +24,10 @@ export function parseMarkovModelData(raw: unknown): MarkovModelData {
   const topLevel = raw;
   const hadModel = 'model' in topLevel;
 
-  const inner: Record<string, unknown> = (() => {
+  const extractedModel: Record<string, unknown> = (() => {
     if (hadModel) {
       const m = topLevel['model'];
-        if (!isRecord(m)) throw new Error('Invalid model format');
+      if (!isRecord(m)) throw new Error('Invalid model format');
       return m;
     }
     return topLevel;
@@ -39,8 +39,8 @@ export function parseMarkovModelData(raw: unknown): MarkovModelData {
   };
 
   const validated: Record<string, Record<string, number>> = {};
-  for (const key of Object.keys(inner)) {
-    const group = inner[key];
+  for (const key of Object.keys(extractedModel)) {
+    const group = extractedModel[key];
     if (!isWeightedCandidates(group)) {
       throw new Error('Invalid model format');
     }
