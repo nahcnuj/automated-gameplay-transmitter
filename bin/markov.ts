@@ -4,7 +4,7 @@ import { generateSamples, inspectToken } from '../src/lib/MarkovModel/MarkovMode
 import { parseArgs } from 'util';
 
 let cmd: string | undefined;
-let opts: CLIOpts = {};
+let opts: Partial<CLIOpts> = {};
 
 function printUsage() {
   console.log('Usage: markov <inspect|generate> [options]');
