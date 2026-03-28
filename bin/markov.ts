@@ -32,7 +32,6 @@ try {
       commit: { type: 'boolean' },
       backup: { type: 'boolean' },
       help: { type: 'boolean' },
-      h: { type: 'boolean' },
     },
     allowPositionals: true,
     strict: true,
@@ -45,8 +44,7 @@ try {
   // default to true for backup to preserve previous behavior when committing
   opts.backup = opts.backup === undefined ? true : Boolean(opts.backup);
   opts.help = Boolean(opts.help ?? false);
-  opts.h = Boolean(opts.h ?? false);
-  if (opts.help || opts.h) {
+  if (opts.help) {
     printUsage();
     process.exit(0);
   }

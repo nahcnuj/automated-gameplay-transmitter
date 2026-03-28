@@ -12,7 +12,6 @@ export type CLIOpts = {
   commit: boolean;
   backup: boolean;
   help: boolean;
-  h: boolean;
 };
 
 function isWeightedCandidates(obj: unknown): obj is Record<string, number> {
