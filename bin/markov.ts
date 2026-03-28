@@ -5,26 +5,13 @@ import { generateSamples, inspectToken } from '../src/lib/MarkovModel/MarkovMode
 const argv = process.argv.slice(2);
 const cmd = argv.shift();
 
-function parseOpts(args: string[]) {
-  const opts: Record<string, any> = {};
-  while (args.length) {
-    const a = args[0]!;
-    if (a.startsWith('--')) {
-      args.shift();
-      const [k, v] = a.includes('=') ? a.slice(2).split('=') : [a.slice(2), undefined];
-      if (v !== undefined) opts[k] = v;
-      else {
-        if (['file', 'start', 'n', 'top'].includes(k)) {
-          opts[k] = args.shift();
-        } else {
-          opts[k] = true;
-        }
-      }
-    } else break;
-  }
-  opts._rest = args;
-  return opts;
-}
+// Use Bun's built-in parser (no polyfill). Requires running under Bun.
+const parsed = Bun.parseArgs(process.argv.slice(2), {
+  string: ['file', 'start', 'n', 'top'],
+  boolean: ['commit', 'backup'],
+});
+const opts = { ...parsed } as Record<string, any>;
+opts._rest = parsed._ ?? [];
 
 if (!cmd) {
   console.log('Usage: markov <inspect|generate> [options]');
