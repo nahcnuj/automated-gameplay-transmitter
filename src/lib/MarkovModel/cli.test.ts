@@ -155,6 +155,28 @@ describe('Markov CLI helpers', () => {
     expect(() => normalizeRawModel(bad as unknown)).toThrow('Invalid model format: "model" is not a valid MarkovModelData');
   });
 
+  it('normalizeRawModel throws when token candidates are not objects', () => {
+    expect(() => normalizeRawModel({ a: [] } as unknown)).toThrow('Invalid model format');
+  });
+
+  it('runCli --help (global) prints usage and exits 0', async () => {
+    const origExit = (process as any).exit;
+    const origLog = (console as any).log;
+    const logs: string[] = [];
+    (console as any).log = (...a: any[]) => { logs.push(a.join(' ')); };
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli(['--help']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:0');
+    } finally {
+      (process as any).exit = origExit;
+      (console as any).log = origLog;
+    }
+    expect(logs.some(l => l.includes('Usage: markov'))).toBe(true);
+  });
+
   it('runCli unknown command triggers exit 1', async () => {
     const origExit = (process as any).exit;
     const origErr = (console as any).error;
