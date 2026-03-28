@@ -32,7 +32,7 @@ describe('Markov CLI helpers', () => {
   it('printUsage and printSubcommandHelp produce output', () => {
     const logs: string[] = [];
     const orig = console.log;
-    console.log = (...args: any[]) => { logs.push(args.join(' ')); } as any;
+    (console as any).log = (...args: any[]) => { logs.push(args.join(' ')); };
     try {
       printUsage();
       printSubcommandHelp('inspect');
@@ -49,9 +49,9 @@ describe('Markov CLI helpers', () => {
     const origExit = process.exit;
     const origLog = console.log;
     const logs: string[] = [];
-    console.log = (...a: any[]) => { logs.push(a.join(' ')); } as any;
+    (console as any).log = (...a: any[]) => { logs.push(a.join(' ')); };
     let code: number | undefined;
-    process.exit = ((c = 0) => { code = c; throw new Error('process.exit:' + c); }) as any;
+    (process as any).exit = (c = 0) => { code = c; throw new Error('process.exit:' + c); };
     try {
       try {
         await runCli(['inspect', '--help']);
@@ -60,8 +60,8 @@ describe('Markov CLI helpers', () => {
         expect(String(err.message)).toContain('process.exit:0');
       }
     } finally {
-      process.exit = origExit;
-      console.log = origLog;
+      (process as any).exit = origExit;
+      (console as any).log = origLog;
     }
     expect(code).toBe(0);
     expect(logs.some(l => l.includes('Usage: markov inspect'))).toBe(true);
@@ -74,7 +74,7 @@ describe('Markov CLI helpers', () => {
     await fs.writeFile(fp, JSON.stringify(model), 'utf8');
     const out: string[] = [];
     const origLog = console.log;
-    console.log = (...a: any[]) => { out.push(a.join(' ')); } as any;
+    (console as any).log = (...a: any[]) => { out.push(a.join(' ')); };
     try {
       await runCli(['inspect', 'hello', '--file', fp, '--top', '2']);
       expect(out.some(l => l.includes('Top'))).toBe(true);
@@ -82,7 +82,7 @@ describe('Markov CLI helpers', () => {
       await runCli(['generate', '--file', fp, '--n', '2']);
       expect(out.some(l => l.match(/^1:\s/))).toBe(true);
     } finally {
-      console.log = origLog;
+      (console as any).log = origLog;
       await fs.unlink(fp).catch(() => {});
     }
   });
