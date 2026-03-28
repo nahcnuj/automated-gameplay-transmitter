@@ -59,8 +59,8 @@ declare global {
   }
 }
 
-if (!(Math as any).sumPrecise) {
-  (Math as any).sumPrecise = (arr: number[]) => {
+if (typeof Math.sumPrecise !== 'function') {
+  Math.sumPrecise = (arr: number[]) => {
     let sum = 0;
     let c = 0;
     for (const v of arr) {
