@@ -27,7 +27,8 @@
   "scripts": {
     "build": "bun run build.ts",
     "build:lib": "bun run build.ts --lib && tsc --project tsconfig.lib.json",
-    "prepublishOnly": "bun run build:lib"
+    "prepublishOnly": "bun run build:lib",
+    "markov": "bun run ./bin/markov.ts"
   },
   "peerDependencies": {
     "react": ">=19",

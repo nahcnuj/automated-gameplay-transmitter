@@ -1,0 +1,34 @@
+import { describe, it, expect } from 'bun:test';
+import { normalizeRawModel, inspectToken, generateSamples, learnPreview } from './cli';
+
+describe('Markov CLI helpers', () => {
+  it('normalizes plain model and with-corpus shapes', () => {
+    const plain = { '': { a: 1 }, a: { '。': 1 } };
+    const n1 = normalizeRawModel(plain);
+    expect(n1.shape).toBe('plain');
+    const wrapped = { model: plain, corpus: ['a。'] };
+    const n2 = normalizeRawModel(wrapped);
+    expect(n2.shape).toBe('withCorpus');
+    expect(n2.corpus.length).toBe(1);
+  });
+
+  it('inspectToken returns sorted candidates', () => {
+    const model = { '': {}, tok: { x: 1, y: 5, z: 2 } };
+    const top = inspectToken(model as any, 'tok', 2);
+    expect(top[0][0]).toBe('y');
+    expect(top[1][0]).toBe('z');
+  });
+
+  it('generateSamples produces expected count', () => {
+    const model = { '': { hello: 1 }, hello: { '。': 1 } };
+    const out = generateSamples(model as any, 'hello', 2);
+    expect(out.length).toBe(2);
+    expect(out[0].endsWith('。')).toBe(true);
+  });
+
+  it('learnPreview shows diffs', () => {
+    const model = { '': {}, 'こんにちは': { '。': 1 } };
+    const preview = learnPreview(model as any, 'おはようございます。');
+    expect(Object.keys(preview.diffs).length).toBeGreaterThanOrEqual(1);
+  });
+});
