@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'bun:test';
-import { normalizeRawModel } from './cli';
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { normalizeRawModel, runCli, printUsage, printSubcommandHelp } from './cli';
 import { inspectToken, generateSamples } from './MarkovModel';
 import type { MarkovModelData } from './MarkovModel';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 describe('Markov CLI helpers', () => {
   it('normalizes model and ignores corpus (model-only)', () => {
@@ -25,5 +27,63 @@ describe('Markov CLI helpers', () => {
     const out = generateSamples(model, 'hello', 2);
     expect(out.length).toBe(2);
     expect(out[0]!.endsWith('。')).toBe(true);
+  });
+
+  it('printUsage and printSubcommandHelp produce output', () => {
+    const logs: string[] = [];
+    const orig = console.log;
+    console.log = (...args: any[]) => { logs.push(args.join(' ')); } as any;
+    try {
+      printUsage();
+      printSubcommandHelp('inspect');
+      printSubcommandHelp('generate');
+      printSubcommandHelp('unknown-cmd');
+    } finally {
+      console.log = orig;
+    }
+    expect(logs.length).toBeGreaterThan(0);
+    expect(logs.some(l => l.includes('Usage: markov'))).toBe(true);
+  });
+
+  it('runCli shows subcommand help with --help and exits', async () => {
+    const origExit = process.exit;
+    const origLog = console.log;
+    const logs: string[] = [];
+    console.log = (...a: any[]) => { logs.push(a.join(' ')); } as any;
+    let code: number | undefined;
+    process.exit = ((c = 0) => { code = c; throw new Error('process.exit:' + c); }) as any;
+    try {
+      try {
+        await runCli(['inspect', '--help']);
+        throw new Error('should have exited');
+      } catch (err: any) {
+        expect(String(err.message)).toContain('process.exit:0');
+      }
+    } finally {
+      process.exit = origExit;
+      console.log = origLog;
+    }
+    expect(code).toBe(0);
+    expect(logs.some(l => l.includes('Usage: markov inspect'))).toBe(true);
+  });
+
+  it('runCli inspect and generate execute using a temp model file', async () => {
+    const model: MarkovModelData = { '': {}, hello: { '。': 1, world: 2 }, world: { '。': 1 } };
+    const fp = path.resolve('var', 'test-model.json');
+    await fs.mkdir(path.dirname(fp), { recursive: true });
+    await fs.writeFile(fp, JSON.stringify(model), 'utf8');
+    const out: string[] = [];
+    const origLog = console.log;
+    console.log = (...a: any[]) => { out.push(a.join(' ')); } as any;
+    try {
+      await runCli(['inspect', 'hello', '--file', fp, '--top', '2']);
+      expect(out.some(l => l.includes('Top'))).toBe(true);
+      out.length = 0;
+      await runCli(['generate', '--file', fp, '--n', '2']);
+      expect(out.some(l => l.match(/^1:\s/))).toBe(true);
+    } finally {
+      console.log = origLog;
+      await fs.unlink(fp).catch(() => {});
+    }
   });
 });
