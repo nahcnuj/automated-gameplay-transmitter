@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { normalizeRawModel, inspectToken, generateSamples, learnPreview } from './cli';
+import { normalizeRawModel, inspectToken, generateSamples } from './cli';
 
 describe('Markov CLI helpers', () => {
   it('normalizes model and ignores corpus (model-only)', () => {
@@ -23,11 +23,5 @@ describe('Markov CLI helpers', () => {
     const out = generateSamples(model as any, 'hello', 2);
     expect(out.length).toBe(2);
     expect(out[0]!.endsWith('。')).toBe(true);
-  });
-
-  it('learnPreview shows diffs', () => {
-    const model = { '': {}, 'こんにちは': { '。': 1 } };
-    const preview = learnPreview(model as any, 'おはようございます。');
-    expect(Object.keys(preview.diffs).length).toBeGreaterThanOrEqual(1);
   });
 });

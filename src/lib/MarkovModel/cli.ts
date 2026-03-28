@@ -72,26 +72,3 @@ export function generateSamples(model: MarkovModelData, start = '', n = 1): stri
   const m = create(cloned);
   return Array.from({ length: n }, () => m.gen(start));
 }
-
-export function learnPreview(model: MarkovModelData, sentence: `${string}。`) {
-  const cloned = JSON.parse(JSON.stringify(model));
-  const m = create(cloned, []);
-  m.learn(sentence);
-  const after = m.json.model;
-  const diffs: Record<string, Record<string, { before: number; after: number }>> = {};
-  const keys = new Set<string>([...Object.keys(model), ...Object.keys(after)]);
-  for (const k of keys) {
-    const before = model[k] ?? {};
-    const afterC = after[k] ?? {};
-    const candKeys = new Set<string>([...Object.keys(before), ...Object.keys(afterC)]);
-    for (const c of candKeys) {
-      const b = before[c] ?? 0;
-      const a = afterC[c] ?? 0;
-      if (a !== b) {
-        diffs[k] = diffs[k] ?? {};
-        diffs[k][c] = { before: b, after: a };
-      }
-    }
-  }
-  return { diffs, newModel: after };
-}
