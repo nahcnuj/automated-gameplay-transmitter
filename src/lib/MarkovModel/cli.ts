@@ -87,80 +87,87 @@ export function printSubcommandHelp(command: string) {
 
 
 export async function runCli(argv: string[]) {
-  try {
-    const { values: optsValues, positionals } = parseArgs({
-      args: argv,
-      options: {
-        file: { type: 'string' },
-        start: { type: 'string' },
-        n: { type: 'string' },
-        top: { type: 'string' },
-        commit: { type: 'boolean' },
-        backup: { type: 'boolean' },
-        help: { type: 'boolean' },
-      },
-      allowPositionals: true,
-      strict: true,
-    });
+  // Isolate argument parsing so that later `process.exit` calls are not
+  // accidentally caught by a surrounding try/catch during tests.
+  const parseResult = (() => {
+    try {
+      return parseArgs({
+        args: argv,
+        options: {
+          file: { type: 'string' },
+          start: { type: 'string' },
+          n: { type: 'string' },
+          top: { type: 'string' },
+          commit: { type: 'boolean' },
+          backup: { type: 'boolean' },
+          help: { type: 'boolean' },
+        },
+        allowPositionals: true,
+        strict: true,
+      });
+    } catch (err: any) {
+      console.error('Argument parse error:', err?.message ?? String(err));
+      console.error('Use --help for usage.');
+      process.exit(2);
+    }
+  })();
 
-    const [cmdLocal, ..._rest] = positionals;
-    const merged = {
-      _rest,
-      commit: false,
-      backup: true,
-      help: false,
-      ...optsValues,
-    } satisfies CLIOpts;
+  const { values: optsValues, positionals } = parseResult as { values: Record<string, unknown>, positionals: string[] };
 
-    // If user passed `--help` together with a subcommand, show that subcommand's help.
-    if (merged.help) {
-      if (cmdLocal) {
-        printSubcommandHelp(cmdLocal);
-        process.exit(0);
-      }
-      printUsage();
+  const [cmdLocal, ..._rest] = positionals;
+  const merged = {
+    _rest,
+    commit: false,
+    backup: true,
+    help: false,
+    ...optsValues,
+  } satisfies CLIOpts;
+
+  // If user passed `--help` together with a subcommand, show that subcommand's help.
+  if (merged.help) {
+    if (cmdLocal) {
+      printSubcommandHelp(cmdLocal);
       process.exit(0);
     }
-
-    // Support `markov help [subcommand]` as a positional-based help helper.
-    if (cmdLocal === 'help') {
-      const target = _rest[0];
-      if (target) printSubcommandHelp(target);
-      else printUsage();
-      process.exit(0);
-    }
-
-    if (!cmdLocal) {
-      printUsage();
-      process.exit(1);
-    }
-
-    const file = merged.file ?? './var/model.json';
-    if (cmdLocal === 'inspect') {
-      const word = merged._rest?.[0];
-      if (!word) { console.error('inspect <word>'); process.exit(1); }
-      const model = await loadModelFromFile(file);
-      const rows = inspectToken(model, word, Number(merged.top ?? '10'));
-      console.log(`Top ${rows.length} for word: ${word}`);
-      for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
-      return;
-    }
-    if (cmdLocal === 'generate') {
-      const n = Number(merged.n ?? '1');
-      const start = merged.start ?? '';
-      const model = await loadModelFromFile(file);
-      const out = generateSamples(model, start, n);
-      out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
-      return;
-    }
-
-    console.error('Unknown command', cmdLocal);
-    process.exit(1);
-  } catch (err: any) {
-    console.error('Argument parse error:', err?.message ?? String(err));
-    console.error('Use --help for usage.');
-    process.exit(2);
+    printUsage();
+    process.exit(0);
   }
+
+  // Support `markov help [subcommand]` as a positional-based help helper.
+  if (cmdLocal === 'help') {
+    const target = _rest[0];
+    if (target) printSubcommandHelp(target);
+    else printUsage();
+    process.exit(0);
+  }
+
+  if (!cmdLocal) {
+    printUsage();
+    process.exit(1);
+  }
+
+  const file = merged.file ?? './var/model.json';
+  if (cmdLocal === 'inspect') {
+    const word = merged._rest?.[0];
+    if (!word) { console.error('inspect <word>'); process.exit(1); }
+    const model = await loadModelFromFile(file);
+    const rows = inspectToken(model, word, Number(merged.top ?? '10'));
+    console.log(`Top ${rows.length} for word: ${word}`);
+    for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
+    return;
+  }
+  if (cmdLocal === 'generate') {
+    const n = Number(merged.n ?? '1');
+    const start = merged.start ?? '';
+    const model = await loadModelFromFile(file);
+    const out = generateSamples(model, start, n);
+    out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
+    return;
+  }
+
+  console.error('Unknown command', cmdLocal);
+  process.exit(1);
+}
 }
 
 export { runCli as parseAndGetCommand };
