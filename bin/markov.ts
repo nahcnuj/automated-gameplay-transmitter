@@ -6,8 +6,8 @@ import {
   generateSamples,
   learnPreview,
   writeModelToFile,
-  NormalizedModel,
 } from '../src/lib/MarkovModel/cli.ts';
+import type { NormalizedModel } from '../src/lib/MarkovModel/cli.ts';
 
 const argv = process.argv.slice(2);
 const cmd = argv.shift();
@@ -15,7 +15,7 @@ const cmd = argv.shift();
 function parseOpts(args: string[]) {
   const opts: Record<string, any> = {};
   while (args.length) {
-    const a = args[0];
+    const a = args[0]!;
     if (a.startsWith('--')) {
       args.shift();
       const [k, v] = a.includes('=') ? a.slice(2).split('=') : [a.slice(2), undefined];
@@ -59,7 +59,7 @@ if (!cmd) {
     return;
   }
   if (cmd === 'learn') {
-    const sentence = opts._rest.join(' ') || opts._rest[0];
+    const sentence = (opts._rest.join(' ') || opts._rest[0]) as `${string}。`;
     if (!sentence) { console.error('learn <sentence。>'); process.exit(1); }
     const { raw, normalized } = await loadModelFromFile(file);
     const preview = learnPreview(normalized.model, sentence);
@@ -72,8 +72,8 @@ if (!cmd) {
     }
     const commit = !!opts.commit;
     if (commit) {
-      const newNormalized: NormalizedModel = { model: preview.newModel, corpus: preview.corpus ?? [], shape: 'withCorpus' };
-      await writeModelToFile(file, newNormalized, { backup: !!opts.backup, preserveCorpus: true });
+      const newNormalized: NormalizedModel = { model: preview.newModel };
+      await writeModelToFile(file, newNormalized, { backup: !!opts.backup });
       console.log(`Committed changes to ${file}`);
     } else {
       console.log('Dry-run (no write). Use --commit to persist; use --backup to create backup.');

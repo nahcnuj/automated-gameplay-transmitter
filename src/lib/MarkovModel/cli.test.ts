@@ -16,15 +16,15 @@ describe('Markov CLI helpers', () => {
   it('inspectToken returns sorted candidates', () => {
     const model = { '': {}, tok: { x: 1, y: 5, z: 2 } };
     const top = inspectToken(model as any, 'tok', 2);
-    expect(top[0][0]).toBe('y');
-    expect(top[1][0]).toBe('z');
+    expect(top[0]![0]).toBe('y');
+    expect(top[1]![0]).toBe('z');
   });
 
   it('generateSamples produces expected count', () => {
     const model = { '': { hello: 1 }, hello: { '。': 1 } };
     const out = generateSamples(model as any, 'hello', 2);
     expect(out.length).toBe(2);
-    expect(out[0].endsWith('。')).toBe(true);
+    expect(out[0]!.endsWith('。')).toBe(true);
   });
 
   it('learnPreview shows diffs', () => {

@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import type { MarkovModelData } from './MarkovModel';
 import { create } from './MarkovModel';
-import type { WeightedCandidates, MarkovModelData } from './MarkovModel';
 export type NormalizedModel = { model: MarkovModelData };
 
 if (!(Math as any).sumPrecise) {
@@ -62,7 +62,7 @@ export function generateSamples(model: MarkovModelData, start = '', n = 1): stri
   return Array.from({ length: n }, () => m.gen(start));
 }
 
-export function learnPreview(model: MarkovModelData, sentence: string) {
+export function learnPreview(model: MarkovModelData, sentence: `${string}。`) {
   const cloned = JSON.parse(JSON.stringify(model));
   const m = create(cloned, []);
   m.learn(sentence);
