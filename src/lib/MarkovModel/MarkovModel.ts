@@ -1,9 +1,9 @@
 import { sliceByNumber } from "../extensions/Array";
 import { splitIntoWords } from "../extensions/String";
 
-type WeightedCandidates = Record<string, number>;
+export type WeightedCandidates = Record<string, number>;
 
-type MarkovModelData = {
+export type MarkovModelData = {
   /** initial word candidates */
   '': WeightedCandidates
 

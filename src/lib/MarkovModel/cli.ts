@@ -1,10 +1,8 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { create } from './MarkovModel';
-
-export type WeightedCandidates = Record<string, number>;
-export type MarkovModelData = { '': WeightedCandidates; [k: string]: WeightedCandidates };
-export type NormalizedModel = { model: MarkovModelData; corpus: string[]; shape: 'withCorpus'|'modelOnly'|'plain' };
+import type { WeightedCandidates, MarkovModelData } from './MarkovModel';
+export type NormalizedModel = { model: MarkovModelData };
 
 if (!(Math as any).sumPrecise) {
   (Math as any).sumPrecise = (arr: number[]) => {
@@ -23,12 +21,11 @@ if (!(Math as any).sumPrecise) {
 export function normalizeRawModel(raw: any): NormalizedModel {
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
     if ('model' in raw && typeof raw.model === 'object') {
-      const corpus = Array.isArray(raw.corpus) ? raw.corpus : [];
-      return { model: raw.model as MarkovModelData, corpus, shape: raw.corpus ? 'withCorpus' : 'modelOnly' };
+      return { model: raw.model as MarkovModelData };
     }
-    return { model: raw as MarkovModelData, corpus: [], shape: 'plain' };
+    return { model: raw as MarkovModelData };
   }
-  return { model: { '': {} }, corpus: [], shape: 'plain' };
+  return { model: { '': {} } };
 }
 
 export async function loadModelFromFile(filePath: string): Promise<{ raw: any; normalized: NormalizedModel }> {
@@ -38,9 +35,9 @@ export async function loadModelFromFile(filePath: string): Promise<{ raw: any; n
   return { raw, normalized: normalizeRawModel(raw) };
 }
 
-export async function writeModelToFile(filePath: string, normalized: NormalizedModel, opts: { backup?: boolean; preserveCorpus?: boolean } = {}) {
+export async function writeModelToFile(filePath: string, normalized: NormalizedModel, opts: { backup?: boolean } = {}) {
   const resolved = path.resolve(process.cwd(), filePath);
-  const { backup = true, preserveCorpus = true } = opts;
+  const { backup = true } = opts;
   try {
     await fs.access(resolved);
     if (backup) {
@@ -50,7 +47,7 @@ export async function writeModelToFile(filePath: string, normalized: NormalizedM
   } catch {
     // file may not exist
   }
-  const content = preserveCorpus ? { model: normalized.model, corpus: normalized.corpus } : { model: normalized.model };
+  const content = { model: normalized.model };
   await fs.writeFile(resolved, JSON.stringify(content, null, 2), 'utf8');
 }
 
@@ -70,7 +67,6 @@ export function learnPreview(model: MarkovModelData, sentence: string) {
   const m = create(cloned, []);
   m.learn(sentence);
   const after = m.json.model;
-  const corpus = m.json.corpus ?? [];
   const diffs: Record<string, Record<string, { before: number; after: number }>> = {};
   const keys = new Set<string>([...Object.keys(model), ...Object.keys(after)]);
   for (const k of keys) {
@@ -86,5 +82,5 @@ export function learnPreview(model: MarkovModelData, sentence: string) {
       }
     }
   }
-  return { diffs, newModel: after, corpus };
+  return { diffs, newModel: after };
 }

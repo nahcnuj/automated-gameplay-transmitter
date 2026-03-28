@@ -2,14 +2,15 @@ import { describe, it, expect } from 'bun:test';
 import { normalizeRawModel, inspectToken, generateSamples, learnPreview } from './cli';
 
 describe('Markov CLI helpers', () => {
-  it('normalizes plain model and with-corpus shapes', () => {
+  it('normalizes model and ignores corpus (model-only)', () => {
     const plain = { '': { a: 1 }, a: { '。': 1 } };
     const n1 = normalizeRawModel(plain);
-    expect(n1.shape).toBe('plain');
+    expect(n1.model).toEqual(plain);
     const wrapped = { model: plain, corpus: ['a。'] };
-    const n2 = normalizeRawModel(wrapped);
-    expect(n2.shape).toBe('withCorpus');
-    expect(n2.corpus.length).toBe(1);
+    const n2 = normalizeRawModel(wrapped as any);
+    expect(n2.model).toEqual(plain);
+    expect((n2 as any).corpus).toBeUndefined();
+    expect((n2 as any).shape).toBeUndefined();
   });
 
   it('inspectToken returns sorted candidates', () => {
