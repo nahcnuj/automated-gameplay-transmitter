@@ -43,7 +43,7 @@ if (!cmd) {
   if (cmd === 'inspect') {
     const token = opts._rest[0];
     if (!token) { console.error('inspect <token>'); process.exit(1); }
-    const { model } = await loadModelFromFile(file);
+    const model = await loadModelFromFile(file);
     const rows = inspectToken(model, token, Number(opts.top ?? 10));
     console.log(`Top ${rows.length} for token: ${token}`);
     for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
@@ -52,7 +52,7 @@ if (!cmd) {
   if (cmd === 'generate') {
     const n = Number(opts.n ?? 1);
     const start = opts.start ?? '';
-    const { model } = await loadModelFromFile(file);
+    const model = await loadModelFromFile(file);
     const out = generateSamples(model, start, n);
     out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
     return;
@@ -60,7 +60,7 @@ if (!cmd) {
   if (cmd === 'learn') {
     const sentence = (opts._rest.join(' ') || opts._rest[0]) as `${string}。`;
     if (!sentence) { console.error('learn <sentence。>'); process.exit(1); }
-    const { raw, model } = await loadModelFromFile(file);
+    const model = await loadModelFromFile(file);
     const preview = learnPreview(model, sentence);
     console.log('Diffs preview:');
     for (const [k, v] of Object.entries(preview.diffs)) {

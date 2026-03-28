@@ -39,11 +39,11 @@ export function normalizeRawModel(raw: any): MarkovModelData {
   throw new Error('Invalid model format: expected an object');
 }
 
-export async function loadModelFromFile(filePath: string): Promise<{ raw: any; model: MarkovModelData }> {
+export async function loadModelFromFile(filePath: string): Promise<MarkovModelData> {
   const resolved = path.resolve(process.cwd(), filePath);
   const txt = await fs.readFile(resolved, 'utf8');
   const raw = JSON.parse(txt);
-  return { raw, model: normalizeRawModel(raw) };
+  return normalizeRawModel(raw);
 }
 
 export async function writeModelToFile(filePath: string, model: MarkovModelData, opts: { backup?: boolean } = {}) {
