@@ -15,29 +15,52 @@ export type CLIOpts = {
   help: boolean;
 };
 
-function isWeightedCandidates(obj: unknown): obj is Record<string, number> {
-  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return false;
-  const rec = obj as Record<string, unknown>;
-  return Object.keys(rec).every(k => typeof k === 'string' && typeof rec[k] === 'number');
-}
-
-function isMarkovModelData(obj: unknown): obj is MarkovModelData {
-  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return false;
-  const rec = obj as Record<string, unknown>;
-  return Object.keys(rec).every(k => typeof k === 'string' && isWeightedCandidates(rec[k]));
-}
-
 export function normalizeRawModel(raw: unknown): MarkovModelData {
-  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) {
-    const rec = raw as Record<string, unknown>;
-    if ('model' in rec) {
-      if (!isMarkovModelData(rec.model)) throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
-      return rec.model as MarkovModelData;
-    }
-    if (isMarkovModelData(rec)) return rec as MarkovModelData;
-    throw new Error('Invalid model format: expected MarkovModelData or { model: MarkovModelData }');
+  const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+  if (!isRecord(raw)) {
+    throw new Error('Invalid model format: expected an object');
   }
-  throw new Error('Invalid model format: expected an object');
+
+  const topLevel = raw;
+  const hadModel = isRecord(topLevel) && 'model' in topLevel;
+
+  const inner = (() => {
+    if (isRecord(topLevel) && 'model' in topLevel) {
+      const m = topLevel['model'];
+      if (!isRecord(m)) {
+        throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
+      }
+      return m;
+    }
+    if (!isRecord(topLevel)) {
+      throw new Error('Invalid model format: expected an object');
+    }
+    return topLevel;
+  })();
+
+  const isWeightedCandidates = (v: unknown): v is Record<string, number> => {
+    if (!isRecord(v)) return false;
+    return Object.values(v).every((x) => typeof x === 'number');
+  };
+
+  const validated: Record<string, Record<string, number>> = {};
+  for (const key of Object.keys(inner)) {
+    const group = inner[key];
+    if (!isWeightedCandidates(group)) {
+      if (hadModel) throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
+      throw new Error(`Invalid model format: value for key ${JSON.stringify(key)} is not a valid weighted-candidates object`);
+    }
+    validated[key] = group;
+  }
+
+  const isMarkovModelData = (o: Record<string, Record<string, number>>): o is MarkovModelData => '' in o;
+  if (!isMarkovModelData(validated)) {
+    if (hadModel) throw new Error('Invalid model format: "model" is not a valid MarkovModelData (missing "")');
+    throw new Error('Invalid model format: missing required "" key');
+  }
+
+  return validated satisfies MarkovModelData;
 }
 
 export async function loadModelFromFile(filePath: string): Promise<MarkovModelData> {
@@ -112,7 +135,8 @@ export async function runCli(argv: string[]) {
     }
   })();
 
-  const { values: optsValues, positionals } = parseResult as { values: Record<string, unknown>, positionals: string[] };
+  if (!parseResult) process.exit(2);
+  const { values: optsValues, positionals } = parseResult;
 
   const [cmdLocal, ..._rest] = positionals;
   const merged: CLIOpts = {

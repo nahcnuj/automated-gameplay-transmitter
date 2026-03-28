@@ -84,7 +84,7 @@ describe('additional generation and learning branches', () => {
     const model = { '': { x: 1 }, x: { '。': 1 } } as any;
     const out = require('./MarkovModel').generateSamples(model, 'x', 3);
     expect(out.length).toBe(3);
-    expect(out.every(s => s.endsWith('。'))).toBe(true);
+    expect(out.every((s: string) => s.endsWith('。'))).toBe(true);
   });
 });
 
