@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { parseArgs } from 'util';
 import type { MarkovModelData } from './MarkovModel';
-import { generateSamples, inspectToken } from './MarkovModel';
 
 export type CLIOpts = {
   _rest: string[];
@@ -44,6 +44,101 @@ export async function loadModelFromFile(filePath: string): Promise<MarkovModelDa
   const txt = await fs.readFile(resolved, 'utf8');
   const raw = JSON.parse(txt);
   return normalizeRawModel(raw);
+}
+
+export function printUsage() {
+  console.log('Usage: markov <inspect|generate> [options]');
+  console.log('Commands:');
+  console.log('  inspect <word>        Show top candidate continuations for <word>');
+  console.log('  generate              Generate sentences from the model');
+  console.log('  help                  Show usage');
+  console.log('Options:');
+  console.log('  --file <path>         Model file (default ./var/model.json)');
+  console.log('  --start <token>       Start token for generate');
+  console.log('  --n <num>             Number of samples to generate');
+  console.log('  --top <num>           Top N candidates for inspect');
+  console.log('  --commit              Commit learned changes to the model file (learn only)');
+  console.log('  --backup              Create a backup when committing changes');
+}
+
+export function printSubcommandHelp(command: string) {
+  switch (command) {
+    case 'inspect':
+      console.log('Usage: markov inspect <word> [--top <num>] [--file <path>]');
+      console.log('Show top candidate continuations for <word>.');
+      console.log('Options:');
+      console.log('  --top <num>    Number of top candidates to show (default 10)');
+      console.log('  --file <path>  Model file (default ./var/model.json)');
+      return;
+    case 'generate':
+      console.log('Usage: markov generate [--n <num>] [--start <token>] [--file <path>]');
+      console.log('Generate sentences from the model.');
+      console.log('Options:');
+      console.log('  --n <num>      Number of samples to generate (default 1)');
+      console.log('  --start <tok>  Start token for generation');
+      console.log('  --file <path>  Model file (default ./var/model.json)');
+      return;
+    default:
+      console.log(`No help available for unknown command: ${command}`);
+      printUsage();
+  }
+}
+
+export function parseAndGetCommand(argv: string[]) {
+  try {
+    const { values: optsValues, positionals } = parseArgs({
+      args: argv,
+      options: {
+        file: { type: 'string' },
+        start: { type: 'string' },
+        n: { type: 'string' },
+        top: { type: 'string' },
+        commit: { type: 'boolean' },
+        backup: { type: 'boolean' },
+        help: { type: 'boolean' },
+      },
+      allowPositionals: true,
+      strict: true,
+    });
+
+    const [cmdLocal, ..._rest] = positionals;
+    const merged = {
+      _rest,
+      commit: false,
+      backup: true,
+      help: false,
+      ...optsValues,
+    } satisfies CLIOpts;
+
+    // If user passed `--help` together with a subcommand, show that subcommand's help.
+    if (merged.help) {
+      if (cmdLocal) {
+        printSubcommandHelp(cmdLocal);
+        process.exit(0);
+      }
+      printUsage();
+      process.exit(0);
+    }
+
+    // Support `markov help [subcommand]` as a positional-based help helper.
+    if (cmdLocal === 'help') {
+      const target = _rest[0];
+      if (target) printSubcommandHelp(target);
+      else printUsage();
+      process.exit(0);
+    }
+
+    if (!cmdLocal) {
+      printUsage();
+      process.exit(1);
+    }
+
+    return { cmd: cmdLocal, opts: merged } as const;
+  } catch (err: any) {
+    console.error('Argument parse error:', err?.message ?? String(err));
+    console.error('Use --help for usage.');
+    process.exit(2);
+  }
 }
 
 
