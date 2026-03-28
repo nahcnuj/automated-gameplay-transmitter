@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { normalizeRawModel, runCli, printUsage, printSubcommandHelp } from './cli';
+import { parseMarkovModelData, runCli, printUsage, printSubcommandHelp } from './cli';
 import { inspectToken, generateSamples } from './MarkovModel';
 import type { MarkovModelData } from './MarkovModel';
 import { promises as fs } from 'fs';
@@ -8,10 +8,10 @@ import path from 'path';
 describe('Markov CLI helpers', () => {
   it('normalizes model and ignores corpus (model-only)', () => {
     const plain = { '': { a: 1 }, a: { '。': 1 } };
-    const n1 = normalizeRawModel(plain);
+    const n1 = parseMarkovModelData(plain);
     expect(n1).toEqual(plain);
     const wrapped = { model: plain, corpus: ['a。'] };
-    const n2 = normalizeRawModel(wrapped as unknown);
+    const n2 = parseMarkovModelData(wrapped as unknown);
     expect(n2).toEqual(plain);
   });
 
@@ -149,14 +149,14 @@ describe('Markov CLI helpers', () => {
     }
   });
 
-  it('normalizeRawModel throws for invalid inputs', () => {
-    expect(() => normalizeRawModel(null)).toThrow();
+  it('parseMarkovModelData throws for invalid inputs', () => {
+    expect(() => parseMarkovModelData(null)).toThrow();
     const bad = { model: { a: { x: 'nope' } } };
-    expect(() => normalizeRawModel(bad as unknown)).toThrow('Invalid model format: "model" is not a valid MarkovModelData');
+    expect(() => parseMarkovModelData(bad as unknown)).toThrow('Invalid model format: "model" is not a valid MarkovModelData');
   });
 
-  it('normalizeRawModel throws when token candidates are not objects', () => {
-    expect(() => normalizeRawModel({ a: [] } as unknown)).toThrow('Invalid model format');
+  it('parseMarkovModelData throws when token candidates are not objects', () => {
+    expect(() => parseMarkovModelData({ a: [] } as unknown)).toThrow('Invalid model format');
   });
 
   it('runCli --help (global) prints usage and exits 0', async () => {

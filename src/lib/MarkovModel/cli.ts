@@ -15,7 +15,7 @@ export type CLIOpts = {
   help: boolean;
 };
 
-export function normalizeRawModel(raw: unknown): MarkovModelData {
+export function parseMarkovModelData(raw: unknown): MarkovModelData {
   const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
   if (!isRecord(raw)) throw new Error('Invalid model format: expected an object');
@@ -61,7 +61,7 @@ export async function loadModelFromFile(filePath: string): Promise<MarkovModelDa
   const resolved = path.resolve(process.cwd(), filePath);
   const txt = await fs.readFile(resolved, 'utf8');
   const raw = JSON.parse(txt);
-  return normalizeRawModel(raw);
+  return parseMarkovModelData(raw);
 }
 
 export function printUsage() {
