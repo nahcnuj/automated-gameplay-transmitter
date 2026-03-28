@@ -78,6 +78,8 @@ const pick = (cands: WeightedCandidates) => {
   return choose(Object.entries(cands), rnd);
 };
 
+const DEBUG_MARKOV = Boolean(process.env.DEBUG_MARKOV);
+
 const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
 
 const jaJP = new Intl.Locale('ja-JP');
@@ -110,7 +112,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
       }
       words.push(w);
     }
-    console.debug('[DEBUG]',
+    if (DEBUG_MARKOV) console.debug('[DEBUG]',
       [...words].length - 1, 'words',
       [...words.join('')].length - 1, 'charas',
       words[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join('/'),
@@ -127,19 +129,19 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     }, ['']);
     const topic = cands.at(Math.floor(Math.random() * cands.length));
     if (topic) {
-      // console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
+      if (DEBUG_MARKOV) console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
       return this.gen(topic);
     }
   },
   learn: (text: `${string}。`): void => {
     corpus.push(text);
-    // console.debug('[DEBUG]', 'learn', text);
+    if (DEBUG_MARKOV) console.debug('[DEBUG]', 'learn', text);
     text[splitIntoWords](jaJP).reduce<string>((prev, next) => {
       if (prev === '' && !acceptBeginning(next)) {
         // skip
         return next;
       }
-      // console.debug('[DEBUG]', prev, next);
+      if (DEBUG_MARKOV) console.debug('[DEBUG]', prev, next);
       model[prev] = {
         [next]: 0,
         ...(model[prev] ?? {}),
