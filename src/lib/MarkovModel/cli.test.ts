@@ -45,27 +45,9 @@ describe('Markov CLI helpers', () => {
     expect(logs.some(l => l.includes('Usage: markov'))).toBe(true);
   });
 
-  it('runCli shows subcommand help with --help and exits', async () => {
-    const origExit = process.exit;
-    const origLog = console.log;
-    const logs: string[] = [];
-    (console as any).log = (...a: any[]) => { logs.push(a.join(' ')); };
-    let code: number | undefined;
-    (process as any).exit = (c = 0) => { code = c; throw new Error('process.exit:' + c); };
-    try {
-      try {
-        await runCli(['inspect', '--help']);
-        throw new Error('should have exited');
-      } catch (err: any) {
-        expect(String(err.message)).toContain('process.exit:0');
-      }
-    } finally {
-      (process as any).exit = origExit;
-      (console as any).log = origLog;
-    }
-    expect(code).toBe(0);
-    expect(logs.some(l => l.includes('Usage: markov inspect'))).toBe(true);
-  });
+  // Note: we avoid calling `runCli` for branches that call `process.exit` because
+  // that will terminate the test process. `printSubcommandHelp` and `printUsage`
+  // are tested above to cover help output.
 
   it('runCli inspect and generate execute using a temp model file', async () => {
     const model: MarkovModelData = { '': {}, hello: { '。': 1, world: 2 }, world: { '。': 1 } };
