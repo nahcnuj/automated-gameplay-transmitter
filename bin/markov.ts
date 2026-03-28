@@ -1,10 +1,6 @@
 #!/usr/bin/env bun
-import path from 'path';
-import {
-  loadModelFromFile,
-  inspectToken,
-  generateSamples,
-} from '../src/lib/MarkovModel/cli.ts';
+import { loadModelFromFile } from '../src/lib/MarkovModel/cli.ts';
+import { generateSamples, inspectToken } from '../src/lib/MarkovModel/MarkovModel.ts';
 
 const argv = process.argv.slice(2);
 const cmd = argv.shift();
@@ -55,7 +51,7 @@ if (!cmd) {
     out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
     return;
   }
-  
+
   console.error('Unknown command', cmd);
   process.exit(1);
 })();
