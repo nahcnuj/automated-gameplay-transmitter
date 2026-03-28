@@ -25,21 +25,20 @@ export function parseMarkovModelData({ model }: { model: unknown }): MarkovModel
     return Object.values(v).every((x) => typeof x === 'number');
   };
 
-    const startGroup = model[''];
-    if (!isWeightedCandidates(startGroup)) throw new Error('Invalid model format');
+  const startGroup = model[''];
+  if (!isWeightedCandidates(startGroup)) throw new Error('Invalid model format');
 
-    const validated: { '': WeightedCandidates } & Record<string, WeightedCandidates> = {
-      '': startGroup,
-    };
+  const validated: MarkovModelData = {
+    '': startGroup,
+  };
 
-    for (const key of Object.keys(model)) {
-      if (key === '') continue;
-      const group = model[key];
-      if (!isWeightedCandidates(group)) throw new Error('Invalid model format');
-      validated[key] = group;
-    }
+  for (const key of Object.keys(model).filter(key => key !== '')) {
+    const group = model[key];
+    if (!isWeightedCandidates(group)) throw new Error('Invalid model format');
+    validated[key] = group;
+  }
 
-    return validated satisfies MarkovModelData;
+  return validated;
 }
 
 export async function loadModelFromFile(filePath: string): Promise<MarkovModelData> {
