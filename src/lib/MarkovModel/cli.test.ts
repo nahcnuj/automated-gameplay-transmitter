@@ -8,10 +8,10 @@ import path from 'path';
 describe('Markov CLI helpers', () => {
   it('normalizes model and ignores corpus (model-only)', () => {
     const plain = { '': { a: 1 }, a: { '。': 1 } };
-    const n1 = parseMarkovModelData(plain);
+    const n1 = parseMarkovModelData({ model: plain });
     expect(n1).toEqual(plain);
     const wrapped = { model: plain, corpus: ['a。'] };
-    const n2 = parseMarkovModelData(wrapped as unknown);
+    const n2 = parseMarkovModelData(wrapped);
     expect(n2).toEqual(plain);
   });
 
@@ -150,13 +150,13 @@ describe('Markov CLI helpers', () => {
   });
 
   it('parseMarkovModelData throws for invalid inputs', () => {
-    expect(() => parseMarkovModelData(null)).toThrow();
+    expect(() => parseMarkovModelData({ model: null })).toThrow();
     const bad = { model: { a: { x: 'nope' } } };
-    expect(() => parseMarkovModelData(bad as unknown)).toThrow('Invalid model format: "model" is not a valid MarkovModelData');
+    expect(() => parseMarkovModelData(bad)).toThrow('Invalid model format');
   });
 
   it('parseMarkovModelData throws when token candidates are not objects', () => {
-    expect(() => parseMarkovModelData({ a: [] } as unknown)).toThrow('Invalid model format');
+    expect(() => parseMarkovModelData({ model: { a: [] } })).toThrow('Invalid model format');
   });
 
   it('runCli --help (global) prints usage and exits 0', async () => {

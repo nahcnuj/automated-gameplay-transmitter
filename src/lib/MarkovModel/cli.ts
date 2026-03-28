@@ -15,23 +15,13 @@ export type CLIOpts = {
   help: boolean;
 };
 
-export function parseMarkovModelData(raw: unknown): MarkovModelData {
+export function parseMarkovModelData(raw: { model: unknown }): MarkovModelData {
   const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-  if (!isRecord(raw)) throw new Error('Invalid model format: expected an object');
-
-  // `raw` is narrowed by the guard above, so assigning preserves the narrowed type.
-  const topLevel = raw;
-  const hadModel = 'model' in topLevel;
-
-  const extractedModel: Record<string, unknown> = (() => {
-    if (hadModel) {
-      const m = topLevel['model'];
-      if (!isRecord(m)) throw new Error('Invalid model format');
-      return m;
-    }
-    return topLevel;
-  })();
+  // Expect callers to pass a wrapper object `{ model: unknown }`.
+  const m = raw.model;
+  if (!isRecord(m)) throw new Error('Invalid model format');
+  const extractedModel: Record<string, unknown> = m;
 
   const isWeightedCandidates = (v: unknown): v is WeightedCandidates => {
     if (!isRecord(v)) return false;
