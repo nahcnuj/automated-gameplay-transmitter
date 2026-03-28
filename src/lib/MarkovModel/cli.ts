@@ -168,7 +168,6 @@ export async function runCli(argv: string[]) {
   console.error('Unknown command', cmdLocal);
   process.exit(1);
 }
-}
 
 export { runCli as parseAndGetCommand };
 
