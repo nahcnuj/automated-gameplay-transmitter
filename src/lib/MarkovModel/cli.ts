@@ -115,13 +115,16 @@ export async function runCli(argv: string[]) {
   const { values: optsValues, positionals } = parseResult as { values: Record<string, unknown>, positionals: string[] };
 
   const [cmdLocal, ..._rest] = positionals;
-  const merged = {
+  const merged: CLIOpts = {
     _rest,
-    commit: false,
-    backup: true,
-    help: false,
-    ...optsValues,
-  } satisfies CLIOpts;
+    file: typeof optsValues.file === 'string' ? optsValues.file : undefined,
+    start: typeof optsValues.start === 'string' ? optsValues.start : undefined,
+    n: typeof optsValues.n === 'string' ? optsValues.n : undefined,
+    top: typeof optsValues.top === 'string' ? optsValues.top : undefined,
+    commit: Boolean(optsValues.commit),
+    backup: optsValues.backup === undefined ? true : Boolean(optsValues.backup),
+    help: Boolean(optsValues.help),
+  };
 
   // If user passed `--help` together with a subcommand, show that subcommand's help.
   if (merged.help) {
