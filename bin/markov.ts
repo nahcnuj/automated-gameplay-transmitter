@@ -7,7 +7,6 @@ import {
   learnPreview,
   writeModelToFile,
 } from '../src/lib/MarkovModel/cli.ts';
-import type { NormalizedModel } from '../src/lib/MarkovModel/cli.ts';
 
 const argv = process.argv.slice(2);
 const cmd = argv.shift();
@@ -44,8 +43,8 @@ if (!cmd) {
   if (cmd === 'inspect') {
     const token = opts._rest[0];
     if (!token) { console.error('inspect <token>'); process.exit(1); }
-    const { normalized } = await loadModelFromFile(file);
-    const rows = inspectToken(normalized.model, token, Number(opts.top ?? 10));
+    const { model } = await loadModelFromFile(file);
+    const rows = inspectToken(model, token, Number(opts.top ?? 10));
     console.log(`Top ${rows.length} for token: ${token}`);
     for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
     return;
@@ -53,16 +52,16 @@ if (!cmd) {
   if (cmd === 'generate') {
     const n = Number(opts.n ?? 1);
     const start = opts.start ?? '';
-    const { normalized } = await loadModelFromFile(file);
-    const out = generateSamples(normalized.model, start, n);
+    const { model } = await loadModelFromFile(file);
+    const out = generateSamples(model, start, n);
     out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
     return;
   }
   if (cmd === 'learn') {
     const sentence = (opts._rest.join(' ') || opts._rest[0]) as `${string}。`;
     if (!sentence) { console.error('learn <sentence。>'); process.exit(1); }
-    const { raw, normalized } = await loadModelFromFile(file);
-    const preview = learnPreview(normalized.model, sentence);
+    const { raw, model } = await loadModelFromFile(file);
+    const preview = learnPreview(model, sentence);
     console.log('Diffs preview:');
     for (const [k, v] of Object.entries(preview.diffs)) {
       console.log(`From token: ${k}`);
@@ -72,8 +71,7 @@ if (!cmd) {
     }
     const commit = !!opts.commit;
     if (commit) {
-      const newNormalized: NormalizedModel = { model: preview.newModel };
-      await writeModelToFile(file, newNormalized, { backup: !!opts.backup });
+      await writeModelToFile(file, preview.newModel, { backup: !!opts.backup });
       console.log(`Committed changes to ${file}`);
     } else {
       console.log('Dry-run (no write). Use --commit to persist; use --backup to create backup.');

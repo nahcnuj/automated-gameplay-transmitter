@@ -5,12 +5,10 @@ describe('Markov CLI helpers', () => {
   it('normalizes model and ignores corpus (model-only)', () => {
     const plain = { '': { a: 1 }, a: { '。': 1 } };
     const n1 = normalizeRawModel(plain);
-    expect(n1.model).toEqual(plain);
+    expect(n1).toEqual(plain);
     const wrapped = { model: plain, corpus: ['a。'] };
     const n2 = normalizeRawModel(wrapped as any);
-    expect(n2.model).toEqual(plain);
-    expect((n2 as any).corpus).toBeUndefined();
-    expect((n2 as any).shape).toBeUndefined();
+    expect(n2).toEqual(plain);
   });
 
   it('inspectToken returns sorted candidates', () => {
