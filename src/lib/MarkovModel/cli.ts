@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { MarkovModelData } from './MarkovModel';
-import { create } from './MarkovModel';
+import { generateSamples, inspectToken } from './MarkovModel';
 
 if (!(Math as any).sumPrecise) {
   (Math as any).sumPrecise = (arr: number[]) => {
@@ -62,13 +62,3 @@ export async function writeModelToFile(filePath: string, model: MarkovModelData,
   await fs.writeFile(resolved, JSON.stringify(content, null, 2), 'utf8');
 }
 
-export function inspectToken(model: MarkovModelData, token: string, topN = 10): Array<[string, number]> {
-  const cands = model[token] ?? {};
-  return Object.entries(cands).sort((a, b) => b[1] - a[1]).slice(0, topN) as Array<[string, number]>;
-}
-
-export function generateSamples(model: MarkovModelData, start = '', n = 1): string[] {
-  const cloned = JSON.parse(JSON.stringify(model));
-  const m = create(cloned);
-  return Array.from({ length: n }, () => m.gen(start));
-}

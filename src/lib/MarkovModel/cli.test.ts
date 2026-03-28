@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'bun:test';
-import { normalizeRawModel, inspectToken, generateSamples } from './cli';
+import { normalizeRawModel } from './cli';
+import { inspectToken, generateSamples } from './MarkovModel';
 
 describe('Markov CLI helpers', () => {
   it('normalizes model and ignores corpus (model-only)', () => {

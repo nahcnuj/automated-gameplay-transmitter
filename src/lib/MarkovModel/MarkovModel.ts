@@ -144,3 +144,20 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     return { model, corpus };
   },
 });
+
+/**
+ * Inspect a token's top candidates sorted by weight.
+ */
+export function inspectToken(model: MarkovModelData, token: string, topN = 10): Array<[string, number]> {
+  const cands = model[token] ?? {};
+  return Object.entries(cands).sort((a, b) => b[1] - a[1]).slice(0, topN) as Array<[string, number]>;
+}
+
+/**
+ * Generate `n` samples from a raw model using the existing `create` generator.
+ */
+export function generateSamples(model: MarkovModelData, start = '', n = 1): string[] {
+  const cloned = JSON.parse(JSON.stringify(model));
+  const m = create(cloned);
+  return Array.from({ length: n }, () => m.gen(start));
+}
