@@ -18,22 +18,16 @@ export type CLIOpts = {
 export function normalizeRawModel(raw: unknown): MarkovModelData {
   const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-  if (!isRecord(raw)) {
-    throw new Error('Invalid model format: expected an object');
-  }
+  if (!isRecord(raw)) throw new Error('Invalid model format: expected an object');
 
+  // `raw` is narrowed by the guard above, so assigning preserves the narrowed type.
   const topLevel = raw;
-  const hadModel = isRecord(topLevel) && 'model' in topLevel;
+  const hadModel = 'model' in topLevel;
 
-  const inner = (() => {
+  const inner: Record<string, unknown> = (() => {
     if (hadModel) {
-      if (!isRecord(topLevel)) {
-        throw new Error('Invalid model format: expected an object');
-      }
       const m = topLevel['model'];
-      if (!isRecord(m)) {
-        throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
-      }
+      if (!isRecord(m)) throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
       return m;
     }
     return topLevel;
