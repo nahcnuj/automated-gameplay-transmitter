@@ -85,6 +85,7 @@ export function printSubcommandHelp(command: string) {
   }
 }
 
+
 export async function runCli(argv: string[]) {
   try {
     const { values: optsValues, positionals } = parseArgs({
@@ -100,14 +101,13 @@ export async function runCli(argv: string[]) {
       },
       allowPositionals: true,
       strict: true,
-    }
-  } catch (err: any) {
+    });
+
     const [cmdLocal, ..._rest] = positionals;
     const merged = {
       _rest,
       commit: false,
       backup: true,
-export { runCli as parseAndGetCommand };
       help: false,
       ...optsValues,
     } satisfies CLIOpts;
@@ -162,5 +162,7 @@ export { runCli as parseAndGetCommand };
     process.exit(2);
   }
 }
+
+export { runCli as parseAndGetCommand };
 
 
