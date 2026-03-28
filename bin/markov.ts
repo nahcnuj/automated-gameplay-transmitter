@@ -42,18 +42,9 @@ try {
     strict: true,
   });
   cmd = positionals[0];
-  const parsedValues = optsValues as Record<string, unknown>;
-  opts = {
-    ...opts,
-    _rest: positionals.slice(1),
-    file: typeof parsedValues.file === 'string' ? parsedValues.file : opts.file,
-    start: typeof parsedValues.start === 'string' ? parsedValues.start : opts.start,
-    n: typeof parsedValues.n === 'string' ? parsedValues.n : opts.n,
-    top: typeof parsedValues.top === 'string' ? parsedValues.top : opts.top,
-    commit: typeof parsedValues.commit === 'boolean' ? parsedValues.commit : opts.commit,
-    backup: typeof parsedValues.backup === 'boolean' ? parsedValues.backup : opts.backup,
-    help: typeof parsedValues.help === 'boolean' ? parsedValues.help : opts.help,
-  };
+  // `optsValues` is produced by `parseArgs` using the options descriptor above,
+  // so we can safely treat it as `Partial<CLIOpts>` and merge.
+  opts = { ...opts, ...(optsValues as Partial<CLIOpts>), _rest: positionals.slice(1) } as CLIOpts;
   if (opts.help) {
     printUsage();
     process.exit(0);
