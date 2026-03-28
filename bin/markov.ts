@@ -26,38 +26,45 @@ function printUsage() {
   console.log('  --backup              Create a backup when committing changes');
 }
 
-try {
-  const { values: optsValues, positionals } = parseArgs({
-    args: process.argv.slice(2),
-    options: {
-      file: { type: 'string' },
-      start: { type: 'string' },
-      n: { type: 'string' },
-      top: { type: 'string' },
-      commit: { type: 'boolean' },
-      backup: { type: 'boolean' },
-      help: { type: 'boolean' },
-    },
-    allowPositionals: true,
-    strict: true,
-  });
-  cmd = positionals[0];
-  // `optsValues` is produced by `parseArgs` using the options descriptor above,
-  // so we can safely treat it as `Partial<CLIOpts>` and merge.
-  opts = { ...opts, ...(optsValues as Partial<CLIOpts>), _rest: positionals.slice(1) } as CLIOpts;
-  if (opts.help) {
-    printUsage();
-    process.exit(0);
+const [parsedCmd, parsedOpts] = (() => {
+  try {
+    const { values: optsValues, positionals } = parseArgs({
+      args: process.argv.slice(2),
+      options: {
+        file: { type: 'string' },
+        start: { type: 'string' },
+        n: { type: 'string' },
+        top: { type: 'string' },
+        commit: { type: 'boolean' },
+        backup: { type: 'boolean' },
+        help: { type: 'boolean' },
+      },
+      allowPositionals: true,
+      strict: true,
+    });
+
+    const [cmdLocal, ..._rest] = positionals;
+    const merged = { ...opts, ...(optsValues as Partial<CLIOpts>), _rest } as CLIOpts;
+
+    if (merged.help) {
+      printUsage();
+      process.exit(0);
+    }
+    if (!cmdLocal) {
+      printUsage();
+      process.exit(1);
+    }
+
+    return [cmdLocal, merged] as const;
+  } catch (err: any) {
+    console.error('Argument parse error:', err?.message ?? String(err));
+    console.error('Use --help for usage.');
+    process.exit(2);
   }
-  if (!cmd) {
-    printUsage();
-    process.exit(1);
-  }
-} catch (err: any) {
-  console.error('Argument parse error:', err?.message ?? String(err));
-  console.error('Use --help for usage.');
-  process.exit(2);
-}
+})();
+
+cmd = parsedCmd;
+opts = parsedOpts;
 
 (async () => {
   const file = opts.file ?? './var/model.json';
