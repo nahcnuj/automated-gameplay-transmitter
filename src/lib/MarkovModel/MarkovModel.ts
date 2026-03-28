@@ -59,26 +59,30 @@ declare global {
   }
 }
 
-if (typeof Math.sumPrecise !== 'function') {
-  Math.sumPrecise = (arr: number[]) => {
-    let sum = 0;
-    let c = 0;
-    for (const v of arr) {
-      const y = v - c;
-      const t = sum + y;
-      c = (t - sum) - y;
-      sum = t;
-    }
-    return sum;
-  };
+export function sumPreciseImpl(arr: number[]) {
+  let sum = 0;
+  let c = 0;
+  for (const v of arr) {
+    const y = v - c;
+    const t = sum + y;
+    c = (t - sum) - y;
+    sum = t;
+  }
+  return sum;
 }
+
+Math.sumPrecise = sumPreciseImpl;
 const pick = (cands: WeightedCandidates) => {
   const total = Math.sumPrecise(Object.values(cands));
   const rnd = Math.floor(Math.random() * total);
   return choose(Object.entries(cands), rnd);
 };
 
-const DEBUG_MARKOV = Boolean(process.env.DEBUG_MARKOV);
+export function formatDebugWords(words: string[]) {
+  return words[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join('/');
+}
+
+const isDebug = () => Boolean(process.env.DEBUG_MARKOV);
 
 const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
 
@@ -112,10 +116,10 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
       }
       words.push(w);
     }
-    if (DEBUG_MARKOV) console.debug('[DEBUG]',
+    if (isDebug()) console.debug('[DEBUG]',
       [...words].length - 1, 'words',
       [...words.join('')].length - 1, 'charas',
-      words[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join('/'),
+      formatDebugWords(words),
     );
     return words.join('');
   },
@@ -129,19 +133,19 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     }, ['']);
     const topic = cands.at(Math.floor(Math.random() * cands.length));
     if (topic) {
-      if (DEBUG_MARKOV) console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
+      if (isDebug()) console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
       return this.gen(topic);
     }
   },
   learn: (text: `${string}。`): void => {
     corpus.push(text);
-    if (DEBUG_MARKOV) console.debug('[DEBUG]', 'learn', text);
+    if (isDebug()) console.debug('[DEBUG]', 'learn', text);
     text[splitIntoWords](jaJP).reduce<string>((prev, next) => {
       if (prev === '' && !acceptBeginning(next)) {
         // skip
         return next;
       }
-      if (DEBUG_MARKOV) console.debug('[DEBUG]', prev, next);
+      if (isDebug()) console.debug('[DEBUG]', prev, next);
       model[prev] = {
         [next]: 0,
         ...(model[prev] ?? {}),
