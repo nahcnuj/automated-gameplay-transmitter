@@ -42,8 +42,8 @@ try {
     strict: true,
   });
   cmd = positionals[0];
-  const parsed = optsValues as Partial<CLIOpts>;
-  opts = { ...opts, ...parsed, _rest: positionals.slice(1) } as CLIOpts;
+  const optsValuesTyped = optsValues as Partial<CLIOpts>;
+  opts = { ...opts, ...optsValuesTyped, _rest: positionals.slice(1) } as CLIOpts;
   // normalize booleans
   opts.commit = Boolean(opts.commit);
   opts.backup = opts.backup === undefined ? true : Boolean(opts.backup);
