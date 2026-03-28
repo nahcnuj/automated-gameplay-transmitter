@@ -4,6 +4,13 @@ import { parseArgs } from 'util';
 import type { MarkovModelData, WeightedCandidates } from './MarkovModel';
 import { generateSamples, inspectToken } from './MarkovModel';
 
+/**
+ * Parsed CLI options structure returned by the argument parser.
+ *
+ * - `_rest`: positional arguments remaining after options are parsed.
+ * - `file`, `start`, `n`, `top`: optional string flags passed on the CLI.
+ * - `commit`, `backup`, `help`: boolean flags.
+ */
 export type CLIOpts = {
   _rest: string[];
   file?: string;
@@ -15,6 +22,18 @@ export type CLIOpts = {
   help: boolean;
 };
 
+/**
+ * Parse and validate a raw model wrapper object into `MarkovModelData`.
+ *
+ * The function expects an object shaped `{ model: unknown }`. It validates
+ * that `model` is a plain record whose values are numeric-weight maps, and
+ * that the required empty-string key (`''`) exists. On validation failure an
+ * `Error` is thrown.
+ *
+ * @param param0 - Object with a `model` property containing the raw parsed JSON.
+ * @returns A validated `MarkovModelData` object.
+ * @throws {Error} If the input is not a valid model format.
+ */
 export function parseMarkovModelData({ model }: { model: unknown }): MarkovModelData {
   const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
@@ -41,6 +60,16 @@ export function parseMarkovModelData({ model }: { model: unknown }): MarkovModel
   return validated;
 }
 
+/**
+ * Load a model from the filesystem and parse it into `MarkovModelData`.
+ *
+ * Reads the file at `filePath`, JSON-parses its contents and delegates
+ * validation to `parseMarkovModelData`.
+ *
+ * @param filePath - Path to the model JSON file.
+ * @returns The validated `MarkovModelData`.
+ * @throws {Error|SyntaxError} If the file cannot be read, parsed, or validated.
+ */
 export async function loadModelFromFile(filePath: string): Promise<MarkovModelData> {
   const resolved = path.resolve(process.cwd(), filePath);
   const txt = await fs.readFile(resolved, 'utf8');
