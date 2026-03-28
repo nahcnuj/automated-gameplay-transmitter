@@ -26,15 +26,15 @@ export function normalizeRawModel(raw: unknown): MarkovModelData {
   const hadModel = isRecord(topLevel) && 'model' in topLevel;
 
   const inner = (() => {
-    if (isRecord(topLevel) && 'model' in topLevel) {
+    if (hadModel) {
+      if (!isRecord(topLevel)) {
+        throw new Error('Invalid model format: expected an object');
+      }
       const m = topLevel['model'];
       if (!isRecord(m)) {
         throw new Error('Invalid model format: "model" is not a valid MarkovModelData');
       }
       return m;
-    }
-    if (!isRecord(topLevel)) {
-      throw new Error('Invalid model format: expected an object');
     }
     return topLevel;
   })();
