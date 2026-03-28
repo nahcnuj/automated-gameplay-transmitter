@@ -3,6 +3,18 @@ import path from 'path';
 import type { MarkovModelData } from './MarkovModel';
 import { generateSamples, inspectToken } from './MarkovModel';
 
+export type CLIOpts = {
+  _rest?: string[];
+  file?: string;
+  start?: string;
+  n?: string;
+  top?: string;
+  commit?: boolean;
+  backup?: boolean;
+  help?: boolean;
+  h?: boolean;
+};
+
 function isWeightedCandidates(obj: unknown): obj is Record<string, number> {
   if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return false;
   const rec = obj as Record<string, unknown>;

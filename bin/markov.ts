@@ -1,19 +1,7 @@
 #!/usr/bin/env bun
-import { loadModelFromFile, writeModelToFile } from '../src/lib/MarkovModel/cli.ts';
+import { loadModelFromFile, writeModelToFile, type CLIOpts } from '../src/lib/MarkovModel/cli.ts';
 import { generateSamples, inspectToken, create } from '../src/lib/MarkovModel/MarkovModel.ts';
 import { parseArgs } from 'util';
-
-type CLIOpts = Record<string, unknown> & {
-  _rest?: string[];
-  file?: string;
-  start?: string;
-  n?: string;
-  top?: string;
-  commit?: boolean;
-  backup?: boolean;
-  help?: boolean;
-  h?: boolean;
-};
 
 let cmd: string | undefined;
 let opts: CLIOpts = {};
