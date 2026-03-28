@@ -3,14 +3,6 @@ import { loadModelFromFile, type CLIOpts } from '../src/lib/MarkovModel/cli.ts';
 import { generateSamples, inspectToken } from '../src/lib/MarkovModel/MarkovModel.ts';
 import { parseArgs } from 'util';
 
-let cmd: string | undefined;
-let opts: CLIOpts = {
-  _rest: [],
-  commit: false,
-  backup: true,
-  help: false,
-};
-
 function printUsage() {
   console.log('Usage: markov <inspect|generate> [options]');
   console.log('Commands:');
@@ -26,7 +18,30 @@ function printUsage() {
   console.log('  --backup              Create a backup when committing changes');
 }
 
-const [parsedCmd, parsedOpts] = (() => {
+function printSubcommandHelp(command: string) {
+  switch (command) {
+    case 'inspect':
+      console.log('Usage: markov inspect <word> [--top <num>] [--file <path>]');
+      console.log('Show top candidate continuations for <word>.');
+      console.log('Options:');
+      console.log('  --top <num>    Number of top candidates to show (default 10)');
+      console.log('  --file <path>  Model file (default ./var/model.json)');
+      return;
+    case 'generate':
+      console.log('Usage: markov generate [--n <num>] [--start <token>] [--file <path>]');
+      console.log('Generate sentences from the model.');
+      console.log('Options:');
+      console.log('  --n <num>      Number of samples to generate (default 1)');
+      console.log('  --start <tok>  Start token for generation');
+      console.log('  --file <path>  Model file (default ./var/model.json)');
+      return;
+    default:
+      console.log(`No help available for unknown command: ${command}`);
+      printUsage();
+  }
+}
+
+const [cmd, opts] = (() => {
   try {
     const { values: optsValues, positionals } = parseArgs({
       args: process.argv.slice(2),
@@ -44,12 +59,32 @@ const [parsedCmd, parsedOpts] = (() => {
     });
 
     const [cmdLocal, ..._rest] = positionals;
-    const merged = { ...opts, ...(optsValues as Partial<CLIOpts>), _rest } as CLIOpts;
+    const merged = {
+      _rest,
+      commit: false,
+      backup: true,
+      help: false,
+      ...optsValues
+    } satisfies CLIOpts;
 
+    // If user passed `--help` together with a subcommand, show that subcommand's help.
     if (merged.help) {
+      if (cmdLocal) {
+        printSubcommandHelp(cmdLocal);
+        process.exit(0);
+      }
       printUsage();
       process.exit(0);
     }
+
+    // Support `markov help [subcommand]` as a positional-based help helper.
+    if (cmdLocal === 'help') {
+      const target = _rest[0];
+      if (target) printSubcommandHelp(target);
+      else printUsage();
+      process.exit(0);
+    }
+
     if (!cmdLocal) {
       printUsage();
       process.exit(1);
@@ -62,9 +97,6 @@ const [parsedCmd, parsedOpts] = (() => {
     process.exit(2);
   }
 })();
-
-cmd = parsedCmd;
-opts = parsedOpts;
 
 (async () => {
   const file = opts.file ?? './var/model.json';
