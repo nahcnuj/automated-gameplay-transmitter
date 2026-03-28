@@ -68,4 +68,84 @@ describe('Markov CLI helpers', () => {
       await fs.unlink(fp).catch(() => {});
     }
   });
+
+  it('runCli exits with code 0 when using --help with subcommand', async () => {
+    const origExit = (process as any).exit;
+    const origLog = (console as any).log;
+    const logs: string[] = [];
+    (console as any).log = (...a: any[]) => { logs.push(a.join(' ')); };
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli(['inspect', '--help']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:0');
+    } finally {
+      (process as any).exit = origExit;
+      (console as any).log = origLog;
+    }
+    expect(logs.some(l => l.includes('Usage: markov inspect'))).toBe(true);
+  });
+
+  it('runCli exits with code 0 for positional help', async () => {
+    const origExit = (process as any).exit;
+    const origLog = (console as any).log;
+    const logs: string[] = [];
+    (console as any).log = (...a: any[]) => { logs.push(a.join(' ')); };
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli(['help', 'generate']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:0');
+    } finally {
+      (process as any).exit = origExit;
+      (console as any).log = origLog;
+    }
+    expect(logs.some(l => l.includes('Usage: markov generate'))).toBe(true);
+  });
+
+  it('runCli exits with code 1 when no command provided', async () => {
+    const origExit = (process as any).exit;
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli([]);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:1');
+    } finally {
+      (process as any).exit = origExit;
+    }
+  });
+
+  it('runCli exits with code 1 when inspect missing argument', async () => {
+    const origExit = (process as any).exit;
+    const origErr = (console as any).error;
+    const errs: string[] = [];
+    (console as any).error = (...a: any[]) => { errs.push(a.join(' ')); };
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli(['inspect']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:1');
+    } finally {
+      (process as any).exit = origExit;
+      (console as any).error = origErr;
+    }
+    expect(errs.some(e => e.includes('inspect <word>'))).toBe(true);
+  });
+
+  it('runCli signals parse error (exit 2) for unknown flags', async () => {
+    const origExit = (process as any).exit;
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli(['--not-a-flag']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:2');
+    } finally {
+      (process as any).exit = origExit;
+    }
+  });
 });
