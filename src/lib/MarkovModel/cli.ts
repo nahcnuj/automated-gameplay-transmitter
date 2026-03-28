@@ -49,14 +49,14 @@ export async function loadModelFromFile(filePath: string): Promise<MarkovModelDa
 export async function writeModelToFile(filePath: string, model: MarkovModelData, opts: { backup?: boolean } = {}) {
   const resolved = path.resolve(process.cwd(), filePath);
   const { backup = true } = opts;
-  try {
-    await fs.access(resolved);
-    if (backup) {
-      const bak = `${resolved}.bak.${Date.now()}`;
+  if (backup) {
+    const bak = `${resolved}.bak.${Date.now()}`;
+    try {
       await fs.copyFile(resolved, bak);
+    } catch (err: any) {
+      // Ignore if file doesn't exist; rethrow other errors
+      if (err?.code !== 'ENOENT') throw err;
     }
-  } catch {
-    // file may not exist
   }
   const content = { model };
   await fs.writeFile(resolved, JSON.stringify(content, null, 2), 'utf8');
