@@ -19,7 +19,6 @@ export function parseMarkovModelData({ model }: { model: unknown }): MarkovModel
   const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
   if (!isRecord(model)) throw new Error('Invalid model format');
-  const extractedModel: Record<string, unknown> = model;
 
   const isWeightedCandidates = (v: unknown): v is WeightedCandidates => {
     if (!isRecord(v)) return false;
@@ -27,8 +26,8 @@ export function parseMarkovModelData({ model }: { model: unknown }): MarkovModel
   };
 
   const validated: Record<string, Record<string, number>> = {};
-  for (const key of Object.keys(extractedModel)) {
-    const group = extractedModel[key];
+  for (const key of Object.keys(model)) {
+    const group = model[key];
     if (!isWeightedCandidates(group)) {
       throw new Error('Invalid model format');
     }
