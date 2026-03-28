@@ -169,6 +169,6 @@ export async function runCli(argv: string[]) {
   process.exit(1);
 }
 
-export { runCli };
+// exported as named function `runCli` above
 
 
