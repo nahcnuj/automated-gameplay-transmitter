@@ -3,6 +3,7 @@ import path from 'path';
 import { parseArgs } from 'util';
 import type { MarkovModel } from './MarkovModel';
 import { create, inspectWord, parseModelFile } from './MarkovModel';
+import { moderateParsedModel, undoModeratedModel } from './moderation';
 
 /**
  * Parsed CLI options structure returned by the argument parser.
@@ -92,6 +93,19 @@ type GenerateCommandHelp = { help: true };
 
 type GenerateCommandOpts = GenerateCommandBase | GenerateCommandHelp;
 
+type ModerateCommandBase = {
+  file: string;
+  out?: string;
+  report?: string;
+  mode?: 'redact' | 'remove';
+  patterns?: string;
+  help?: never;
+};
+
+type ModerateCommandHelp = { help: true };
+
+type ModerateCommandOpts = ModerateCommandBase | ModerateCommandHelp;
+
 async function inspectCommand(opts: InspectCommandOpts) {
   if ('help' in opts && opts.help) {
     console.log('Usage: markov inspect <word> [--top <num>] [--file <path>] [--help]');
@@ -146,6 +160,95 @@ async function generateCommand(opts: GenerateCommandOpts) {
       console.error('Failed to write model file:', String(err));
       process.exit(1);
     }
+  }
+}
+
+async function moderateCommand(opts: ModerateCommandOpts) {
+  if ('help' in opts && opts.help) {
+    console.log('Usage: markov moderate [--file <path>] [--out <path>] [--report <path>] [--mode <redact|remove>] [--help]');
+    console.log('Scan model tokens for sensitive content and produce a redacted or stripped copy.');
+    console.log('Options:');
+    console.log('  --file <path>   Model file (default ./var/model.json)');
+    console.log('  --out <path>    Output moderated model (default ./var/model.moderated.json)');
+    console.log('  --report <path> Moderation report (default ./var/moderation_report.json)');
+    console.log('  --patterns <path>  Patterns file (default ./var/moderation_patterns.json)');
+    console.log('  --mode <redact|remove>  redacted keys or remove offending keys (default redact)');
+    console.log('  --help          Show this help');
+    process.exit(0);
+  }
+
+  const { file, out = './var/model.moderated.json', report = './var/moderation_report.json', mode = 'redact', patterns: patternsArg } = opts;
+
+  const raw = await readJsonFile(file);
+  const parsedFile = parseModelFile(raw);
+  const parsed = parsedFile.model;
+  const corpus = parsedFile.corpus ?? [];
+
+  // Attempt to load patterns from the provided path or the default
+  // ./var/moderation_patterns.json. If loading/parsing fails, fall back
+  // to internal defaults in moderation.ts.
+  let patterns: any = undefined;
+  try {
+    const patternsPath = patternsArg ?? './var/moderation_patterns.json';
+    patterns = await readJsonFile(patternsPath);
+  } catch {
+    // ignore and let moderation module use its internal defaults
+  }
+
+  const { model: newModel, report: reportSummary, mapping } = moderateParsedModel(parsed, corpus, { mode, patterns });
+
+  try {
+    await fs.writeFile(report, JSON.stringify({ summary: reportSummary, mapping }, null, 2), 'utf8');
+    await fs.writeFile(out, JSON.stringify({ model: newModel, corpus }, null, 2), 'utf8');
+    console.log('Moderation complete. Report:', report);
+    console.log('Moderated model written to:', out);
+  } catch (err: any) {
+    console.error('Failed to write moderation outputs:', String(err));
+    process.exit(1);
+  }
+}
+
+type UndoCommandBase = {
+  file: string;
+  report?: string;
+  out?: string;
+  help?: never;
+};
+
+type UndoCommandHelp = { help: true };
+
+type UndoCommandOpts = UndoCommandBase | UndoCommandHelp;
+
+async function undoCommand(opts: UndoCommandOpts) {
+  if ('help' in opts && opts.help) {
+    console.log('Usage: markov undo [--file <path>] [--report <path>] [--out <path>] [--help]');
+    console.log('Restore a moderated model using the moderation report.');
+    console.log('Options:');
+    console.log('  --file <path>   Moderated model file (default ./var/model.moderated.json)');
+    console.log('  --report <path> Moderation report (default ./var/moderation_report.json)');
+    console.log('  --out <path>    Restored output (default ./var/model.restored.json)');
+    console.log('  --help          Show this help');
+    process.exit(0);
+  }
+
+  const { file, report = './var/moderation_report.json', out = './var/model.restored.json' } = opts as UndoCommandBase;
+
+  try {
+    const raw = await readJsonFile(file);
+    const parsed = raw as any;
+    const moderatedModel = parsed.model as Record<string, Record<string, number>>;
+
+    const rep = (await readJsonFile(report)) as any;
+    const mapping = rep.mapping ?? rep.mapping ?? {};
+
+    const restoredModel = undoModeratedModel(moderatedModel, mapping);
+
+    const corpus = parsed.corpus ?? [];
+    await fs.writeFile(out, JSON.stringify({ model: restoredModel, corpus }, null, 2), 'utf8');
+    console.log('Restored model written to:', out);
+  } catch (err: any) {
+    console.error('Failed to restore moderated model:', String(err));
+    process.exit(1);
   }
 }
 
@@ -228,6 +331,42 @@ export async function runCli(argv: string[]) {
         ['--help', 'Show this help'],
       ],
     },
+    moderate: {
+      parseOptions: {
+        file: { type: 'string' },
+        out: { type: 'string' },
+        report: { type: 'string' },
+        patterns: { type: 'string' },
+        mode: { type: 'string' },
+        help: { type: 'boolean' },
+      },
+      usage: 'Usage: markov moderate [--file <path>] [--out <path>] [--report <path>] [--mode <redact|remove>] [--help]',
+      desc: 'Scan model tokens and produce a moderated copy + report.',
+      optsHelp: [
+        ['--out <path>', 'Output moderated model (default ./var/model.moderated.json)'],
+        ['--report <path>', 'Moderation report (default ./var/moderation_report.json)'],
+        ['--mode <redact|remove>', 'redact or remove offending tokens (default redact)'],
+        ['--patterns <path>', 'Patterns file (default ./var/moderation_patterns.json)'],
+        ['--file <path>', 'Model file (default ./var/model.json)'],
+        ['--help', 'Show this help'],
+      ],
+    },
+    undo: {
+      parseOptions: {
+        file: { type: 'string' },
+        report: { type: 'string' },
+        out: { type: 'string' },
+        help: { type: 'boolean' },
+      },
+      usage: 'Usage: markov undo [--file <path>] [--report <path>] [--out <path>] [--help]',
+      desc: 'Restore a moderated model using the moderation report.',
+      optsHelp: [
+        ['--file <path>', 'Moderated model file (default ./var/model.moderated.json)'],
+        ['--report <path>', 'Moderation report (default ./var/moderation_report.json)'],
+        ['--out <path>', 'Restored output (default ./var/model.restored.json)'],
+        ['--help', 'Show this help'],
+      ],
+    },
   };
 
   const printCommandHelp = (k: string) => {
@@ -306,6 +445,52 @@ export async function runCli(argv: string[]) {
     const commit = values.commit ?? false;
     const backup = values.backup ?? true;
     await generateCommand({ file, start, n, commit, backup });
+    return;
+  }
+
+  if (cmd === 'moderate') {
+    const def = commandDefs.moderate;
+    let pr: any;
+    try {
+      pr = parseArgs({ args: rest, options: def.parseOptions, allowPositionals: true, strict: true });
+    } catch (err: any) {
+      console.error('Argument parse error:', err?.message ?? String(err));
+      console.error('Use --help for usage.');
+      process.exit(2);
+    }
+    const { values } = pr;
+    if (values.help) {
+      printCommandHelp('moderate');
+      process.exit(0);
+    }
+    const file = values.file ?? './var/model.json';
+    const out = values.out ?? './var/model.moderated.json';
+    const report = values.report ?? './var/moderation_report.json';
+    const mode = (values.mode ?? 'redact') as 'redact' | 'remove';
+    const patterns = values.patterns as string | undefined;
+    await moderateCommand({ file, out, report, mode, patterns });
+    return;
+  }
+
+  if (cmd === 'undo') {
+    const def = commandDefs.undo;
+    let pr: any;
+    try {
+      pr = parseArgs({ args: rest, options: def.parseOptions, allowPositionals: true, strict: true });
+    } catch (err: any) {
+      console.error('Argument parse error:', err?.message ?? String(err));
+      console.error('Use --help for usage.');
+      process.exit(2);
+    }
+    const { values } = pr;
+    if (values.help) {
+      printCommandHelp('undo');
+      process.exit(0);
+    }
+    const file = values.file ?? './var/model.moderated.json';
+    const report = values.report ?? './var/moderation_report.json';
+    const out = values.out ?? './var/model.restored.json';
+    await undoCommand({ file, report, out });
     return;
   }
 
