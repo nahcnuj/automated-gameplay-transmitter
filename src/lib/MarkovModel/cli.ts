@@ -150,11 +150,19 @@ async function generateCommand(opts: GenerateCommandOpts) {
 }
 
 export async function runCli(argv: string[]) {
-  // Isolate argument parsing so that later `process.exit` calls are not
-  // accidentally caught by a surrounding try/catch during tests.
-  const parseResult = (() => {
+  // No args -> usage
+  if (!argv || argv.length === 0) {
+    printUsage();
+    process.exit(1);
+  }
+
+  // If the invocation begins with a global flag, parse globally to
+  // preserve the previous parse-error behaviour for unknown flags.
+  const first = argv[0];
+  if (typeof first === 'string' && first.startsWith('-')) {
+    let global: any;
     try {
-      return parseArgs({
+      global = parseArgs({
         args: argv,
         options: {
           file: { type: 'string' },
@@ -173,68 +181,70 @@ export async function runCli(argv: string[]) {
       console.error('Use --help for usage.');
       process.exit(2);
     }
-  })();
-
-  if (!parseResult) process.exit(2);
-  const { values: optsValues, positionals } = parseResult;
-
-  const [cmdLocal, ..._rest] = positionals;
-
-  const merged: CLIOpts = {
-    _rest,
-    ...optsValues,
-    // Provide definitive boolean defaults without boxing or casts.
-    commit: optsValues.commit ?? false,
-    backup: optsValues.backup ?? true,
-    help: optsValues.help ?? false,
-  };
-
-  // Helpers to build typed options for each command from the merged input.
-  const buildInspectOpts = (helpOnly = false): InspectCommandOpts => {
-    if (helpOnly) return { help: true };
-    const file = merged.file ?? './var/model.json';
-    const word = merged._rest?.[0] ?? '';
-    const top = merged.top !== undefined ? Number(merged.top) : 10;
-    return { file, word, top };
-  };
-
-  const buildGenerateOpts = (helpOnly = false): GenerateCommandOpts => {
-    if (helpOnly) return { help: true };
-    const file = merged.file ?? './var/model.json';
-    const start = merged.start ?? '';
-    const n = merged.n !== undefined ? Number(merged.n) : 1;
-    return { file, start, n, commit: merged.commit, backup: merged.backup };
-  };
-
-  // Global `--help` with optional subcommand: delegate to individual command help.
-  if (merged.help) {
-    if (cmdLocal === 'inspect') {
-      await inspectCommand({ help: true });
-      return;
-    }
-    if (cmdLocal === 'generate') {
-      await generateCommand({ help: true });
-      return;
-    }
-    if (cmdLocal) {
-      console.log(`No help available for unknown command: ${cmdLocal}`);
+    if (global.values && global.values.help) {
       printUsage();
       process.exit(0);
     }
     printUsage();
-    process.exit(0);
+    process.exit(1);
   }
 
-  // `markov help [subcommand]`
-  if (cmdLocal === 'help') {
-    const target = _rest[0];
-    if (target === 'inspect') {
-      await inspectCommand({ help: true });
-      return;
-    }
-    if (target === 'generate') {
-      await generateCommand({ help: true });
-      return;
+  const cmd = argv[0];
+  const rest = argv.slice(1);
+
+  // Per-command parse definitions and associated help metadata.
+  const commandDefs: Record<string, any> = {
+    inspect: {
+      parseOptions: {
+        file: { type: 'string' },
+        top: { type: 'string' },
+        help: { type: 'boolean' },
+      },
+      usage: 'Usage: markov inspect <word> [--top <num>] [--file <path>] [--help]',
+      desc: 'Show top candidate continuations for <word>.',
+      optsHelp: [
+        ['--top <num>', 'Number of top candidates to show (default 10)'],
+        ['--file <path>', 'Model file (default ./var/model.json)'],
+        ['--help', 'Show this help'],
+      ],
+    },
+    generate: {
+      parseOptions: {
+        file: { type: 'string' },
+        start: { type: 'string' },
+        n: { type: 'string' },
+        commit: { type: 'boolean' },
+        backup: { type: 'boolean' },
+        help: { type: 'boolean' },
+      },
+      usage: 'Usage: markov generate [--n <num>] [--start <word>] [--file <path>] [--help]',
+      desc: 'Generate sentences from the model.',
+      optsHelp: [
+        ['--n <num>', 'Number of samples to generate (default 1)'],
+        ['--start <word>', 'Start word for generation'],
+        ['--file <path>', 'Model file (default ./var/model.json)'],
+        ['--commit', 'Write generated results back to model file'],
+        ['--backup', 'Create a backup before writing (default true)'],
+        ['--help', 'Show this help'],
+      ],
+    },
+  };
+
+  const printCommandHelp = (k: string) => {
+    const def = commandDefs[k];
+    if (!def) return;
+    console.log(def.usage);
+    console.log(def.desc);
+    console.log('Options:');
+    for (const [opt, d] of def.optsHelp) console.log(`  ${opt}  ${d}`);
+  };
+
+  // markov help <cmd>
+  if (cmd === 'help') {
+    const target = rest[0];
+    if (target && commandDefs[target]) {
+      printCommandHelp(target);
+      process.exit(0);
     }
     if (target) {
       console.log(`No help available for unknown command: ${target}`);
@@ -245,23 +255,60 @@ export async function runCli(argv: string[]) {
     process.exit(0);
   }
 
-  if (!cmdLocal) {
+  // Unknown command + --help fallback
+  if ((rest.includes('--help') || rest.includes('-h')) && !(cmd in commandDefs)) {
+    console.log(`No help available for unknown command: ${cmd}`);
     printUsage();
-    process.exit(1);
+    process.exit(0);
   }
 
-  if (cmdLocal === 'inspect') {
-    const opts = buildInspectOpts(false);
-    await inspectCommand(opts);
+  // Dispatch to subcommands with per-command parsing
+  if (cmd === 'inspect') {
+    const def = commandDefs.inspect;
+    let pr: any;
+    try {
+      pr = parseArgs({ args: rest, options: def.parseOptions, allowPositionals: true, strict: true });
+    } catch (err: any) {
+      console.error('Argument parse error:', err?.message ?? String(err));
+      console.error('Use --help for usage.');
+      process.exit(2);
+    }
+    const { values, positionals } = pr;
+    if (values.help) {
+      printCommandHelp('inspect');
+      process.exit(0);
+    }
+    const file = values.file ?? './var/model.json';
+    const top = Number(values.top ?? '10');
+    const word = positionals[0] ?? '';
+    await inspectCommand({ file, word, top });
     return;
   }
 
-  if (cmdLocal === 'generate') {
-    const opts = buildGenerateOpts(false);
-    await generateCommand(opts);
+  if (cmd === 'generate') {
+    const def = commandDefs.generate;
+    let pr: any;
+    try {
+      pr = parseArgs({ args: rest, options: def.parseOptions, allowPositionals: true, strict: true });
+    } catch (err: any) {
+      console.error('Argument parse error:', err?.message ?? String(err));
+      console.error('Use --help for usage.');
+      process.exit(2);
+    }
+    const { values } = pr;
+    if (values.help) {
+      printCommandHelp('generate');
+      process.exit(0);
+    }
+    const file = values.file ?? './var/model.json';
+    const start = values.start ?? '';
+    const n = Number(values.n ?? '1');
+    const commit = values.commit ?? false;
+    const backup = values.backup ?? true;
+    await generateCommand({ file, start, n, commit, backup });
     return;
   }
 
-  console.error('Unknown command', cmdLocal);
+  console.error('Unknown command', cmd);
   process.exit(1);
 }
