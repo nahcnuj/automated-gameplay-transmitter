@@ -1,20 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { parseMarkovModelData, runCli, printUsage, printSubcommandHelp } from './cli';
+import { runCli } from './cli';
 import { inspectToken, generateSamples } from './MarkovModel';
 import type { MarkovModelData } from './MarkovModel';
 import { promises as fs } from 'fs';
 import path from 'path';
 
 describe('Markov CLI helpers', () => {
-  it('normalizes model and ignores corpus (model-only)', () => {
-    const plain = { '': { a: 1 }, a: { '。': 1 } };
-    const n1 = parseMarkovModelData(plain);
-    expect(n1).toEqual(plain);
-    const wrapped = { model: plain, corpus: ['a。'] };
-    const n2 = parseMarkovModelData(wrapped.model);
-    expect(n2).toEqual(plain);
-  });
-
   it('inspectToken returns sorted candidates', () => {
     const model: MarkovModelData = { '': {}, tok: { x: 1, y: 5, z: 2 } };
     const top = inspectToken(model, 'tok', 2);
@@ -29,21 +20,8 @@ describe('Markov CLI helpers', () => {
     expect(out[0]!.endsWith('。')).toBe(true);
   });
 
-  it('printUsage and printSubcommandHelp produce output', () => {
-    const logs: string[] = [];
-    const orig = console.log;
-    (console as any).log = (...args: any[]) => { logs.push(args.join(' ')); };
-    try {
-      printUsage();
-      printSubcommandHelp('inspect');
-      printSubcommandHelp('generate');
-      printSubcommandHelp('unknown-cmd');
-    } finally {
-      console.log = orig;
-    }
-    expect(logs.length).toBeGreaterThan(0);
-    expect(logs.some(l => l.includes('Usage: markov'))).toBe(true);
-  });
+  // Note: helper functions `printUsage` and `printSubcommandHelp` are
+  // internal and not exported anymore; we only test `runCli` behaviors.
 
   // Note: we avoid calling `runCli` for branches that call `process.exit` because
   // that will terminate the test process. `printSubcommandHelp` and `printUsage`
@@ -149,15 +127,8 @@ describe('Markov CLI helpers', () => {
     }
   });
 
-  it('parseMarkovModelData throws for invalid inputs', () => {
-    expect(() => parseMarkovModelData(null)).toThrow();
-    const badModel = { a: { x: 'nope' } };
-    expect(() => parseMarkovModelData(badModel)).toThrow('Invalid model format');
-  });
-
-  it('parseMarkovModelData throws when token candidates are not objects', () => {
-    expect(() => parseMarkovModelData({ a: [] })).toThrow('Invalid model format');
-  });
+  // parseMarkovModelData is internal; its validation is covered indirectly
+  // through end-to-end `runCli` tests that exercise error branches.
 
   it('runCli --help (global) prints usage and exits 0', async () => {
     const origExit = (process as any).exit;
