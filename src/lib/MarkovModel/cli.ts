@@ -183,12 +183,10 @@ export async function runCli(argv: string[]) {
   const [cmdLocal, ..._rest] = positionals;
   const merged: CLIOpts = {
     _rest,
-    file: typeof optsValues.file === 'string' ? optsValues.file : undefined,
-    start: typeof optsValues.start === 'string' ? optsValues.start : undefined,
-    n: typeof optsValues.n === 'string' ? optsValues.n : undefined,
-    top: typeof optsValues.top === 'string' ? optsValues.top : undefined,
-    commit: Boolean(optsValues.commit),
+    ...(optsValues as unknown as Omit<CLIOpts, '_rest'>),
+    // normalize booleans and provide default for backup
     backup: optsValues.backup === undefined ? true : Boolean(optsValues.backup),
+    commit: Boolean(optsValues.commit),
     help: Boolean(optsValues.help),
   };
 
