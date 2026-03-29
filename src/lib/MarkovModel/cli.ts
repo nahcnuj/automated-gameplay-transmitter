@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { parseArgs } from 'util';
-import type { MarkovModelData, WeightedCandidates } from './MarkovModel';
-import { generateSamples, inspectToken } from './MarkovModel';
+import type { MarkovModelData, WeightedCandidates, MarkovModel } from './MarkovModel';
+import { create, inspectToken } from './MarkovModel';
 
 /**
  * Parsed CLI options structure returned by the argument parser.
@@ -190,8 +190,10 @@ export async function runCli(argv: string[]) {
     const word = merged._rest?.[0];
     if (!word) { console.error('inspect <word>'); process.exit(1); }
     const raw = await readJsonFile(file);
-    const model = parseMarkovModelData((raw as any)?.model);
-    const rows = inspectToken(model, word, Number(merged.top ?? '10'));
+    const parsed = parseMarkovModelData((raw as any)?.model);
+    const corpus = Array.isArray((raw as any)?.corpus) ? (raw as any).corpus as string[] : [];
+    const m: MarkovModel = create(parsed, corpus);
+    const rows = inspectToken(m.json.model, word, Number(merged.top ?? '10'));
     console.log(`Top ${rows.length} for word: ${word}`);
     for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
     return;
@@ -200,9 +202,26 @@ export async function runCli(argv: string[]) {
     const n = Number(merged.n ?? '1');
     const start = merged.start ?? '';
     const raw = await readJsonFile(file);
-    const model = parseMarkovModelData((raw as any)?.model);
-    const out = generateSamples(model, start, n);
+    const parsed = parseMarkovModelData((raw as any)?.model);
+    const corpus = Array.isArray((raw as any)?.corpus) ? (raw as any).corpus as string[] : [];
+    const m: MarkovModel = create(parsed, corpus);
+    const out = Array.from({ length: n }, () => m.gen(start));
     out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
+
+    if (merged.commit) {
+      // Preserve the original corpus when writing back the model file.
+      try {
+        if (merged.backup) {
+          const bak = `${file}.bak.${Date.now()}`;
+          await fs.copyFile(file, bak);
+        }
+        const toWrite = { model: m.json.model, corpus };
+        await fs.writeFile(file, JSON.stringify(toWrite, null, 2), 'utf8');
+      } catch (err: any) {
+        console.error('Failed to write model file:', String(err));
+        process.exit(1);
+      }
+    }
     return;
   }
 
