@@ -2,14 +2,12 @@ import { z } from 'zod';
 import { sliceByNumber } from "../extensions/Array";
 import { splitIntoWords } from "../extensions/String";
 
-export const weightedCandidatesSchema = z.record(z.number());
-export type WeightedCandidates = z.infer<typeof weightedCandidatesSchema>;
+const weightedCandidatesSchema = z.record(z.number());
+const initialCandidatesSchema = z.object({ '': weightedCandidatesSchema });
+const markovModelDataSchema = initialCandidatesSchema.catchall(weightedCandidatesSchema);
 
-export const initialCandidatesSchema = z.object({ '': weightedCandidatesSchema });
-
-export const markovModelDataSchema = initialCandidatesSchema.catchall(weightedCandidatesSchema);
-
-export type MarkovModelData = z.infer<typeof markovModelDataSchema>;
+type WeightedCandidates = z.infer<typeof weightedCandidatesSchema>;
+type MarkovModelData = z.infer<typeof markovModelDataSchema>;
 
 /**
  * Selects a candidate string from a list of weighted candidates by scanning
@@ -46,12 +44,14 @@ export type MarkovModelData = z.infer<typeof markovModelDataSchema>;
  * - w = 5.9  -> 'c' (5.9 < 6 = 1+2+3)
  * - w >= 6.0 -> 'c' ( w >= 6 = 1+2+3)
  */
-export const choose = (cands: [string, number][], w: number): string => cands.reduce(([current, acc], [next, weight]) => {
-  if (acc > w) {
-    return [current, acc];
-  }
-  return [next, acc + weight];
-}, ['', 0])[0];
+export const choose = (cands: [string, number][], w: number): string => {
+  return cands.reduce(([current, acc], [next, weight]) => {
+    if (acc > w) {
+      return [current, acc];
+    }
+    return [next, acc + weight];
+  }, ['', 0])[0];
+};
 
 declare global {
   interface Math {
@@ -80,7 +80,9 @@ const pick = (cands: WeightedCandidates) => {
 };
 
 export function formatDebugWords(words: string[]) {
-  return words[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join('/');
+  return words[sliceByNumber](7)
+    .flatMap((ss, i) => (i ? [' ', ...ss] : ss))
+    .join('/');
 }
 
 const isDebug = () => Boolean(process.env.DEBUG_MARKOV);
