@@ -19,6 +19,9 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "markov": "./dist/markov.js"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
