@@ -189,7 +189,7 @@ export async function runCli(argv: string[]) {
     process.exit(1);
   }
 
-  const cmd = argv[0];
+  const cmd = argv[0] ?? '';
   const rest = argv.slice(1);
 
   // Per-command parse definitions and associated help metadata.
