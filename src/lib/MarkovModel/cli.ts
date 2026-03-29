@@ -30,11 +30,11 @@ export type CLIOpts = {
  * that the required empty-string key (`''`) exists. On validation failure an
  * `Error` is thrown.
  *
- * @param param0 - Object with a `model` property containing the raw parsed JSON.
+ * @param model - Raw parsed JSON value representing the model object.
  * @returns A validated `MarkovModelData` object.
  * @throws {Error} If the input is not a valid model format.
  */
-export function parseMarkovModelData({ model }: { model: unknown }): MarkovModelData {
+export function parseMarkovModelData(model: unknown): MarkovModelData {
   const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
   if (!isRecord(model)) throw new Error('Invalid model format');
@@ -74,7 +74,7 @@ export async function loadModelFromFile(filePath: string): Promise<MarkovModelDa
   const resolved = path.resolve(process.cwd(), filePath);
   const txt = await fs.readFile(resolved, 'utf8');
   const raw = JSON.parse(txt);
-  return parseMarkovModelData({ model: raw });
+  return parseMarkovModelData(raw);
 }
 
 export function printUsage() {
