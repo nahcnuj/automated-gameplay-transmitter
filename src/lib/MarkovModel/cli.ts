@@ -59,7 +59,7 @@ async function readJsonFile(filePath: string): Promise<unknown> {
  * top-level usage information or when unknown commands are given.
  */
 function printUsage() {
-  console.log('Usage: cmd <inspect|generate> [options]');
+  console.log('Usage: markov <inspect|generate> [options]');
   console.log('Commands:');
   console.log('  inspect <word> [--help]   Show top candidate continuations for <word>');
   console.log('  generate [--help]         Generate sentences from the model');
@@ -86,7 +86,7 @@ type GenerateCommandOpts = {
 
 async function inspectCommand({ file, word = '', top = 10, help = false }: InspectCommandOpts) {
   if (help) {
-    console.log('Usage: cmd inspect <word> [--top <num>] [--file <path>] [--help]');
+    console.log('Usage: markov inspect <word> [--top <num>] [--file <path>] [--help]');
     console.log('Show top candidate continuations for <word>.');
     console.log('Options:');
     console.log('  --top <num>    Number of top candidates to show (default 10)');
@@ -107,7 +107,7 @@ async function inspectCommand({ file, word = '', top = 10, help = false }: Inspe
 
 async function generateCommand({ file, start = '', n = 1, commit = false, backup = true, help = false }: GenerateCommandOpts) {
   if (help) {
-    console.log('Usage: cmd generate [--n <num>] [--start <word>] [--file <path>] [--help]');
+    console.log('Usage: markov generate [--n <num>] [--start <word>] [--file <path>] [--help]');
     console.log('Generate sentences from the model.');
     console.log('Options:');
     console.log('  --n <num>      Number of samples to generate (default 1)');
