@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { parseArgs } from 'util';
-import type { MarkovModelData, WeightedCandidates, MarkovModel } from './MarkovModel';
+import type { MarkovModel } from './MarkovModel';
 import { create, inspectWord, parseModelFile } from './MarkovModel';
 
 /**
@@ -183,11 +183,11 @@ export async function runCli(argv: string[]) {
   const [cmdLocal, ..._rest] = positionals;
   const merged: CLIOpts = {
     _rest,
-    ...(optsValues as unknown as Omit<CLIOpts, '_rest'>),
-    // normalize booleans and provide default for backup
-    backup: optsValues.backup === undefined ? true : Boolean(optsValues.backup),
-    commit: Boolean(optsValues.commit),
-    help: Boolean(optsValues.help),
+    ...optsValues,
+    // Provide definitive boolean defaults without boxing or casts.
+    commit: optsValues.commit ?? false,
+    backup: optsValues.backup ?? true,
+    help: optsValues.help ?? false,
   };
 
   // If user passed `--help` together with a subcommand, delegate help
@@ -195,7 +195,6 @@ export async function runCli(argv: string[]) {
   // provide its own subcommand-specific help text.
   if (merged.help) {
     if (cmdLocal) {
-      const filePath = merged.file ?? './var/model.json';
       if (cmdLocal === 'inspect') {
         await inspectCommand({ help: true });
         return;
@@ -216,7 +215,6 @@ export async function runCli(argv: string[]) {
   // Support `markov help [subcommand]` as a positional-based help helper.
   if (cmdLocal === 'help') {
     const target = _rest[0];
-    const filePath = merged.file ?? './var/model.json';
     if (target === 'inspect') {
       await inspectCommand({ help: true });
       return;
