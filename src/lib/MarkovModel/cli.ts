@@ -83,12 +83,8 @@ export async function readJsonFile(filePath: string): Promise<unknown> {
  * so callers (and tests) can exercise parsing logic without touching the
  * filesystem.
  */
-export async function loadModelFromFile(filePath: string): Promise<MarkovModelData> {
-  const raw = await readJsonFile(filePath);
-  // JSON file format places the model under the `model` key.
-  // Delegate validation to the parser which expects the raw model value.
-  return parseMarkovModelData((raw as any)?.model);
-}
+// NOTE: `loadModelFromFile` removed — prefer `readJsonFile` then
+// `parseMarkovModelData(raw.model)` so I/O and parsing responsibilities are separated.
 
 export function printUsage() {
   console.log('Usage: markov <inspect|generate> [options]');
@@ -197,7 +193,8 @@ export async function runCli(argv: string[]) {
   if (cmdLocal === 'inspect') {
     const word = merged._rest?.[0];
     if (!word) { console.error('inspect <word>'); process.exit(1); }
-    const model = await loadModelFromFile(file);
+    const raw = await readJsonFile(file);
+    const model = parseMarkovModelData((raw as any)?.model);
     const rows = inspectToken(model, word, Number(merged.top ?? '10'));
     console.log(`Top ${rows.length} for word: ${word}`);
     for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
@@ -206,7 +203,8 @@ export async function runCli(argv: string[]) {
   if (cmdLocal === 'generate') {
     const n = Number(merged.n ?? '1');
     const start = merged.start ?? '';
-    const model = await loadModelFromFile(file);
+    const raw = await readJsonFile(file);
+    const model = parseMarkovModelData((raw as any)?.model);
     const out = generateSamples(model, start, n);
     out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
     return;
