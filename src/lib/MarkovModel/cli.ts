@@ -70,11 +70,24 @@ export function parseMarkovModelData(model: unknown): MarkovModelData {
  * @returns The validated `MarkovModelData`.
  * @throws {Error|SyntaxError} If the file cannot be read, parsed, or validated.
  */
-export async function loadModelFromFile(filePath: string): Promise<MarkovModelData> {
+export async function readJsonFile(filePath: string): Promise<unknown> {
   const resolved = path.resolve(process.cwd(), filePath);
   const txt = await fs.readFile(resolved, 'utf8');
-  const raw = JSON.parse(txt);
-  return parseMarkovModelData(raw.model);
+  return JSON.parse(txt);
+}
+
+/**
+ * Load a model file and parse it into `MarkovModelData`.
+ *
+ * This function separates I/O (reading/parsing JSON) from model validation
+ * so callers (and tests) can exercise parsing logic without touching the
+ * filesystem.
+ */
+export async function loadModelFromFile(filePath: string): Promise<MarkovModelData> {
+  const raw = await readJsonFile(filePath);
+  // JSON file format places the model under the `model` key.
+  // Delegate validation to the parser which expects the raw model value.
+  return parseMarkovModelData((raw as any)?.model);
 }
 
 export function printUsage() {
