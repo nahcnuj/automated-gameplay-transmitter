@@ -61,16 +61,11 @@ async function readJsonFile(filePath: string): Promise<unknown> {
 function printUsage() {
   console.log('Usage: markov <inspect|generate> [options]');
   console.log('Commands:');
-  console.log('  inspect <word>        Show top candidate continuations for <word>');
-  console.log('  generate              Generate sentences from the model');
+  console.log('  inspect <word> [--help]   Show top candidate continuations for <word>');
+  console.log('  generate [--help]         Generate sentences from the model');
   console.log('  help                  Show usage');
   console.log('Options:');
-  console.log('  --file <path>         Model file (default ./var/model.json)');
-  console.log('  --start <word>       Start word for generation');
-  console.log('  --n <num>             Number of samples to generate');
-  console.log('  --top <num>           Top N candidates for inspect');
-  console.log('  --commit              Commit learned changes to the model file (learn only)');
-  console.log('  --backup              Create a backup when committing changes');
+  console.log('  --help                Show this help (or use `markov <command> --help`)');
 }
 
 type InspectCommandOpts = {
@@ -91,11 +86,12 @@ type GenerateCommandOpts = {
 
 async function inspectCommand({ file, word = '', top = 10, help = false }: InspectCommandOpts) {
   if (help) {
-    console.log('Usage: markov inspect <word> [--top <num>] [--file <path>]');
+    console.log('Usage: markov inspect <word> [--top <num>] [--file <path>] [--help]');
     console.log('Show top candidate continuations for <word>.');
     console.log('Options:');
     console.log('  --top <num>    Number of top candidates to show (default 10)');
     console.log('  --file <path>  Model file (default ./var/model.json)');
+    console.log('  --help         Show this help');
     process.exit(0);
   }
   if (!word) { console.error('inspect <word>'); process.exit(1); }
@@ -111,12 +107,13 @@ async function inspectCommand({ file, word = '', top = 10, help = false }: Inspe
 
 async function generateCommand({ file, start = '', n = 1, commit = false, backup = true, help = false }: GenerateCommandOpts) {
   if (help) {
-    console.log('Usage: markov generate [--n <num>] [--start <word>] [--file <path>]');
+    console.log('Usage: markov generate [--n <num>] [--start <word>] [--file <path>] [--help]');
     console.log('Generate sentences from the model.');
     console.log('Options:');
     console.log('  --n <num>      Number of samples to generate (default 1)');
     console.log('  --start <word>  Start word for generation');
     console.log('  --file <path>  Model file (default ./var/model.json)');
+    console.log('  --help         Show this help');
     process.exit(0);
   }
   const raw = await readJsonFile(file);
@@ -170,6 +167,8 @@ export async function runCli(argv: string[]) {
 
   if (!parseResult) process.exit(2);
   const { values: optsValues, positionals } = parseResult;
+
+  // (no-op)
 
   const [cmdLocal, ..._rest] = positionals;
   const merged: CLIOpts = {
