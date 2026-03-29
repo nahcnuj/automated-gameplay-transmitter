@@ -73,7 +73,24 @@ function printUsage() {
   console.log('  --backup              Create a backup when committing changes');
 }
 
-async function inspectCommand(file: string, word: string, top = 10, help = false) {
+type InspectCommandOpts = {
+  file: string;
+  word?: string;
+  top?: number;
+  help?: boolean;
+};
+
+type GenerateCommandOpts = {
+  file: string;
+  start?: string;
+  n?: number;
+  commit?: boolean;
+  backup?: boolean;
+  help?: boolean;
+};
+
+async function inspectCommand(opts: InspectCommandOpts) {
+  const { file, word = '', top = 10, help = false } = opts;
   if (help) {
     console.log('Usage: markov inspect <word> [--top <num>] [--file <path>]');
     console.log('Show top candidate continuations for <word>.');
@@ -93,7 +110,8 @@ async function inspectCommand(file: string, word: string, top = 10, help = false
   for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
 }
 
-async function generateCommand(file: string, start = '', n = 1, commit = false, backup = true, help = false) {
+async function generateCommand(opts: GenerateCommandOpts) {
+  const { file, start = '', n = 1, commit = false, backup = true, help = false } = opts;
   if (help) {
     console.log('Usage: markov generate [--n <num>] [--start <word>] [--file <path>]');
     console.log('Generate sentences from the model.');
@@ -174,13 +192,13 @@ export async function runCli(argv: string[]) {
     if (cmdLocal) {
       const filePath = merged.file ?? './var/model.json';
       if (cmdLocal === 'inspect') {
-        await inspectCommand(filePath, merged._rest?.[0] ?? '', Number(merged.top ?? '10'), true);
+        await inspectCommand({ file: filePath, word: merged._rest?.[0] ?? '', top: Number(merged.top ?? '10'), help: true });
         return;
       }
       if (cmdLocal === 'generate') {
         const start = merged.start ?? '';
         const n = Number(merged.n ?? '1');
-        await generateCommand(filePath, start, n, merged.commit, merged.backup, true);
+        await generateCommand({ file: filePath, start, n, commit: merged.commit, backup: merged.backup, help: true });
         return;
       }
       // Fallback for unknown subcommands
@@ -197,13 +215,13 @@ export async function runCli(argv: string[]) {
     const target = _rest[0];
     const filePath = merged.file ?? './var/model.json';
     if (target === 'inspect') {
-      await inspectCommand(filePath, merged._rest?.[0] ?? '', Number(merged.top ?? '10'), true);
+      await inspectCommand({ file: filePath, word: merged._rest?.[0] ?? '', top: Number(merged.top ?? '10'), help: true });
       return;
     }
     if (target === 'generate') {
       const start = merged.start ?? '';
       const n = Number(merged.n ?? '1');
-      await generateCommand(filePath, start, n, merged.commit, merged.backup, true);
+      await generateCommand({ file: filePath, start, n, commit: merged.commit, backup: merged.backup, help: true });
       return;
     }
     if (target) {
@@ -223,13 +241,13 @@ export async function runCli(argv: string[]) {
   const file = merged.file ?? './var/model.json';
   if (cmdLocal === 'inspect') {
     const word = merged._rest?.[0];
-    await inspectCommand(file, word ?? '', Number(merged.top ?? '10'));
+    await inspectCommand({ file, word: word ?? '', top: Number(merged.top ?? '10') });
     return;
   }
   if (cmdLocal === 'generate') {
     const n = Number(merged.n ?? '1');
     const start = merged.start ?? '';
-    await generateCommand(file, start, n, merged.commit, merged.backup);
+    await generateCommand({ file, start, n, commit: merged.commit, backup: merged.backup });
     return;
   }
 
