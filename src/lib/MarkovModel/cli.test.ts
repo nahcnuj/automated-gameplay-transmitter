@@ -165,4 +165,134 @@ describe('Markov CLI helpers', () => {
     }
     expect(errMsg).toContain('Unknown command');
   });
+
+  it('runCli exits with code 0 when using --help with generate subcommand', async () => {
+    const origExit = (process as any).exit;
+    const origLog = (console as any).log;
+    const logs: string[] = [];
+    (console as any).log = (...a: any[]) => { logs.push(a.join(' ')); };
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli(['generate', '--help']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:0');
+    } finally {
+      (process as any).exit = origExit;
+      (console as any).log = origLog;
+    }
+    expect(logs.some(l => l.includes('Usage: markov generate'))).toBe(true);
+  });
+
+  it('runCli unknown command with --help prints fallback and exits 0', async () => {
+    const origExit = (process as any).exit;
+    const origLog = (console as any).log;
+    const logs: string[] = [];
+    (console as any).log = (...a: any[]) => { logs.push(a.join(' ')); };
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli(['unknowncmd', '--help']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:0');
+    } finally {
+      (process as any).exit = origExit;
+      (console as any).log = origLog;
+    }
+    expect(logs.some(l => l.includes('No help available for unknown command'))).toBe(true);
+  });
+
+  it('runCli help inspect exits 0 and prints inspect usage', async () => {
+    const origExit = (process as any).exit;
+    const origLog = (console as any).log;
+    const logs: string[] = [];
+    (console as any).log = (...a: any[]) => { logs.push(a.join(' ')); };
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli(['help', 'inspect']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:0');
+    } finally {
+      (process as any).exit = origExit;
+      (console as any).log = origLog;
+    }
+    expect(logs.some(l => l.includes('Usage: markov inspect'))).toBe(true);
+  });
+
+  it('runCli help unknown prints fallback and exits 0', async () => {
+    const origExit = (process as any).exit;
+    const origLog = (console as any).log;
+    const logs: string[] = [];
+    (console as any).log = (...a: any[]) => { logs.push(a.join(' ')); };
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+    try {
+      await runCli(['help', 'idontexist']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:0');
+    } finally {
+      (process as any).exit = origExit;
+      (console as any).log = origLog;
+    }
+    expect(logs.some(l => l.includes('No help available for unknown command'))).toBe(true);
+  });
+
+  it('runCli generate --commit creates a backup and writes the model file', async () => {
+    const model: MarkovModelData = { '': {}, hello: { '。': 1 } };
+    const fp = path.resolve('var', 'test-model-commit.json');
+    await fs.mkdir(path.dirname(fp), { recursive: true });
+    await fs.writeFile(fp, JSON.stringify({ model }), 'utf8');
+    const out: string[] = [];
+    const origLog = console.log;
+    (console as any).log = (...a: any[]) => { out.push(a.join(' ')); };
+    try {
+      await runCli(['generate', '--file', fp, '--n', '1', '--commit']);
+      const files = await fs.readdir(path.dirname(fp));
+      const base = path.basename(fp);
+      const bakExists = files.some(f => f.startsWith(base + '.bak.'));
+      expect(bakExists).toBe(true);
+      const txt = await fs.readFile(fp, 'utf8');
+      const parsed = JSON.parse(txt);
+      expect(parsed.model).toBeTruthy();
+    } finally {
+      (console as any).log = origLog;
+      const files = await fs.readdir(path.dirname(fp));
+      for (const f of files) {
+        if (f.startsWith(path.basename(fp))) await fs.unlink(path.join(path.dirname(fp), f)).catch(() => {});
+      }
+    }
+  });
+
+  it('runCli generate --commit reports error and exits 1 when write fails', async () => {
+    const model: MarkovModelData = { '': {}, hello: { '。': 1 } };
+    const fp = path.resolve('var', 'test-model-commit-fail.json');
+    await fs.mkdir(path.dirname(fp), { recursive: true });
+    await fs.writeFile(fp, JSON.stringify({ model }), 'utf8');
+
+    const origErr = (console as any).error;
+    const errs: string[] = [];
+    (console as any).error = (...a: any[]) => { errs.push(a.join(' ')); };
+
+    const origExit = (process as any).exit;
+    (process as any).exit = (c = 0) => { throw new Error('EXIT:' + c); };
+
+    // Monkeypatch fs/promises.writeFile to throw to exercise the catch branch.
+    const fsp: any = require('fs/promises');
+    const origWrite = fsp.writeFile;
+    fsp.writeFile = async () => { throw new Error('boom'); };
+
+    try {
+      await runCli(['generate', '--file', fp, '--n', '1', '--commit']);
+      throw new Error('expected exit');
+    } catch (err: any) {
+      expect(String(err.message)).toContain('EXIT:1');
+    } finally {
+      (process as any).exit = origExit;
+      (console as any).error = origErr;
+      fsp.writeFile = origWrite;
+      await fs.unlink(fp).catch(() => {});
+    }
+    expect(errs.some(e => e.includes('Failed to write model file:'))).toBe(true);
+  });
 });
