@@ -53,33 +53,13 @@ export const choose = (cands: [string, number][], w: number): string => {
   }, ['', 0])[0];
 };
 
-declare global {
-  interface Math {
-    /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sumPrecise */
-    sumPrecise(args: number[]): number;
-  }
-}
-
-export function sumPreciseImpl(arr: number[]) {
-  let sum = 0;
-  let c = 0;
-  for (const v of arr) {
-    const y = v - c;
-    const t = sum + y;
-    c = (t - sum) - y;
-    sum = t;
-  }
-  return sum;
-}
-
-Math.sumPrecise = sumPreciseImpl;
 const pick = (cands: WeightedCandidates) => {
   const total = Math.sumPrecise(Object.values(cands));
   const rnd = Math.floor(Math.random() * total);
   return choose(Object.entries(cands), rnd);
 };
 
-export function formatDebugWords(words: string[]) {
+function formatDebugWords(words: string[]) {
   return words[sliceByNumber](7)
     .flatMap((ss, i) => (i ? [' ', ...ss] : ss))
     .join('/');
@@ -178,15 +158,6 @@ export function inspectWord(model: MarkovModelData, word: string, topN = 10): Ar
 }
 
 /**
- * Generate `n` samples from a raw model using the existing `create` generator.
- */
-export function generateSamples(model: MarkovModelData, start = '', n = 1): string[] {
-  const cloned = JSON.parse(JSON.stringify(model));
-  const m = create(cloned);
-  return Array.from({ length: n }, () => m.gen(start));
-}
-
-/**
  * Parse and validate a model file object previously produced by `JSON.parse`.
  * Ensures the object has a `model` property (MarkovModelData) and an
  * optional `corpus` array of strings. The `model` is required to contain
@@ -200,4 +171,11 @@ export function parseModelFile(fileContents: unknown): { model: MarkovModelData;
 
   const parsed = schema.parse(fileContents);
   return parsed as { model: MarkovModelData; corpus?: string[] };
+}
+
+declare global {
+  interface Math {
+    /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sumPrecise */
+    sumPrecise(args: number[]): number;
+  }
 }
