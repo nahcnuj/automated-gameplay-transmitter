@@ -178,9 +178,8 @@ export async function runCli(argv: string[]) {
   if (!parseResult) process.exit(2);
   const { values: optsValues, positionals } = parseResult;
 
-  // (no-op)
-
   const [cmdLocal, ..._rest] = positionals;
+
   const merged: CLIOpts = {
     _rest,
     ...optsValues,
@@ -190,20 +189,34 @@ export async function runCli(argv: string[]) {
     help: optsValues.help ?? false,
   };
 
-  // If user passed `--help` together with a subcommand, delegate help
-  // printing to the individual command handlers so each command can
-  // provide its own subcommand-specific help text.
+  // Helpers to build typed options for each command from the merged input.
+  const buildInspectOpts = (helpOnly = false): InspectCommandOpts => {
+    if (helpOnly) return { help: true };
+    const file = merged.file ?? './var/model.json';
+    const word = merged._rest?.[0] ?? '';
+    const top = merged.top !== undefined ? Number(merged.top) : 10;
+    return { file, word, top };
+  };
+
+  const buildGenerateOpts = (helpOnly = false): GenerateCommandOpts => {
+    if (helpOnly) return { help: true };
+    const file = merged.file ?? './var/model.json';
+    const start = merged.start ?? '';
+    const n = merged.n !== undefined ? Number(merged.n) : 1;
+    return { file, start, n, commit: merged.commit, backup: merged.backup };
+  };
+
+  // Global `--help` with optional subcommand: delegate to individual command help.
   if (merged.help) {
+    if (cmdLocal === 'inspect') {
+      await inspectCommand({ help: true });
+      return;
+    }
+    if (cmdLocal === 'generate') {
+      await generateCommand({ help: true });
+      return;
+    }
     if (cmdLocal) {
-      if (cmdLocal === 'inspect') {
-        await inspectCommand({ help: true });
-        return;
-      }
-      if (cmdLocal === 'generate') {
-        await generateCommand({ help: true });
-        return;
-      }
-      // Fallback for unknown subcommands
       console.log(`No help available for unknown command: ${cmdLocal}`);
       printUsage();
       process.exit(0);
@@ -212,7 +225,7 @@ export async function runCli(argv: string[]) {
     process.exit(0);
   }
 
-  // Support `markov help [subcommand]` as a positional-based help helper.
+  // `markov help [subcommand]`
   if (cmdLocal === 'help') {
     const target = _rest[0];
     if (target === 'inspect') {
@@ -237,16 +250,15 @@ export async function runCli(argv: string[]) {
     process.exit(1);
   }
 
-  const file = merged.file ?? './var/model.json';
   if (cmdLocal === 'inspect') {
-    const word = merged._rest?.[0];
-    await inspectCommand({ file, word: word ?? '', top: Number(merged.top ?? '10') });
+    const opts = buildInspectOpts(false);
+    await inspectCommand(opts);
     return;
   }
+
   if (cmdLocal === 'generate') {
-    const n = Number(merged.n ?? '1');
-    const start = merged.start ?? '';
-    await generateCommand({ file, start, n, commit: merged.commit, backup: merged.backup });
+    const opts = buildGenerateOpts(false);
+    await generateCommand(opts);
     return;
   }
 
