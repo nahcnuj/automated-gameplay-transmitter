@@ -1,5 +1,6 @@
 import { sliceByNumber } from "../extensions/Array";
 import { splitIntoWords } from "../extensions/String";
+import { z } from 'zod';
 
 export type WeightedCandidates = Record<string, number>;
 
@@ -181,4 +182,27 @@ export function generateSamples(model: MarkovModelData, start = '', n = 1): stri
   const cloned = JSON.parse(JSON.stringify(model));
   const m = create(cloned);
   return Array.from({ length: n }, () => m.gen(start));
+}
+
+/**
+ * Parse and validate a model file object previously produced by `JSON.parse`.
+ * Ensures the object has a `model` property (MarkovModelData) and an
+ * optional `corpus` array of strings. The `model` is required to contain
+ * the empty-string start key `` ''.
+ */
+export function parseModelFile(fileContents: unknown): { model: MarkovModelData; corpus?: string[] } {
+  const weightedCandidatesSchema = z.record(z.number());
+  const markovModelDataSchema = z
+    .record(weightedCandidatesSchema)
+    .refine((m) => Object.prototype.hasOwnProperty.call(m, ''), {
+      message: "Model must contain empty-string start key ''",
+    });
+
+  const schema = z.object({
+    model: markovModelDataSchema,
+    corpus: z.array(z.string()).optional(),
+  });
+
+  const parsed = schema.parse(fileContents);
+  return parsed as { model: MarkovModelData; corpus?: string[] };
 }

@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { parseArgs } from 'util';
 import type { MarkovModelData, WeightedCandidates, MarkovModel } from './MarkovModel';
-import { create, inspectToken } from './MarkovModel';
+import { create, inspectToken, parseModelFile } from './MarkovModel';
 
 /**
  * Parsed CLI options structure returned by the argument parser.
@@ -34,31 +34,7 @@ type CLIOpts = {
  * @returns A validated `MarkovModelData` object.
  * @throws {Error} If the input is not a valid model format.
  */
-function parseMarkovModelData(model: unknown): MarkovModelData {
-  const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-
-  if (!isRecord(model)) throw new Error('Invalid model format');
-
-  const isWeightedCandidates = (v: unknown): v is WeightedCandidates => {
-    if (!isRecord(v)) return false;
-    return Object.values(v).every((x) => typeof x === 'number');
-  };
-
-  const startGroup = model[''];
-  if (!isWeightedCandidates(startGroup)) throw new Error('Invalid model format');
-
-  const validated: MarkovModelData = {
-    '': startGroup,
-  };
-
-  for (const key of Object.keys(model).filter(key => key !== '')) {
-    const group = model[key];
-    if (!isWeightedCandidates(group)) throw new Error('Invalid model format');
-    validated[key] = group;
-  }
-
-  return validated;
-}
+// parsing/validation delegated to MarkovModel.parseModelFile
 
 /**
  * Read and parse a JSON file from disk.
@@ -190,8 +166,9 @@ export async function runCli(argv: string[]) {
     const word = merged._rest?.[0];
     if (!word) { console.error('inspect <word>'); process.exit(1); }
     const raw = await readJsonFile(file);
-    const parsed = parseMarkovModelData((raw as any)?.model);
-    const corpus = Array.isArray((raw as any)?.corpus) ? (raw as any).corpus as string[] : [];
+    const parsedFile = parseModelFile(raw);
+    const parsed = parsedFile.model;
+    const corpus = parsedFile.corpus ?? [];
     const m: MarkovModel = create(parsed, corpus);
     const rows = inspectToken(m.json.model, word, Number(merged.top ?? '10'));
     console.log(`Top ${rows.length} for word: ${word}`);
@@ -202,8 +179,9 @@ export async function runCli(argv: string[]) {
     const n = Number(merged.n ?? '1');
     const start = merged.start ?? '';
     const raw = await readJsonFile(file);
-    const parsed = parseMarkovModelData((raw as any)?.model);
-    const corpus = Array.isArray((raw as any)?.corpus) ? (raw as any).corpus as string[] : [];
+    const parsedFile = parseModelFile(raw);
+    const parsed = parsedFile.model;
+    const corpus = parsedFile.corpus ?? [];
     const m: MarkovModel = create(parsed, corpus);
     const out = Array.from({ length: n }, () => m.gen(start));
     out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
