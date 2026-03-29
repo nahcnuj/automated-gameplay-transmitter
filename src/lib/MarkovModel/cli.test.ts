@@ -62,7 +62,7 @@ describe('Markov CLI helpers', () => {
       (process as any).exit = origExit;
       (console as any).log = origLog;
     }
-    expect(logs.some(l => l.includes('Usage: markov inspect'))).toBe(true);
+    expect(logs.some(l => l.includes('Usage: cmd inspect'))).toBe(true);
   });
 
   it('runCli exits with code 0 for positional help', async () => {
@@ -80,7 +80,7 @@ describe('Markov CLI helpers', () => {
       (process as any).exit = origExit;
       (console as any).log = origLog;
     }
-    expect(logs.some(l => l.includes('Usage: markov generate'))).toBe(true);
+    expect(logs.some(l => l.includes('Usage: cmd generate'))).toBe(true);
   });
 
   it('runCli exits with code 1 when no command provided', async () => {
@@ -145,7 +145,7 @@ describe('Markov CLI helpers', () => {
       (process as any).exit = origExit;
       (console as any).log = origLog;
     }
-    expect(logs.some(l => l.includes('Usage: markov'))).toBe(true);
+    expect(logs.some(l => l.includes('Usage: cmd'))).toBe(true);
   });
 
   it('runCli unknown command triggers exit 1', async () => {
@@ -181,7 +181,7 @@ describe('Markov CLI helpers', () => {
       (process as any).exit = origExit;
       (console as any).log = origLog;
     }
-    expect(logs.some(l => l.includes('Usage: markov generate'))).toBe(true);
+    expect(logs.some(l => l.includes('Usage: cmd generate'))).toBe(true);
   });
 
   it('runCli unknown command with --help prints fallback and exits 0', async () => {
@@ -217,7 +217,7 @@ describe('Markov CLI helpers', () => {
       (process as any).exit = origExit;
       (console as any).log = origLog;
     }
-    expect(logs.some(l => l.includes('Usage: markov inspect'))).toBe(true);
+    expect(logs.some(l => l.includes('Usage: cmd inspect'))).toBe(true);
   });
 
   it('runCli help unknown prints fallback and exits 0', async () => {
