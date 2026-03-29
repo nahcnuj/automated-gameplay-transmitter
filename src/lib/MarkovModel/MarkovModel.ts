@@ -164,6 +164,8 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
   },
 });
 
+export type MarkovModel = ReturnType<typeof create>;
+
 /**
  * Inspect a token's top candidates sorted by weight.
  */
