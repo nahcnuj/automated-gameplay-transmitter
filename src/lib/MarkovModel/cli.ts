@@ -74,7 +74,7 @@ export async function loadModelFromFile(filePath: string): Promise<MarkovModelDa
   const resolved = path.resolve(process.cwd(), filePath);
   const txt = await fs.readFile(resolved, 'utf8');
   const raw = JSON.parse(txt);
-  return parseMarkovModelData(raw);
+  return parseMarkovModelData(raw.model);
 }
 
 export function printUsage() {

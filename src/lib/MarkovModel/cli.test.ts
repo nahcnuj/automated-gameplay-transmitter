@@ -53,7 +53,7 @@ describe('Markov CLI helpers', () => {
     const model: MarkovModelData = { '': {}, hello: { '。': 1, world: 2 }, world: { '。': 1 } };
     const fp = path.resolve('var', 'test-model.json');
     await fs.mkdir(path.dirname(fp), { recursive: true });
-    await fs.writeFile(fp, JSON.stringify(model), 'utf8');
+    await fs.writeFile(fp, JSON.stringify({ model }), 'utf8');
     const out: string[] = [];
     const origLog = console.log;
     (console as any).log = (...a: any[]) => { out.push(a.join(' ')); };
@@ -151,8 +151,8 @@ describe('Markov CLI helpers', () => {
 
   it('parseMarkovModelData throws for invalid inputs', () => {
     expect(() => parseMarkovModelData(null)).toThrow();
-    const bad = { model: { a: { x: 'nope' } } };
-    expect(() => parseMarkovModelData(bad)).toThrow('Invalid model format');
+    const badModel = { a: { x: 'nope' } };
+    expect(() => parseMarkovModelData(badModel)).toThrow('Invalid model format');
   });
 
   it('parseMarkovModelData throws when token candidates are not objects', () => {
