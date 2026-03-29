@@ -68,24 +68,32 @@ function printUsage() {
   console.log('  --help                Show this help (or use `markov <command> --help`)');
 }
 
-type InspectCommandOpts = {
+type InspectCommandBase = {
   file: string;
   word?: string;
   top?: number;
-  help?: boolean;
+  help?: never;
 };
 
-type GenerateCommandOpts = {
+type InspectCommandHelp = { help: true };
+
+type InspectCommandOpts = InspectCommandBase | InspectCommandHelp;
+
+type GenerateCommandBase = {
   file: string;
   start?: string;
   n?: number;
   commit?: boolean;
   backup?: boolean;
-  help?: boolean;
+  help?: never;
 };
 
-async function inspectCommand({ file, word = '', top = 10, help = false }: InspectCommandOpts) {
-  if (help) {
+type GenerateCommandHelp = { help: true };
+
+type GenerateCommandOpts = GenerateCommandBase | GenerateCommandHelp;
+
+async function inspectCommand(opts: InspectCommandOpts) {
+  if ('help' in opts && opts.help) {
     console.log('Usage: markov inspect <word> [--top <num>] [--file <path>] [--help]');
     console.log('Show top candidate continuations for <word>.');
     console.log('Options:');
@@ -94,6 +102,7 @@ async function inspectCommand({ file, word = '', top = 10, help = false }: Inspe
     console.log('  --help         Show this help');
     process.exit(0);
   }
+  const { file, word = '', top = 10 } = opts;
   if (!word) { console.error('inspect <word>'); process.exit(1); }
   const raw = await readJsonFile(file);
   const parsedFile = parseModelFile(raw);
@@ -105,8 +114,8 @@ async function inspectCommand({ file, word = '', top = 10, help = false }: Inspe
   for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
 }
 
-async function generateCommand({ file, start = '', n = 1, commit = false, backup = true, help = false }: GenerateCommandOpts) {
-  if (help) {
+async function generateCommand(opts: GenerateCommandOpts) {
+  if ('help' in opts && opts.help) {
     console.log('Usage: markov generate [--n <num>] [--start <word>] [--file <path>] [--help]');
     console.log('Generate sentences from the model.');
     console.log('Options:');
@@ -116,6 +125,7 @@ async function generateCommand({ file, start = '', n = 1, commit = false, backup
     console.log('  --help         Show this help');
     process.exit(0);
   }
+  const { file, start = '', n = 1, commit = false, backup = true } = opts;
   const raw = await readJsonFile(file);
   const parsedFile = parseModelFile(raw);
   const parsed = parsedFile.model;
@@ -189,13 +199,11 @@ export async function runCli(argv: string[]) {
     if (cmdLocal) {
       const filePath = merged.file ?? './var/model.json';
       if (cmdLocal === 'inspect') {
-        await inspectCommand({ file: filePath, word: merged._rest?.[0] ?? '', top: Number(merged.top ?? '10'), help: true });
+        await inspectCommand({ help: true });
         return;
       }
       if (cmdLocal === 'generate') {
-        const start = merged.start ?? '';
-        const n = Number(merged.n ?? '1');
-        await generateCommand({ file: filePath, start, n, commit: merged.commit, backup: merged.backup, help: true });
+        await generateCommand({ help: true });
         return;
       }
       // Fallback for unknown subcommands
@@ -212,13 +220,11 @@ export async function runCli(argv: string[]) {
     const target = _rest[0];
     const filePath = merged.file ?? './var/model.json';
     if (target === 'inspect') {
-      await inspectCommand({ file: filePath, word: merged._rest?.[0] ?? '', top: Number(merged.top ?? '10'), help: true });
+      await inspectCommand({ help: true });
       return;
     }
     if (target === 'generate') {
-      const start = merged.start ?? '';
-      const n = Number(merged.n ?? '1');
-      await generateCommand({ file: filePath, start, n, commit: merged.commit, backup: merged.backup, help: true });
+      await generateCommand({ help: true });
       return;
     }
     if (target) {
