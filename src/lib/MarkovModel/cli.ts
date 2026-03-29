@@ -11,7 +11,7 @@ import { generateSamples, inspectToken } from './MarkovModel';
  * - `file`, `start`, `n`, `top`: optional string flags passed on the CLI.
  * - `commit`, `backup`, `help`: boolean flags.
  */
-export type CLIOpts = {
+type CLIOpts = {
   _rest: string[];
   file?: string;
   start?: string;
@@ -34,7 +34,7 @@ export type CLIOpts = {
  * @returns A validated `MarkovModelData` object.
  * @throws {Error} If the input is not a valid model format.
  */
-export function parseMarkovModelData(model: unknown): MarkovModelData {
+function parseMarkovModelData(model: unknown): MarkovModelData {
   const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
   if (!isRecord(model)) throw new Error('Invalid model format');
@@ -70,7 +70,7 @@ export function parseMarkovModelData(model: unknown): MarkovModelData {
  * @returns The parsed JSON value.
  * @throws {Error|SyntaxError} If the file cannot be read or parsed.
  */
-export async function readJsonFile(filePath: string): Promise<unknown> {
+async function readJsonFile(filePath: string): Promise<unknown> {
   const resolved = path.resolve(process.cwd(), filePath);
   const txt = await fs.readFile(resolved, 'utf8');
   return JSON.parse(txt);
@@ -82,7 +82,7 @@ export async function readJsonFile(filePath: string): Promise<unknown> {
  * This is a small, human-oriented helper used by `runCli` when printing
  * top-level usage information or when unknown commands are given.
  */
-export function printUsage() {
+function printUsage() {
   console.log('Usage: markov <inspect|generate> [options]');
   console.log('Commands:');
   console.log('  inspect <word>        Show top candidate continuations for <word>');
@@ -97,7 +97,7 @@ export function printUsage() {
   console.log('  --backup              Create a backup when committing changes');
 }
 
-export function printSubcommandHelp(command: string) {
+function printSubcommandHelp(command: string) {
   switch (command) {
     case 'inspect':
       console.log('Usage: markov inspect <word> [--top <num>] [--file <path>]');
