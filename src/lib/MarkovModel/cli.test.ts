@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { runCli } from './cli';
-import { inspectToken, generateSamples } from './MarkovModel';
+import { inspectWord, generateSamples } from './MarkovModel';
 import type { MarkovModelData } from './MarkovModel';
 import { promises as fs } from 'fs';
 import path from 'path';
 
 describe('Markov CLI helpers', () => {
-  it('inspectToken returns sorted candidates', () => {
+  it('inspectWord returns sorted candidates', () => {
     const model: MarkovModelData = { '': {}, tok: { x: 1, y: 5, z: 2 } };
-    const top = inspectToken(model, 'tok', 2);
+    const top = inspectWord(model, 'tok', 2);
     expect(top[0]![0]).toBe('y');
     expect(top[1]![0]).toBe('z');
   });

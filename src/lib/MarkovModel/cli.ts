@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { parseArgs } from 'util';
 import type { MarkovModelData, WeightedCandidates, MarkovModel } from './MarkovModel';
-import { create, inspectToken, parseModelFile } from './MarkovModel';
+import { create, inspectWord, parseModelFile } from './MarkovModel';
 
 /**
  * Parsed CLI options structure returned by the argument parser.
@@ -66,36 +66,65 @@ function printUsage() {
   console.log('  help                  Show usage');
   console.log('Options:');
   console.log('  --file <path>         Model file (default ./var/model.json)');
-  console.log('  --start <token>       Start token for generate');
+  console.log('  --start <word>       Start word for generation');
   console.log('  --n <num>             Number of samples to generate');
   console.log('  --top <num>           Top N candidates for inspect');
   console.log('  --commit              Commit learned changes to the model file (learn only)');
   console.log('  --backup              Create a backup when committing changes');
 }
 
-function printSubcommandHelp(command: string) {
-  switch (command) {
-    case 'inspect':
-      console.log('Usage: markov inspect <word> [--top <num>] [--file <path>]');
-      console.log('Show top candidate continuations for <word>.');
-      console.log('Options:');
-      console.log('  --top <num>    Number of top candidates to show (default 10)');
-      console.log('  --file <path>  Model file (default ./var/model.json)');
-      return;
-    case 'generate':
-      console.log('Usage: markov generate [--n <num>] [--start <token>] [--file <path>]');
-      console.log('Generate sentences from the model.');
-      console.log('Options:');
-      console.log('  --n <num>      Number of samples to generate (default 1)');
-      console.log('  --start <tok>  Start token for generation');
-      console.log('  --file <path>  Model file (default ./var/model.json)');
-      return;
-    default:
-      console.log(`No help available for unknown command: ${command}`);
-      printUsage();
+async function inspectCommand(file: string, word: string, top = 10, help = false) {
+  if (help) {
+    console.log('Usage: markov inspect <word> [--top <num>] [--file <path>]');
+    console.log('Show top candidate continuations for <word>.');
+    console.log('Options:');
+    console.log('  --top <num>    Number of top candidates to show (default 10)');
+    console.log('  --file <path>  Model file (default ./var/model.json)');
+    process.exit(0);
   }
+  if (!word) { console.error('inspect <word>'); process.exit(1); }
+  const raw = await readJsonFile(file);
+  const parsedFile = parseModelFile(raw);
+  const parsed = parsedFile.model;
+  const corpus = parsedFile.corpus ?? [];
+  const m: MarkovModel = create(parsed, corpus);
+  const rows = inspectWord(m.json.model, word, top);
+  console.log(`Top ${rows.length} for word: ${word}`);
+  for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
 }
 
+async function generateCommand(file: string, start = '', n = 1, commit = false, backup = true, help = false) {
+  if (help) {
+    console.log('Usage: markov generate [--n <num>] [--start <word>] [--file <path>]');
+    console.log('Generate sentences from the model.');
+    console.log('Options:');
+    console.log('  --n <num>      Number of samples to generate (default 1)');
+    console.log('  --start <word>  Start word for generation');
+    console.log('  --file <path>  Model file (default ./var/model.json)');
+    process.exit(0);
+  }
+  const raw = await readJsonFile(file);
+  const parsedFile = parseModelFile(raw);
+  const parsed = parsedFile.model;
+  const corpus = parsedFile.corpus ?? [];
+  const m: MarkovModel = create(parsed, corpus);
+  const out = Array.from({ length: n }, () => m.gen(start));
+  out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
+
+  if (commit) {
+    try {
+      if (backup) {
+        const bak = `${file}.bak.${Date.now()}`;
+        await fs.copyFile(file, bak);
+      }
+      const toWrite = { model: m.json.model, corpus };
+      await fs.writeFile(file, JSON.stringify(toWrite, null, 2), 'utf8');
+    } catch (err: any) {
+      console.error('Failed to write model file:', String(err));
+      process.exit(1);
+    }
+  }
+}
 
 export async function runCli(argv: string[]) {
   // Isolate argument parsing so that later `process.exit` calls are not
@@ -138,10 +167,25 @@ export async function runCli(argv: string[]) {
     help: Boolean(optsValues.help),
   };
 
-  // If user passed `--help` together with a subcommand, show that subcommand's help.
+  // If user passed `--help` together with a subcommand, delegate help
+  // printing to the individual command handlers so each command can
+  // provide its own subcommand-specific help text.
   if (merged.help) {
     if (cmdLocal) {
-      printSubcommandHelp(cmdLocal);
+      const filePath = merged.file ?? './var/model.json';
+      if (cmdLocal === 'inspect') {
+        await inspectCommand(filePath, merged._rest?.[0] ?? '', Number(merged.top ?? '10'), true);
+        return;
+      }
+      if (cmdLocal === 'generate') {
+        const start = merged.start ?? '';
+        const n = Number(merged.n ?? '1');
+        await generateCommand(filePath, start, n, merged.commit, merged.backup, true);
+        return;
+      }
+      // Fallback for unknown subcommands
+      console.log(`No help available for unknown command: ${cmdLocal}`);
+      printUsage();
       process.exit(0);
     }
     printUsage();
@@ -151,8 +195,23 @@ export async function runCli(argv: string[]) {
   // Support `markov help [subcommand]` as a positional-based help helper.
   if (cmdLocal === 'help') {
     const target = _rest[0];
-    if (target) printSubcommandHelp(target);
-    else printUsage();
+    const filePath = merged.file ?? './var/model.json';
+    if (target === 'inspect') {
+      await inspectCommand(filePath, merged._rest?.[0] ?? '', Number(merged.top ?? '10'), true);
+      return;
+    }
+    if (target === 'generate') {
+      const start = merged.start ?? '';
+      const n = Number(merged.n ?? '1');
+      await generateCommand(filePath, start, n, merged.commit, merged.backup, true);
+      return;
+    }
+    if (target) {
+      console.log(`No help available for unknown command: ${target}`);
+      printUsage();
+    } else {
+      printUsage();
+    }
     process.exit(0);
   }
 
@@ -164,49 +223,16 @@ export async function runCli(argv: string[]) {
   const file = merged.file ?? './var/model.json';
   if (cmdLocal === 'inspect') {
     const word = merged._rest?.[0];
-    if (!word) { console.error('inspect <word>'); process.exit(1); }
-    const raw = await readJsonFile(file);
-    const parsedFile = parseModelFile(raw);
-    const parsed = parsedFile.model;
-    const corpus = parsedFile.corpus ?? [];
-    const m: MarkovModel = create(parsed, corpus);
-    const rows = inspectToken(m.json.model, word, Number(merged.top ?? '10'));
-    console.log(`Top ${rows.length} for word: ${word}`);
-    for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
+    await inspectCommand(file, word ?? '', Number(merged.top ?? '10'));
     return;
   }
   if (cmdLocal === 'generate') {
     const n = Number(merged.n ?? '1');
     const start = merged.start ?? '';
-    const raw = await readJsonFile(file);
-    const parsedFile = parseModelFile(raw);
-    const parsed = parsedFile.model;
-    const corpus = parsedFile.corpus ?? [];
-    const m: MarkovModel = create(parsed, corpus);
-    const out = Array.from({ length: n }, () => m.gen(start));
-    out.forEach((s, i) => console.log(`${i + 1}: ${s}`));
-
-    if (merged.commit) {
-      // Preserve the original corpus when writing back the model file.
-      try {
-        if (merged.backup) {
-          const bak = `${file}.bak.${Date.now()}`;
-          await fs.copyFile(file, bak);
-        }
-        const toWrite = { model: m.json.model, corpus };
-        await fs.writeFile(file, JSON.stringify(toWrite, null, 2), 'utf8');
-      } catch (err: any) {
-        console.error('Failed to write model file:', String(err));
-        process.exit(1);
-      }
-    }
+    await generateCommand(file, start, n, merged.commit, merged.backup);
     return;
   }
 
   console.error('Unknown command', cmdLocal);
   process.exit(1);
 }
-
-// exported as named function `runCli` above
-
-

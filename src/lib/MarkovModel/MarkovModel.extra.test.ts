@@ -52,7 +52,7 @@ describe('learning, toLearned and reply behaviors', () => {
   test('learning skips single-character punctuation at beginning', () => {
     const m = create();
     m.learn('、こんにちは。');
-    // model[''] should not include the single punctuation token as beginning
+    // model[''] should not include the single punctuation word as beginning
     expect(Object.keys(m.json.model[''])).not.toContain('、');
   });
 });
@@ -80,7 +80,7 @@ describe('additional generation and learning branches', () => {
     expect(json.model['わん']).toHaveProperty('。', 2);
   });
 
-  test('generateSamples with start token and n>1', () => {
+  test('generateSamples with start word and n>1', () => {
     const model = { '': { x: 1 }, x: { '。': 1 } } as any;
     const out = require('./MarkovModel').generateSamples(model, 'x', 3);
     expect(out.length).toBe(3);

@@ -168,10 +168,10 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
 export type MarkovModel = ReturnType<typeof create>;
 
 /**
- * Inspect a token's top candidates sorted by weight.
+ * Inspect a word's top candidates sorted by weight.
  */
-export function inspectToken(model: MarkovModelData, token: string, topN = 10): Array<[string, number]> {
-  const cands = model[token] ?? {};
+export function inspectWord(model: MarkovModelData, word: string, topN = 10): Array<[string, number]> {
+  const cands = model[word] ?? {};
   return Object.entries(cands).sort((a, b) => b[1] - a[1]).slice(0, topN) as Array<[string, number]>;
 }
 
