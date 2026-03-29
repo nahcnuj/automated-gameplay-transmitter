@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { parseArgs } from 'util';
 import type { MarkovModelData, WeightedCandidates } from './MarkovModel';
