@@ -61,14 +61,14 @@ export function parseMarkovModelData(model: unknown): MarkovModelData {
 }
 
 /**
- * Load a model from the filesystem and parse it into `MarkovModelData`.
+ * Read and parse a JSON file from disk.
  *
- * Reads the file at `filePath`, JSON-parses its contents and delegates
- * validation to `parseMarkovModelData`.
+ * This helper resolves `filePath` against the current working directory,
+ * reads the file contents and returns the result of `JSON.parse`.
  *
- * @param filePath - Path to the model JSON file.
- * @returns The validated `MarkovModelData`.
- * @throws {Error|SyntaxError} If the file cannot be read, parsed, or validated.
+ * @param filePath - Path to the JSON file.
+ * @returns The parsed JSON value.
+ * @throws {Error|SyntaxError} If the file cannot be read or parsed.
  */
 export async function readJsonFile(filePath: string): Promise<unknown> {
   const resolved = path.resolve(process.cwd(), filePath);
@@ -77,15 +77,11 @@ export async function readJsonFile(filePath: string): Promise<unknown> {
 }
 
 /**
- * Load a model file and parse it into `MarkovModelData`.
+ * Print a short usage summary for the CLI to stdout.
  *
- * This function separates I/O (reading/parsing JSON) from model validation
- * so callers (and tests) can exercise parsing logic without touching the
- * filesystem.
+ * This is a small, human-oriented helper used by `runCli` when printing
+ * top-level usage information or when unknown commands are given.
  */
-// NOTE: `loadModelFromFile` removed — prefer `readJsonFile` then
-// `parseMarkovModelData(raw.model)` so I/O and parsing responsibilities are separated.
-
 export function printUsage() {
   console.log('Usage: markov <inspect|generate> [options]');
   console.log('Commands:');
