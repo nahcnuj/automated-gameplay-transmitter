@@ -89,8 +89,7 @@ type GenerateCommandOpts = {
   help?: boolean;
 };
 
-async function inspectCommand(opts: InspectCommandOpts) {
-  const { file, word = '', top = 10, help = false } = opts;
+async function inspectCommand({ file, word = '', top = 10, help = false }: InspectCommandOpts) {
   if (help) {
     console.log('Usage: markov inspect <word> [--top <num>] [--file <path>]');
     console.log('Show top candidate continuations for <word>.');
@@ -110,8 +109,7 @@ async function inspectCommand(opts: InspectCommandOpts) {
   for (const [cand, weight] of rows) console.log(`${cand}\t${weight}`);
 }
 
-async function generateCommand(opts: GenerateCommandOpts) {
-  const { file, start = '', n = 1, commit = false, backup = true, help = false } = opts;
+async function generateCommand({ file, start = '', n = 1, commit = false, backup = true, help = false }: GenerateCommandOpts) {
   if (help) {
     console.log('Usage: markov generate [--n <num>] [--start <word>] [--file <path>]');
     console.log('Generate sentences from the model.');
