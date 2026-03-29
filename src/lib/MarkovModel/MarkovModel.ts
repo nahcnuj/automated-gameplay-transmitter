@@ -1,15 +1,15 @@
+import { z } from 'zod';
 import { sliceByNumber } from "../extensions/Array";
 import { splitIntoWords } from "../extensions/String";
-import { z } from 'zod';
 
-export type WeightedCandidates = Record<string, number>;
+export const weightedCandidatesSchema = z.record(z.number());
+export type WeightedCandidates = z.infer<typeof weightedCandidatesSchema>;
 
-export type MarkovModelData = {
-  /** initial word candidates */
-  '': WeightedCandidates
+export const initialCandidatesSchema = z.object({ '': weightedCandidatesSchema });
 
-  [k: string]: WeightedCandidates
-};
+export const markovModelDataSchema = initialCandidatesSchema.catchall(weightedCandidatesSchema);
+
+export type MarkovModelData = z.infer<typeof markovModelDataSchema>;
 
 /**
  * Selects a candidate string from a list of weighted candidates by scanning
@@ -191,13 +191,6 @@ export function generateSamples(model: MarkovModelData, start = '', n = 1): stri
  * the empty-string start key `` ''.
  */
 export function parseModelFile(fileContents: unknown): { model: MarkovModelData; corpus?: string[] } {
-  const weightedCandidatesSchema = z.record(z.number());
-  const markovModelDataSchema = z
-    .record(weightedCandidatesSchema)
-    .refine((m) => Object.prototype.hasOwnProperty.call(m, ''), {
-      message: "Model must contain empty-string start key ''",
-    });
-
   const schema = z.object({
     model: markovModelDataSchema,
     corpus: z.array(z.string()).optional(),
