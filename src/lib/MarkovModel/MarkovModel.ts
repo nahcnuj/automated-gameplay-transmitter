@@ -1,13 +1,24 @@
-import { z } from 'zod';
 import { sliceByNumber } from "../extensions/Array";
 import { splitIntoWords } from "../extensions/String";
 
-const weightedCandidatesSchema = z.record(z.number());
-const initialCandidatesSchema = z.object({ '': weightedCandidatesSchema });
-const markovModelDataSchema = initialCandidatesSchema.catchall(weightedCandidatesSchema);
+type WeightedCandidates = Record<string, number>;
+type MarkovModelData = { '': WeightedCandidates } & Record<string, WeightedCandidates>;
 
-type WeightedCandidates = z.infer<typeof weightedCandidatesSchema>;
-type MarkovModelData = z.infer<typeof markovModelDataSchema>;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isWeightedCandidates(value: unknown): value is WeightedCandidates {
+  return isRecord(value) && Object.values(value).every(v => typeof v === 'number');
+}
+
+function isMarkovModelData(value: unknown): value is MarkovModelData {
+  return isRecord(value) && '' in value && Object.values(value).every(v => isWeightedCandidates(v));
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(item => typeof item === 'string');
+}
 
 /**
  * Selects a candidate string from a list of weighted candidates by scanning
@@ -164,13 +175,17 @@ export function inspectWord(model: MarkovModelData, word: string, topN = 10): Ar
  * the empty-string start key `` ''.
  */
 export function parseModelFile(fileContents: unknown): { model: MarkovModelData; corpus?: string[] } {
-  const schema = z.object({
-    model: markovModelDataSchema,
-    corpus: z.array(z.string()).optional(),
-  });
-
-  const parsed = schema.parse(fileContents);
-  return parsed as { model: MarkovModelData; corpus?: string[] };
+  if (!isRecord(fileContents)) {
+    throw new Error('Invalid model file: expected an object');
+  }
+  if (!isMarkovModelData(fileContents['model'])) {
+    throw new Error('Invalid model file: model must be a valid MarkovModelData');
+  }
+  const corpus = fileContents['corpus'];
+  if (corpus !== undefined && !isStringArray(corpus)) {
+    throw new Error('Invalid model file: corpus must be an array of strings');
+  }
+  return { model: fileContents['model'], corpus };
 }
 
 declare global {
