@@ -2,13 +2,23 @@ import { sliceByNumber } from "../extensions/Array";
 import { splitIntoWords } from "../extensions/String";
 
 type WeightedCandidates = Record<string, number>;
+type MarkovModelData = { '': WeightedCandidates } & Record<string, WeightedCandidates>;
 
-type MarkovModelData = {
-  /** initial word candidates */
-  '': WeightedCandidates
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
-  [k: string]: WeightedCandidates
-};
+function isWeightedCandidates(value: unknown): value is WeightedCandidates {
+  return isRecord(value) && Object.values(value).every(v => typeof v === 'number');
+}
+
+function isMarkovModelData(value: unknown): value is MarkovModelData {
+  return isRecord(value) && '' in value && Object.values(value).every(v => isWeightedCandidates(v));
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(item => typeof item === 'string');
+}
 
 /**
  * Selects a candidate string from a list of weighted candidates by scanning
@@ -45,25 +55,28 @@ type MarkovModelData = {
  * - w = 5.9  -> 'c' (5.9 < 6 = 1+2+3)
  * - w >= 6.0 -> 'c' ( w >= 6 = 1+2+3)
  */
-export const choose = (cands: [string, number][], w: number): string => cands.reduce(([current, acc], [next, weight]) => {
-  if (acc > w) {
-    return [current, acc];
-  }
-  return [next, acc + weight];
-}, ['', 0])[0];
-
-declare global {
-  interface Math {
-    /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sumPrecise */
-    sumPrecise(args: number[]): number;
-  }
-}
+export const choose = (cands: [string, number][], w: number): string => {
+  return cands.reduce(([current, acc], [next, weight]) => {
+    if (acc > w) {
+      return [current, acc];
+    }
+    return [next, acc + weight];
+  }, ['', 0])[0];
+};
 
 const pick = (cands: WeightedCandidates) => {
   const total = Math.sumPrecise(Object.values(cands));
   const rnd = Math.floor(Math.random() * total);
   return choose(Object.entries(cands), rnd);
 };
+
+function formatDebugWords(words: string[]) {
+  return words[sliceByNumber](7)
+    .flatMap((ss, i) => (i ? [' ', ...ss] : ss))
+    .join('/');
+}
+
+const isDebug = () => Boolean(process.env.DEBUG_MARKOV);
 
 const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
 
@@ -97,10 +110,10 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
       }
       words.push(w);
     }
-    console.debug('[DEBUG]',
+    if (isDebug()) console.debug('[DEBUG]',
       [...words].length - 1, 'words',
       [...words.join('')].length - 1, 'charas',
-      words[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join('/'),
+      formatDebugWords(words),
     );
     return words.join('');
   },
@@ -114,19 +127,19 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     }, ['']);
     const topic = cands.at(Math.floor(Math.random() * cands.length));
     if (topic) {
-      // console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
+      if (isDebug()) console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
       return this.gen(topic);
     }
   },
   learn: (text: `${string}。`): void => {
     corpus.push(text);
-    // console.debug('[DEBUG]', 'learn', text);
+    if (isDebug()) console.debug('[DEBUG]', 'learn', text);
     text[splitIntoWords](jaJP).reduce<string>((prev, next) => {
       if (prev === '' && !acceptBeginning(next)) {
         // skip
         return next;
       }
-      // console.debug('[DEBUG]', prev, next);
+      if (isDebug()) console.debug('[DEBUG]', prev, next);
       model[prev] = {
         [next]: 0,
         ...(model[prev] ?? {}),
@@ -144,3 +157,40 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     return { model, corpus };
   },
 });
+
+export type MarkovModel = ReturnType<typeof create>;
+
+/**
+ * Inspect a word's top candidates sorted by weight.
+ */
+export function inspectWord(model: MarkovModelData, word: string, topN = 10): Array<[string, number]> {
+  const cands = model[word] ?? {};
+  return Object.entries(cands).sort((a, b) => b[1] - a[1]).slice(0, topN) as Array<[string, number]>;
+}
+
+/**
+ * Parse and validate a model file object previously produced by `JSON.parse`.
+ * Ensures the object has a `model` property (MarkovModelData) and an
+ * optional `corpus` array of strings. The `model` is required to contain
+ * the empty-string start key `` ''.
+ */
+export function parseModelFile(fileContents: unknown): { model: MarkovModelData; corpus?: string[] } {
+  if (!isRecord(fileContents)) {
+    throw new Error('Invalid model file: expected an object');
+  }
+  if (!isMarkovModelData(fileContents['model'])) {
+    throw new Error('Invalid model file: model must be a valid MarkovModelData');
+  }
+  const corpus = fileContents['corpus'];
+  if (corpus !== undefined && !isStringArray(corpus)) {
+    throw new Error('Invalid model file: corpus must be an array of strings');
+  }
+  return { model: fileContents['model'], corpus };
+}
+
+declare global {
+  interface Math {
+    /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sumPrecise */
+    sumPrecise(args: number[]): number;
+  }
+}

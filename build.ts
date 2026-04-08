@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import plugin from "bun-plugin-tailwind";
 import { existsSync } from "fs";
-import { rm } from "fs/promises";
+import { rm, readFile, writeFile } from "fs/promises";
 import path from "path";
 
 if (process.argv.includes("--help") || process.argv.includes("-h")) {
@@ -33,7 +33,7 @@ Example:
   process.exit(0);
 }
 
-const toCamelCase = (str: string): string => str.replace(/-([a-z])/g, g => g[1].toUpperCase());
+const toCamelCase = (str: string): string => str.replace(/-([a-z])/g, (_match, p1) => p1.toUpperCase());
 
 const parseValue = (value: string): any => {
   if (value === "true") return true;
@@ -47,8 +47,8 @@ const parseValue = (value: string): any => {
   return value;
 };
 
-function parseArgs(): Partial<Bun.BuildConfig> {
-  const config: Partial<Bun.BuildConfig> = {};
+function parseArgs(): any {
+  const config: any = {};
   const args = process.argv.slice(2);
 
   for (let i = 0; i < args.length; i++) {
@@ -81,7 +81,7 @@ function parseArgs(): Partial<Bun.BuildConfig> {
     key = toCamelCase(key);
 
     if (key.includes(".")) {
-      const [parentKey, childKey] = key.split(".");
+      const [parentKey, childKey] = key.split(".") as [string, string];
       config[parentKey] = config[parentKey] || {};
       config[parentKey][childKey] = parseValue(value);
     } else {
@@ -171,7 +171,47 @@ if (process.argv.includes("--lib")) {
     console.log(`\n✅ Node library build completed in ${(nodeEnd - nodeStart).toFixed(2)}ms\n`);
   }
 
-  process.exit(browserResult.success && nodeResult.success ? 0 : 1);
+  // Build CLI entrypoint (bin/markov.ts) into dist/bin/markov.js with a Node shebang
+  console.log("\n📦 Building CLI (markov)...\n");
+  const cliStart = performance.now();
+  const cliResult = await Bun.build({
+    entrypoints: [path.resolve("bin/markov.ts")],
+    outdir,
+    target: "node",
+    format: "esm",
+    packages: "external",
+    banner: "#!/usr/bin/env node\n",
+  });
+
+  const cliEnd = performance.now();
+
+  const cliOutputTable = cliResult.outputs.map(output => ({
+    File: path.relative(process.cwd(), output.path),
+    Type: output.kind,
+    Size: formatFileSize(output.size),
+  }));
+
+  // Ensure the generated files start with a shebang for npm/bun installers
+  for (const output of cliResult.outputs) {
+    try {
+      const p = output.path;
+      let content = await readFile(p, 'utf8');
+      // Remove any existing shebang lines and normalize to a single Node shebang
+      content = content.replace(/#!.*\r?\n/g, '');
+      await writeFile(p, '#!/usr/bin/env node\n' + content, 'utf8');
+    } catch (err) {
+      // best-effort, ignore
+    }
+  }
+
+  console.table(cliOutputTable);
+  if (!cliResult.success) {
+    console.error(`\n❌ CLI build failed\n`);
+  } else {
+    console.log(`\n✅ CLI build completed in ${(cliEnd - cliStart).toFixed(2)}ms\n`);
+  }
+
+  process.exit(browserResult.success && nodeResult.success && cliResult.success ? 0 : 1);
 }
 
 console.log("\n🚀 Starting build process...\n");

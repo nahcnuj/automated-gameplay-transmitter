@@ -88,3 +88,75 @@ describe('json', () => {
     expect(create(undefined, ['こんにちは。']).json).toEqual({ model: { '': {} }, corpus: ['こんにちは。'] });
   });
 });
+
+describe('additional extra tests merged', () => {
+  test('choose with empty candidates and negative threshold', () => {
+    expect(choose([], 0)).toBe('');
+    expect(choose([['a', 1]], -1)).toBe('');
+  });
+
+  test('learn updates model and corpus', () => {
+    const m = create();
+    m.learn('あい。');
+    const json = m.json;
+    expect(json.corpus).toContain('あい。');
+    expect(json.model['']).toHaveProperty('あい', 1);
+    expect(json.model['あい']).toHaveProperty('。', 1);
+  });
+
+  test('toLearned returns a new model and does not mutate original', () => {
+    const m = create();
+    const m2 = m.toLearned('おはよう。');
+    expect(m.json.model['']).not.toHaveProperty('おはよう');
+    expect(m2.json.model['']).toHaveProperty('おはよう');
+  });
+
+  test('reply returns undefined for empty input', () => {
+    const m = create();
+    expect(m.reply('')).toBeUndefined();
+  });
+
+  test('reply returns generated string when topic exists', () => {
+    const model = {
+      '': { topic: 1 },
+      topic: { '。': 1 },
+    } as any;
+    const m = create(model);
+    const resp = m.reply('topic');
+    expect(resp).toBe('topic。');
+  });
+
+  test('learning skips single-character punctuation at beginning', () => {
+    const m = create();
+    m.learn('、こんにちは。');
+    expect(Object.keys(m.json.model[''])).not.toContain('、');
+  });
+
+  test('gen stops by reaching max words length', () => {
+    const model = {
+      '': { a: 1 },
+      a: { a: 1 },
+    } as any;
+    const m = create(model);
+    const out = m.gen();
+    expect(out.length).toBeGreaterThan(0);
+  });
+
+  test('learn increments existing counts when called repeatedly', () => {
+    const m = create();
+    m.learn('わん。');
+    m.learn('わん。');
+    const json = m.json;
+    expect(json.model['']).toHaveProperty('わん', 2);
+    expect(json.model['わん']).toHaveProperty('。', 2);
+  });
+
+  test('gen executes debug console when DEBUG_MARKOV enabled', () => {
+    process.env.DEBUG_MARKOV = '1';
+    const m = create();
+    m.learn('デバッグ。');
+    const out = m.gen('デバッグ');
+    expect(typeof out).toBe('string');
+    delete process.env.DEBUG_MARKOV;
+  });
+});
