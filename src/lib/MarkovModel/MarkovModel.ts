@@ -101,7 +101,6 @@ const jaJP = new Intl.Locale('ja-JP');
  * console.log(reply);
  */
 export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = []) => {
-  const order = Math.max(1, ...Object.keys(model).map((k) => k.split('\0').length));
   return ({
   gen: (bos = '', nGram = 1): string => {
     const genOrder = normalizeNGram(nGram);
@@ -144,7 +143,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
         // skip
         return [...prev, next];
       }
-      for (let i = Math.min(order, prev.length); i > 0; i--) {
+      for (let i = prev.length; i > 0; i--) {
         const key = makeNGramKey(prev.slice(-i));
         // console.debug('[DEBUG]', key, next);
         model[key] = {
@@ -153,7 +152,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
         };
         model[key][next] = (model[key][next] ?? 0) + 1;
       }
-      return [...prev, next].slice(-order);
+      return [...prev, next];
     }, ['']);
   },
   toLearned: (text: `${string}。`) => {

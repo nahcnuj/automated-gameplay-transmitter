@@ -125,25 +125,23 @@ describe('json', () => {
   });
 
   test('learn with n-gram includes null-delimited keys', () => {
-    // Seed with a 2-gram-shaped key so learning runs in 2-gram mode without create-time n configuration.
-    const model = create({ '': {}, '\0': {} });
+    const model = create();
     const before = new Set(Object.keys(model.json.model));
     model.learn('こんにちは。');
     const createdNGramKeys = Object.keys(model.json.model).filter((k) => k.includes('\0') && !before.has(k));
     expect(createdNGramKeys.length).toBeGreaterThan(0);
   });
 
-  test('toLearned should keep n-gram order', () => {
-    // Seed with a 2-gram-shaped key so learning runs in 2-gram mode without create-time n configuration.
-    const base = create({ '': {}, '\0': {} });
+  test('toLearned should create null-delimited keys from empty base model', () => {
+    const base = create();
     const before = new Set(Object.keys(base.json.model));
     const model = base.toLearned('こんにちは。');
     const createdNGramKeys = Object.keys(model.json.model).filter((k) => k.includes('\0') && !before.has(k));
     expect(createdNGramKeys.length).toBeGreaterThan(0);
   });
 
-  test('learn should record 3-gram transitions when model implies order 3', () => {
-    const model = create({ '': {}, '\0\0': {} });
+  test('learn should record 3-gram transitions from empty model', () => {
+    const model = create();
     const before = new Set(Object.keys(model.json.model));
     model.learn('あいう。');
     const createdKeys = Object.keys(model.json.model).filter((k) => !before.has(k));
