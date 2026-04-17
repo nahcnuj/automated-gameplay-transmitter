@@ -154,7 +154,7 @@ describe('json', () => {
   test('JSON roundtrip should preserve null-delimited model keys', () => {
     const sourceModel = {
       '': { 'A': 1 },
-      ['A\0B']: { 'C': 1 },
+      [['A', 'B'].join('\0')]: { 'C': 1 },
       [['', 'A', 'B'].join('\0')]: { '。': 1 },
     };
     const restoredModel = JSON.parse(JSON.stringify(sourceModel));
