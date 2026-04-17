@@ -67,7 +67,7 @@ const pick = (cands: WeightedCandidates) => {
 
 const makeNGramKey = (words: string[]) => words.join('\0');
 
-const normalizeNGram = (n: number) => Math.max(1, Math.floor(n));
+const normalizeNGram = (n: number) => Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 1;
 
 const resolveCandidates = (model: MarkovModelData, words: string[], nGram: number): WeightedCandidates => {
   for (let i = Math.min(nGram, words.length); i > 0; i--) {

@@ -125,6 +125,7 @@ describe('json', () => {
   });
 
   test('learn with n-gram includes null-delimited keys', () => {
+    // Seed with a 2-gram-shaped key so learning runs in 2-gram mode without create-time n configuration.
     const model = create({ '': {}, '\0': {} });
     const before = new Set(Object.keys(model.json.model));
     model.learn('こんにちは。');
@@ -133,6 +134,7 @@ describe('json', () => {
   });
 
   test('toLearned should keep n-gram order', () => {
+    // Seed with a 2-gram-shaped key so learning runs in 2-gram mode without create-time n configuration.
     const base = create({ '': {}, '\0': {} });
     const before = new Set(Object.keys(base.json.model));
     const model = base.toLearned('こんにちは。');
