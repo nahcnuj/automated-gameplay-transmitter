@@ -68,6 +68,7 @@ const pick = (cands: WeightedCandidates) => {
 const makeNGramKey = (words: string[]) => words.join('\0');
 
 const normalizeNGram = (n: number) => Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 1;
+const maxLearnContext = 15;
 
 const resolveCandidates = (model: MarkovModelData, words: string[], nGram: number): WeightedCandidates => {
   for (let i = Math.min(nGram, words.length); i > 0; i--) {
@@ -143,7 +144,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
         // skip
         return [...prev, next];
       }
-      for (let i = prev.length; i > 0; i--) {
+      for (let i = Math.min(prev.length, maxLearnContext); i > 0; i--) {
         const key = makeNGramKey(prev.slice(-i));
         // console.debug('[DEBUG]', key, next);
         model[key] = {
@@ -152,7 +153,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
         };
         model[key][next] = (model[key][next] ?? 0) + 1;
       }
-      return [...prev, next];
+      return [...prev, next].slice(-maxLearnContext);
     }, ['']);
   },
   toLearned: (text: `${string}。`) => {
