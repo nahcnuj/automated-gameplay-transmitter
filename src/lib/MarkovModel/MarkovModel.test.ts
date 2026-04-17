@@ -45,7 +45,7 @@ describe('generate', () => {
     expect(counts["こんばんは。"]).toBe(50);
   });
 
-  test('n-gram model should prefer longer context', () => {
+  test('n-gram model should prefer longer context when n is specified at generation time', () => {
     const bosA = ['', 'A'].join('\0');
     const aB = ['A', 'B'].join('\0');
     const model = create({
@@ -55,8 +55,9 @@ describe('generate', () => {
       'B': { '。': 1 },
       [aB]: { '。': 1 },
       'X': { '。': 1 },
-    }, [], 2);
-    expect(model.gen()).toBe('AB。');
+    });
+    expect(model.gen('', 2)).toBe('AB。');
+    expect(model.gen()).toBe('AX。');
   });
 
   test('n-gram model should fallback to shorter context when needed', () => {
@@ -64,8 +65,20 @@ describe('generate', () => {
       '': { 'A': 1 },
       'A': { 'X': 1 },
       'X': { '。': 1 },
-    }, [], 2);
-    expect(model.gen()).toBe('AX。');
+    });
+    expect(model.gen('', 2)).toBe('AX。');
+  });
+
+  test('n-gram size can be specified when generating replies', () => {
+    const fooA = ['foo', 'A'].join('\0');
+    const model = create({
+      'foo': { 'A': 1 },
+      'A': { 'X': 1 },
+      [fooA]: { '。': 1 },
+      'X': { '。': 1 },
+    });
+    expect(model.reply('foo', 2)).toBe('fooA。');
+    expect(model.reply('foo')).toBe('fooAX。');
   });
 });
 
@@ -112,13 +125,18 @@ describe('json', () => {
   });
 
   test('learn with n-gram includes null-delimited keys', () => {
-    const model = create(undefined, [], 2);
+    const model = create({ '': {}, '\0': {} });
+    const before = new Set(Object.keys(model.json.model));
     model.learn('こんにちは。');
-    expect(Object.keys(model.json.model).some((k) => k.includes('\0'))).toBe(true);
+    const createdNGramKeys = Object.keys(model.json.model).filter((k) => k.includes('\0') && !before.has(k));
+    expect(createdNGramKeys.length).toBeGreaterThan(0);
   });
 
   test('toLearned should keep n-gram order', () => {
-    const model = create(undefined, [], 2).toLearned('こんにちは。');
-    expect(Object.keys(model.json.model).some((k) => k.includes('\0'))).toBe(true);
+    const base = create({ '': {}, '\0': {} });
+    const before = new Set(Object.keys(base.json.model));
+    const model = base.toLearned('こんにちは。');
+    const createdNGramKeys = Object.keys(model.json.model).filter((k) => k.includes('\0') && !before.has(k));
+    expect(createdNGramKeys.length).toBeGreaterThan(0);
   });
 });

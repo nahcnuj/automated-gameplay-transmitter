@@ -67,6 +67,8 @@ const pick = (cands: WeightedCandidates) => {
 
 const makeNGramKey = (words: string[]) => words.join('\0');
 
+const normalizeNGram = (n: number) => Math.max(1, Math.floor(n));
+
 const resolveCandidates = (model: MarkovModelData, words: string[], nGram: number): WeightedCandidates => {
   for (let i = Math.min(nGram, words.length); i > 0; i--) {
     const key = makeNGramKey(words.slice(-i));
@@ -98,14 +100,15 @@ const jaJP = new Intl.Locale('ja-JP');
  * const reply = model.reply('元気ですか？');
  * console.log(reply);
  */
-export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [], nGram = 1) => {
-  const order = Math.max(nGram, ...Object.keys(model).map((k) => k.split('\0').length));
+export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = []) => {
+  const order = Math.max(1, ...Object.keys(model).map((k) => k.split('\0').length));
   return ({
-  gen: (bos = ''): string => {
+  gen: (bos = '', nGram = 1): string => {
+    const genOrder = normalizeNGram(nGram);
     const words: string[] = [bos];
     while (words.at(-1) !== '。' && words.length < 15 && [...words.join('')].length < 32) {
       // console.debug('[DEBUG]', s.at(-1), ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));
-      const w = pick(resolveCandidates(model, words, order));
+      const w = pick(resolveCandidates(model, words, genOrder));
       if (w.length <= 0) {
         words.push('。');
         break;
@@ -119,7 +122,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     );
     return words.join('');
   },
-  reply(text: string): string | undefined {
+  reply(text: string, nGram = 1): string | undefined {
     const words = text[splitIntoWords](jaJP);
     const cands = words.reduce<string[]>((prev, s) => {
       const a = [...s].length;
@@ -130,7 +133,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     const topic = cands.at(Math.floor(Math.random() * cands.length));
     if (topic) {
       // console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
-      return this.gen(topic);
+      return this.gen(topic, nGram);
     }
   },
   learn: (text: `${string}。`): void => {
@@ -154,7 +157,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     }, ['']);
   },
   toLearned: (text: `${string}。`) => {
-    const m = create(structuredClone(model), structuredClone(corpus), order);
+    const m = create(structuredClone(model), structuredClone(corpus));
     m.learn(text);
     return m;
   },
