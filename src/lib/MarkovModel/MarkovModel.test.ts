@@ -46,12 +46,14 @@ describe('generate', () => {
   });
 
   test('n-gram model should prefer longer context', () => {
+    const bosA = ['', 'A'].join('\0');
+    const aB = ['A', 'B'].join('\0');
     const model = create({
       '': { 'A': 1 },
       'A': { 'X': 1 },
-      '\0A': { 'B': 1 },
+      [bosA]: { 'B': 1 },
       'B': { '。': 1 },
-      'A\0B': { '。': 1 },
+      [aB]: { '。': 1 },
       'X': { '。': 1 },
     }, [], 2);
     expect(model.gen()).toBe('AB。');

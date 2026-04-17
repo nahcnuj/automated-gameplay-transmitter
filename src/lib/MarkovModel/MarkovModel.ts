@@ -71,7 +71,7 @@ const resolveCandidates = (model: MarkovModelData, words: string[], nGram: numbe
   for (let i = Math.min(nGram, words.length); i > 0; i--) {
     const key = makeNGramKey(words.slice(-i));
     const cands = model[key];
-    if (cands && (Object.keys(cands)).length > 0) {
+    if (cands && Object.keys(cands).length > 0) {
       return cands;
     }
   }
