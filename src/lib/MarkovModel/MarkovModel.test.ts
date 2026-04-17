@@ -44,6 +44,27 @@ describe('generate', () => {
     expect(counts["こんにちは。"]).toBe(50);
     expect(counts["こんばんは。"]).toBe(50);
   });
+
+  test('n-gram model should prefer longer context', () => {
+    const model = create({
+      '': { 'A': 1 },
+      'A': { 'X': 1 },
+      '\0A': { 'B': 1 },
+      'B': { '。': 1 },
+      'A\0B': { '。': 1 },
+      'X': { '。': 1 },
+    }, [], 2);
+    expect(model.gen()).toBe('AB。');
+  });
+
+  test('n-gram model should fallback to shorter context when needed', () => {
+    const model = create({
+      '': { 'A': 1 },
+      'A': { 'X': 1 },
+      'X': { '。': 1 },
+    }, [], 2);
+    expect(model.gen()).toBe('AX。');
+  });
 });
 
 describe.each<[[string, number][], [number, string][]]>([
@@ -86,5 +107,16 @@ describe('json', () => {
 
   test('includes corpus', () => {
     expect(create(undefined, ['こんにちは。']).json).toEqual({ model: { '': {} }, corpus: ['こんにちは。'] });
+  });
+
+  test('learn with n-gram includes null-delimited keys', () => {
+    const model = create(undefined, [], 2);
+    model.learn('こんにちは。');
+    expect(Object.keys(model.json.model).some((k) => k.includes('\0'))).toBe(true);
+  });
+
+  test('toLearned should keep n-gram order', () => {
+    const model = create(undefined, [], 2).toLearned('こんにちは。');
+    expect(Object.keys(model.json.model).some((k) => k.includes('\0'))).toBe(true);
   });
 });

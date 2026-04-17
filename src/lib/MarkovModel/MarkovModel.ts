@@ -65,6 +65,19 @@ const pick = (cands: WeightedCandidates) => {
   return choose(Object.entries(cands), rnd);
 };
 
+const makeNGramKey = (words: string[]) => words.join('\0');
+
+const resolveCandidates = (model: MarkovModelData, words: string[], nGram: number): WeightedCandidates => {
+  for (let i = Math.min(nGram, words.length); i > 0; i--) {
+    const key = makeNGramKey(words.slice(-i));
+    const cands = model[key];
+    if (cands && (Object.keys(cands)).length > 0) {
+      return cands;
+    }
+  }
+  return {};
+};
+
 const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
 
 const jaJP = new Intl.Locale('ja-JP');
@@ -85,12 +98,14 @@ const jaJP = new Intl.Locale('ja-JP');
  * const reply = model.reply('元気ですか？');
  * console.log(reply);
  */
-export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = []) => ({
+export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [], nGram = 1) => {
+  const order = Math.max(nGram, ...Object.keys(model).map((k) => k.split('\0').length));
+  return ({
   gen: (bos = ''): string => {
     const words: string[] = [bos];
     while (words.at(-1) !== '。' && words.length < 15 && [...words.join('')].length < 32) {
       // console.debug('[DEBUG]', s.at(-1), ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));
-      const w = pick(model[words.at(-1) ?? ''] ?? {});
+      const w = pick(resolveCandidates(model, words, order));
       if (w.length <= 0) {
         words.push('。');
         break;
@@ -121,22 +136,25 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
   learn: (text: `${string}。`): void => {
     corpus.push(text);
     // console.debug('[DEBUG]', 'learn', text);
-    text[splitIntoWords](jaJP).reduce<string>((prev, next) => {
-      if (prev === '' && !acceptBeginning(next)) {
+    text[splitIntoWords](jaJP).reduce<string[]>((prev, next) => {
+      if ((prev.at(-1) ?? '') === '' && !acceptBeginning(next)) {
         // skip
-        return next;
+        return [...prev, next];
       }
-      // console.debug('[DEBUG]', prev, next);
-      model[prev] = {
-        [next]: 0,
-        ...(model[prev] ?? {}),
-      };
-      model[prev][next] = (model[prev][next] ?? 0) + 1;
-      return next;
-    }, '');
+      for (let i = Math.min(order, prev.length); i > 0; i--) {
+        const key = makeNGramKey(prev.slice(-i));
+        // console.debug('[DEBUG]', key, next);
+        model[key] = {
+          [next]: 0,
+          ...(model[key] ?? {}),
+        };
+        model[key][next] = (model[key][next] ?? 0) + 1;
+      }
+      return [...prev, next].slice(-order);
+    }, ['']);
   },
   toLearned: (text: `${string}。`) => {
-    const m = create(structuredClone(model));
+    const m = create(structuredClone(model), structuredClone(corpus), order);
     m.learn(text);
     return m;
   },
@@ -144,3 +162,4 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     return { model, corpus };
   },
 });
+};
