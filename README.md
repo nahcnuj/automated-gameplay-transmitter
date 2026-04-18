@@ -8,6 +8,21 @@ shared React components/contexts.
 - **React UI building blocks** (`components/` and `contexts/`) for displaying stream
   information, comments, speech, etc.
 
+## Markov Chain Model
+
+The package exports a Markov chain model as `MarkovModel` from both root entry points.
+You can create and train a model with `MarkovModel.create(...)`.
+
+```ts
+import { MarkovModel } from "automated-gameplay-transmitter";
+// or: import { MarkovModel } from "automated-gameplay-transmitter/server";
+
+const model = MarkovModel.create();
+model.learn("こんにちは。");
+
+const reply = model.reply("元気ですか？");
+```
+
 ## Layout Example
 
 The `Layout` component arranges three panels — main, side, and bottom — in a 16:9 grid.
