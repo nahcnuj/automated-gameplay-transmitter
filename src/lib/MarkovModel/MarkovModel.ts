@@ -67,7 +67,7 @@ const pick = (cands: WeightedCandidates) => {
 
 const makeNGramKey = (words: string[]) => words.join('\0');
 
-const normalizeNGram = (n: number) => Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 1;
+const normalizePositiveInteger = (n: number) => Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 1;
 // Keep learning context bounded to align with generation limits and avoid unbounded memory growth.
 const DEFAULT_MAX_LEARN_CONTEXT = 15;
 
@@ -107,10 +107,10 @@ export const create = (
   corpus: string[] = [],
   maxLearnContext = DEFAULT_MAX_LEARN_CONTEXT,
 ) => {
-  const learnContextLimit = normalizeNGram(maxLearnContext);
+  const learnContextLimit = normalizePositiveInteger(maxLearnContext);
   return ({
   gen: (bos = '', nGram = 1): string => {
-    const genOrder = normalizeNGram(nGram);
+    const genOrder = normalizePositiveInteger(nGram);
     const words: string[] = [bos];
     while (words.at(-1) !== '。' && words.length < 15 && [...words.join('')].length < 32) {
       // console.debug('[DEBUG]', s.at(-1), ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));

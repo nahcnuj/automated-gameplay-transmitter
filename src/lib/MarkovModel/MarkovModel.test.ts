@@ -130,6 +130,7 @@ describe('json', () => {
     const model = create();
     model.learn(text);
     const words = text[splitIntoWords](new Intl.Locale('ja-JP'));
+    expect(words).toEqual(['こんにちは', '。']);
     const expectedKeys = new Set<string>();
     let prev = [''];
     for (const next of words) {
