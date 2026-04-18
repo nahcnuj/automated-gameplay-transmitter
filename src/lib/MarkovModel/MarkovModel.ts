@@ -65,6 +65,23 @@ const pick = (cands: WeightedCandidates) => {
   return choose(Object.entries(cands), rnd);
 };
 
+const makeNGramKey = (words: string[]) => words.join('\0');
+
+const normalizePositiveInteger = (n: number) => Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 1;
+// Keep learning context bounded to align with generation limits and avoid unbounded memory growth.
+const DEFAULT_MAX_LEARN_CONTEXT = 15;
+
+const resolveCandidates = (model: MarkovModelData, words: string[], nGram: number): WeightedCandidates => {
+  for (let i = Math.min(nGram, words.length); i > 0; i--) {
+    const key = makeNGramKey(words.slice(-i));
+    const cands = model[key];
+    if (cands && Object.keys(cands).length > 0) {
+      return cands;
+    }
+  }
+  return {};
+};
+
 const acceptBeginning = (text: string) => [...text].length > 1 || !text.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Punctuation}\p{Modifier_Letter}\p{Other_Symbol}]/u);
 
 const jaJP = new Intl.Locale('ja-JP');
@@ -85,12 +102,19 @@ const jaJP = new Intl.Locale('ja-JP');
  * const reply = model.reply('元気ですか？');
  * console.log(reply);
  */
-export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = []) => ({
-  gen: (bos = ''): string => {
+export const create = (
+  model: MarkovModelData = { '': {} },
+  corpus: string[] = [],
+  maxLearnContext = DEFAULT_MAX_LEARN_CONTEXT,
+) => {
+  const learnContextLimit = normalizePositiveInteger(maxLearnContext);
+  return ({
+  gen: (bos = '', nGram = 1): string => {
+    const genOrder = normalizePositiveInteger(nGram);
     const words: string[] = [bos];
     while (words.at(-1) !== '。' && words.length < 15 && [...words.join('')].length < 32) {
       // console.debug('[DEBUG]', s.at(-1), ...Object.entries(model[s.at(-1) ?? ''] ?? {}).toSorted(([, a], [, b]) => b - a).slice(0, 3));
-      const w = pick(model[words.at(-1) ?? ''] ?? {});
+      const w = pick(resolveCandidates(model, words, genOrder));
       if (w.length <= 0) {
         words.push('。');
         break;
@@ -104,7 +128,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     );
     return words.join('');
   },
-  reply(text: string): string | undefined {
+  reply(text: string, nGram = 1): string | undefined {
     const words = text[splitIntoWords](jaJP);
     const cands = words.reduce<string[]>((prev, s) => {
       const a = [...s].length;
@@ -115,28 +139,31 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     const topic = cands.at(Math.floor(Math.random() * cands.length));
     if (topic) {
       // console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
-      return this.gen(topic);
+      return this.gen(topic, nGram);
     }
   },
   learn: (text: `${string}。`): void => {
     corpus.push(text);
     // console.debug('[DEBUG]', 'learn', text);
-    text[splitIntoWords](jaJP).reduce<string>((prev, next) => {
-      if (prev === '' && !acceptBeginning(next)) {
+    text[splitIntoWords](jaJP).reduce<string[]>((prev, next) => {
+      if ((prev.at(-1) ?? '') === '' && !acceptBeginning(next)) {
         // skip
-        return next;
+        return [next];
       }
-      // console.debug('[DEBUG]', prev, next);
-      model[prev] = {
-        [next]: 0,
-        ...(model[prev] ?? {}),
-      };
-      model[prev][next] = (model[prev][next] ?? 0) + 1;
-      return next;
-    }, '');
+      for (let i = Math.min(prev.length, learnContextLimit); i > 0; i--) {
+        const key = makeNGramKey(prev.slice(-i));
+        // console.debug('[DEBUG]', key, next);
+        model[key] = {
+          [next]: 0,
+          ...(model[key] ?? {}),
+        };
+        model[key][next] = (model[key][next] ?? 0) + 1;
+      }
+      return [...prev, next].slice(-learnContextLimit);
+    }, ['']);
   },
   toLearned: (text: `${string}。`) => {
-    const m = create(structuredClone(model));
+    const m = create(structuredClone(model), structuredClone(corpus), learnContextLimit);
     m.learn(text);
     return m;
   },
@@ -144,3 +171,4 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     return { model, corpus };
   },
 });
+};
