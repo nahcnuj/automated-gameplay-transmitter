@@ -6,4 +6,5 @@ export { CharacterSprite } from "./src/components/CharacterSprite";
 export { useInterval } from "./src/hooks/useInterval";
 export * from "./src/lib/Browser";
 export * from "./src/lib/Agent";
+export * as MarkovModel from "./src/lib/MarkovModel";
 
