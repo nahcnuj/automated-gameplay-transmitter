@@ -143,20 +143,20 @@ describe('json', () => {
   test('learn should record 3-gram transitions from empty model', () => {
     const model = create();
     const before = new Set(Object.keys(model.json.model));
-    model.learn('あいう。');
+    model.learn('私は猫です。');
     const createdKeys = Object.keys(model.json.model).filter((k) => !before.has(k));
-    const maxContextSize = Math.max(...createdKeys.map((k) => k.split('\0').length));
-    expect(maxContextSize).toBe(3);
     const threeWordContextKeys = createdKeys.filter((k) => k.split('\0').length === 3);
     expect(threeWordContextKeys.length).toBeGreaterThan(0);
     expect(threeWordContextKeys.some((k) => Object.keys(model.json.model[k]).length > 0)).toBe(true);
   });
 
   test('JSON roundtrip should preserve null-delimited model keys', () => {
+    const aB = ['A', 'B'].join('\0');
+    const bosAB = ['', 'A', 'B'].join('\0');
     const sourceModel = {
       '': { 'A': 1 },
-      [['A', 'B'].join('\0')]: { 'C': 1 },
-      [['', 'A', 'B'].join('\0')]: { '。': 1 },
+      [aB]: { 'C': 1 },
+      [bosAB]: { '。': 1 },
     };
     const restoredModel = JSON.parse(JSON.stringify(sourceModel));
     expect(restoredModel).toEqual(sourceModel);

@@ -143,7 +143,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
     text[splitIntoWords](jaJP).reduce<string[]>((prev, next) => {
       if ((prev.at(-1) ?? '') === '' && !acceptBeginning(next)) {
         // skip
-        return [...prev, next];
+        return [next];
       }
       for (let i = Math.min(prev.length, MAX_LEARN_CONTEXT); i > 0; i--) {
         const key = makeNGramKey(prev.slice(-i));
