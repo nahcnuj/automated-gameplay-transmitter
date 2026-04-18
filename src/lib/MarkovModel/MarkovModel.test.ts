@@ -1,5 +1,6 @@
 import { describe, expect, jest, test } from "bun:test";
 import { choose, create } from "./MarkovModel";
+import { splitIntoWords } from "../extensions/String";
 
 describe('generate', () => {
   test('An empty model should always generate "。".', () => {
@@ -125,19 +126,28 @@ describe('json', () => {
   });
 
   test('learn with n-gram includes null-delimited keys', () => {
+    const text = 'こんにちは。' as const;
     const model = create();
-    const before = new Set(Object.keys(model.json.model));
-    model.learn('こんにちは。');
-    const createdNGramKeys = Object.keys(model.json.model).filter((k) => k.includes('\0') && !before.has(k));
-    expect(createdNGramKeys.length).toBeGreaterThan(0);
+    model.learn(text);
+    const words = text[splitIntoWords](new Intl.Locale('ja-JP'));
+    const expectedKeys = new Set<string>();
+    let prev = [''];
+    for (const next of words) {
+      for (let i = 1; i <= prev.length; i++) {
+        expectedKeys.add(prev.slice(-i).join('\0'));
+      }
+      prev = [...prev, next];
+    }
+    for (const key of expectedKeys) {
+      expect(Object.keys(model.json.model)).toContain(key);
+    }
   });
 
-  test('toLearned should create null-delimited keys from empty base model', () => {
+  test('toLearned should clone corpus', () => {
     const base = create();
-    const before = new Set(Object.keys(base.json.model));
     const model = base.toLearned('こんにちは。');
-    const createdNGramKeys = Object.keys(model.json.model).filter((k) => k.includes('\0') && !before.has(k));
-    expect(createdNGramKeys.length).toBeGreaterThan(0);
+    expect(base.json.corpus).toEqual([]);
+    expect(model.json.corpus).toEqual(['こんにちは。']);
   });
 
   test('learn should record 3-gram transitions from empty model', () => {
@@ -147,7 +157,15 @@ describe('json', () => {
     const createdKeys = Object.keys(model.json.model).filter((k) => !before.has(k));
     const threeWordContextKeys = createdKeys.filter((k) => k.split('\0').length === 3);
     expect(threeWordContextKeys.length).toBeGreaterThan(0);
+    expect(createdKeys).toContain(['私', 'は', '猫'].join('\0'));
     expect(threeWordContextKeys.some((k) => Object.keys(model.json.model[k]).length > 0)).toBe(true);
+  });
+
+  test('learn should honor maxLearnContext passed to create', () => {
+    const model = create(undefined, [], 3);
+    model.learn('私は猫です。');
+    const contextKeys = Object.keys(model.json.model).filter((k) => k.length > 0);
+    expect(contextKeys.every((k) => k.split('\0').length <= 3)).toBe(true);
   });
 
   test('JSON roundtrip should preserve null-delimited model keys', () => {

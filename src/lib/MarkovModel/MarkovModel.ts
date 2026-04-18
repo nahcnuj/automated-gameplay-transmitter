@@ -69,7 +69,7 @@ const makeNGramKey = (words: string[]) => words.join('\0');
 
 const normalizeNGram = (n: number) => Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 1;
 // Keep learning context bounded to align with generation limits and avoid unbounded memory growth.
-const MAX_LEARN_CONTEXT = 15;
+const DEFAULT_MAX_LEARN_CONTEXT = 15;
 
 const resolveCandidates = (model: MarkovModelData, words: string[], nGram: number): WeightedCandidates => {
   for (let i = Math.min(nGram, words.length); i > 0; i--) {
@@ -102,7 +102,12 @@ const jaJP = new Intl.Locale('ja-JP');
  * const reply = model.reply('元気ですか？');
  * console.log(reply);
  */
-export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = []) => {
+export const create = (
+  model: MarkovModelData = { '': {} },
+  corpus: string[] = [],
+  maxLearnContext = DEFAULT_MAX_LEARN_CONTEXT,
+) => {
+  const learnContextLimit = normalizeNGram(maxLearnContext);
   return ({
   gen: (bos = '', nGram = 1): string => {
     const genOrder = normalizeNGram(nGram);
@@ -145,7 +150,7 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
         // skip
         return [next];
       }
-      for (let i = Math.min(prev.length, MAX_LEARN_CONTEXT); i > 0; i--) {
+      for (let i = Math.min(prev.length, learnContextLimit); i > 0; i--) {
         const key = makeNGramKey(prev.slice(-i));
         // console.debug('[DEBUG]', key, next);
         model[key] = {
@@ -154,11 +159,11 @@ export const create = (model: MarkovModelData = { '': {} }, corpus: string[] = [
         };
         model[key][next] = (model[key][next] ?? 0) + 1;
       }
-      return [...prev, next].slice(-MAX_LEARN_CONTEXT);
+      return [...prev, next].slice(-learnContextLimit);
     }, ['']);
   },
   toLearned: (text: `${string}。`) => {
-    const m = create(structuredClone(model), structuredClone(corpus));
+    const m = create(structuredClone(model), structuredClone(corpus), learnContextLimit);
     m.learn(text);
     return m;
   },
