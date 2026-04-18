@@ -2,6 +2,8 @@ import { describe, expect, jest, test } from "bun:test";
 import { choose, create } from "./MarkovModel";
 import { splitIntoWords } from "../extensions/String";
 
+const modelKeys = (model: ReturnType<typeof create>) => Object.keys(model.json.model);
+
 describe('generate', () => {
   test('An empty model should always generate "。".', () => {
     const model = create();
@@ -132,7 +134,7 @@ describe('json', () => {
     const words = text[splitIntoWords](new Intl.Locale('ja-JP'));
     expect(words).toEqual(['こんにちは', '。']);
     for (const key of ['', 'こんにちは', '\0こんにちは']) {
-      expect(Object.keys(model.json.model)).toContain(key);
+      expect(modelKeys(model)).toContain(key);
     }
   });
 
@@ -146,9 +148,9 @@ describe('json', () => {
 
   test('learn should record 3-gram transitions from empty model', () => {
     const model = create();
-    const before = new Set(Object.keys(model.json.model));
+    const before = new Set(modelKeys(model));
     model.learn('私は猫です。');
-    const createdKeys = Object.keys(model.json.model).filter((k) => !before.has(k));
+    const createdKeys = modelKeys(model).filter((k) => !before.has(k));
     const threeWordContextKeys = createdKeys.filter((k) => k.split('\0').length === 3);
     expect(threeWordContextKeys.length).toBeGreaterThan(0);
     expect(createdKeys).toContain(['私', 'は', '猫'].join('\0'));
@@ -158,7 +160,7 @@ describe('json', () => {
   test('learn should honor maxLearnContext passed to create', () => {
     const model = create(undefined, [], 3);
     model.learn('私は猫です。');
-    const contextKeys = Object.keys(model.json.model).filter((k) => k.length > 0);
+    const contextKeys = modelKeys(model).filter((k) => k.length > 0);
     expect(contextKeys.every((k) => k.split('\0').length <= 3)).toBe(true);
   });
 
