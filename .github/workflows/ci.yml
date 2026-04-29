@@ -15,5 +15,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install
+      - name: TypeScript typecheck
+        run: tsc --project tsconfig.lib.json --noEmit
       - name: Run tests
         run: bun test
