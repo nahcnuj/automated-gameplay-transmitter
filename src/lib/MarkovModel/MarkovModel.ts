@@ -142,8 +142,8 @@ export const create = (
     }, ['']);
     const topic = cands.at(Math.floor(Math.random() * cands.length));
     if (topic) {
-      // console.debug(`words: ${words}\ncands: ${cands}\ntopic: ${topic}`);
-      return this.gen(topic, nGram);
+      const out = this.gen(topic, nGram as number) as string | { text: string, nodes: string[] };
+      return typeof out === 'string' ? out : out.text;
     }
   },
   learn: (text: `${string}。`): void => {
