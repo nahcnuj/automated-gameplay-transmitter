@@ -22,6 +22,19 @@ describe('generate', () => {
     expect(model.gen()).toBe('こんにちは。');
   });
 
+  test('gen with trace option should return nodes array', () => {
+    const model = create({
+      '': { 'こ': 1 },
+      'こ': { 'ん': 1 },
+      'ん': { 'に': 1 },
+      'に': { 'ち': 1 },
+      'ち': { 'は': 1 },
+      'は': { '。': 1 },
+    });
+    const got = model.gen('', 1, { trace: true });
+    expect(got).toEqual({ text: 'こんにちは。', nodes: ['こ', 'ん', 'に', 'ち', 'は', '。'] });
+  });
+
   test('If "。" was picked once, the generation should stop.', () => {
     const model = create({
       '': { '。': 1 },

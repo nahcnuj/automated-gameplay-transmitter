@@ -109,7 +109,7 @@ export const create = (
 ) => {
   const learnContextLimit = normalizePositiveInteger(maxLearnContext);
   return ({
-  gen: (bos = '', nGram = 1): string => {
+  gen: (bos = '', nGram = 1, opts?: { trace?: boolean }): string | { text: string, nodes: string[] } => {
     const genOrder = normalizePositiveInteger(nGram);
     const words: string[] = [bos];
     while (words.at(-1) !== '。' && words.length < 15 && [...words.join('')].length < 32) {
@@ -126,7 +126,11 @@ export const create = (
       [...words.join('')].length - 1, 'charas',
       words[sliceByNumber](7).flatMap((ss, i) => i ? [' ', ...ss] : ss).join('/'),
     );
-    return words.join('');
+    const text = words.join('');
+    if (opts?.trace) {
+      return { text, nodes: words.slice(1) };
+    }
+    return text;
   },
   reply(text: string, nGram = 1): string | undefined {
     const words = text[splitIntoWords](jaJP);
