@@ -109,6 +109,27 @@ export const create = (
 ) => {
   const learnContextLimit = normalizePositiveInteger(maxLearnContext);
   return ({
+  /**
+   * Generate a sentence from the model.
+   *
+   * @param bos - The beginning-of-sentence seed word (default: `''`).
+   * @param nGram - The n-gram order to use when selecting the next word (default: `1`).
+   * @param opts - Optional generation options.
+   * @param opts.trace - When `true`, returns an object `{ text, nodes }` instead of a plain string.
+   *                     `text` is the generated sentence and `nodes` is an array of the individual
+   *                     words that were picked (excluding the seed `bos`).
+   *
+   * @returns The generated sentence as a `string` when `opts.trace` is falsy, or
+   *          `{ text: string, nodes: string[] }` when `opts.trace` is `true`.
+   *
+   * @example
+   * // plain string (default)
+   * const text = model.gen();
+   *
+   * // with trace enabled
+   * const { text, nodes } = model.gen('', 1, { trace: true }) as { text: string, nodes: string[] };
+   * console.log(nodes); // e.g. ['こ', 'ん', 'に', 'ち', 'は', '。']
+   */
   gen: (bos = '', nGram = 1, opts?: { trace?: boolean }): string | { text: string, nodes: string[] } => {
     const genOrder = normalizePositiveInteger(nGram);
     const words: string[] = [bos];
