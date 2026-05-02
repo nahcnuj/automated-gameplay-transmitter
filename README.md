@@ -23,6 +23,19 @@ model.learn("こんにちは。");
 const reply = model.reply("元気ですか？");
 ```
 
+### Trace mode
+
+Pass `{ trace: true }` as the third argument to `model.gen()` to receive both the
+generated text and the sequence of nodes (words) that were picked during generation:
+
+```ts
+const result = model.gen('', 1, { trace: true }) as { text: string; nodes: string[] };
+console.log(result.text);  // e.g. "こんにちは。"
+console.log(result.nodes); // e.g. ["こ", "ん", "に", "ち", "は", "。"]
+```
+
+Without the trace option (default behaviour) `gen` returns a plain `string`.
+
 ## Layout Example
 
 The `Layout` component arranges three panels — main, side, and bottom — in a 16:9 grid.
