@@ -1,6 +1,4 @@
-type Props = {
-  children?: JSX.Element | JSX.Element[] | string | number | boolean | null;
-};
+type Props = ChildrenProps;
 
 export function Container({ children }: Props): JSX.Element {
   return (

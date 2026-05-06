@@ -5,3 +5,8 @@ declare namespace JSX {
   type Element = React.JSX.Element;
   type IntrinsicElements = React.JSX.IntrinsicElements;
 }
+
+/** Props accepted by components that render child content. */
+type ChildrenProps = {
+  children?: JSX.Element | JSX.Element[] | string | number | boolean | null;
+};

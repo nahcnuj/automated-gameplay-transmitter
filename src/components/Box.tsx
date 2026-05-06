@@ -1,5 +1,4 @@
-type Props = {
-  /** Background color Tailwind class (e.g. `"bg-black"`, `"bg-slate-900/80"`) */
+type Props = ChildrenProps & {
   bgColor?: `bg-${string}`;
   /** Border color Tailwind class (e.g. `"border-white"`, `"border-emerald-300"`) */
   borderColor?: `border-${string}`;
@@ -9,7 +8,6 @@ type Props = {
   borderWidth?: "border" | `border-${string}`;
   /** Border radius Tailwind class (e.g. `"rounded"`, `"rounded-xl"`, `"rounded-full"`) */
   rounded?: "rounded" | `rounded-${string}`;
-  children?: JSX.Element | JSX.Element[] | string | number | boolean | null;
 };
 
 /**

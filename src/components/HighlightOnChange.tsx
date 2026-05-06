@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 
-type Props = {
+type Props = ChildrenProps & {
   /** timeout in millisecond */
   timeout: number
 
   /** className on changed */
   classNameOnChanged?: string
-
-  children?: JSX.Element | JSX.Element[] | string | number | boolean | null;
 };
 
 export function HighlightOnChange({ children, timeout, classNameOnChanged }: Props): JSX.Element {
