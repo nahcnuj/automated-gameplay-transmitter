@@ -6,7 +6,7 @@ declare namespace JSX {
   type IntrinsicElements = React.JSX.IntrinsicElements;
 }
 
-/** Props accepted by components that render child content. */
-type ChildrenProps = {
+/** Adds an optional `children` prop to `T`. Mirrors React's `PropsWithChildren<T>`. */
+type PropsWithChildren<T = {}> = T & {
   children?: JSX.Element | JSX.Element[] | string | number | boolean | null;
 };

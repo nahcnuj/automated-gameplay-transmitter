@@ -1,4 +1,4 @@
-type Props = ChildrenProps & {
+type Props = PropsWithChildren<{
   bgColor?: `bg-${string}`;
   /** Border color Tailwind class (e.g. `"border-white"`, `"border-emerald-300"`) */
   borderColor?: `border-${string}`;
@@ -8,7 +8,7 @@ type Props = ChildrenProps & {
   borderWidth?: "border" | `border-${string}`;
   /** Border radius Tailwind class (e.g. `"rounded"`, `"rounded-xl"`, `"rounded-full"`) */
   rounded?: "rounded" | `rounded-${string}`;
-};
+}>;
 
 /**
  * A container box with configurable background and border styles.

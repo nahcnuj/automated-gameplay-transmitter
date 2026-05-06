@@ -1,4 +1,4 @@
-type Props = ChildrenProps;
+type Props = PropsWithChildren;
 
 export function Container({ children }: Props): JSX.Element {
   return (
