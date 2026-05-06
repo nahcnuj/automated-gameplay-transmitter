@@ -1,5 +1,3 @@
-import type { ReactNode } from "react";
-
 type LayoutProps<M, S, B> = {
   count: keyof typeof gridTemplateClass,
   span: keyof typeof screenClass,
@@ -33,7 +31,7 @@ const bottomClass: Record<string, string> = {
   '10_8': 'col-span-10 row-span-2',
 };
 
-export const Layout = <MainComponent extends ReactNode, SideComponent extends ReactNode, BottomComponent extends ReactNode>({ count, span, className, children: [mainPanel, sidePanel, bottomPanel] }: LayoutProps<MainComponent, SideComponent, BottomComponent>) => {
+export const Layout = <MainComponent extends React.ReactNode, SideComponent extends React.ReactNode, BottomComponent extends React.ReactNode>({ count, span, className, children: [mainPanel, sidePanel, bottomPanel] }: LayoutProps<MainComponent, SideComponent, BottomComponent>): JSX.Element => {
   const count_span = `${count}_${span}`;
 
   // TODO type restriction

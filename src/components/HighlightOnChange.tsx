@@ -1,4 +1,4 @@
-import { useEffect, useState, type PropsWithChildren } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   /** timeout in millisecond */
@@ -6,9 +6,11 @@ type Props = {
 
   /** className on changed */
   classNameOnChanged?: string
+
+  children?: JSX.Element | JSX.Element[] | string | number | boolean | null;
 };
 
-export function HighlightOnChange({ children, timeout, classNameOnChanged }: PropsWithChildren<Props>) {
+export function HighlightOnChange({ children, timeout, classNameOnChanged }: Props): JSX.Element {
   const [isHighlighting, setIsHighlighting] = useState(false);
 
   useEffect(() => {

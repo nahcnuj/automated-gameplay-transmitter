@@ -1,5 +1,3 @@
-import type { PropsWithChildren } from "react";
-
 type Props = {
   /** Background color Tailwind class (e.g. `"bg-black"`, `"bg-slate-900/80"`) */
   bgColor?: `bg-${string}`;
@@ -11,6 +9,7 @@ type Props = {
   borderWidth?: "border" | `border-${string}`;
   /** Border radius Tailwind class (e.g. `"rounded"`, `"rounded-xl"`, `"rounded-full"`) */
   rounded?: "rounded" | `rounded-${string}`;
+  children?: JSX.Element | JSX.Element[] | string | number | boolean | null;
 };
 
 /**
@@ -29,7 +28,7 @@ export function Box({
   borderWidth = "border",
   rounded,
   children,
-}: PropsWithChildren<Props>) {
+}: Props): JSX.Element {
   const classes = ["w-full", "h-full", bgColor, borderColor, borderStyle, borderWidth];
   if (rounded) classes.push(rounded);
   return (
