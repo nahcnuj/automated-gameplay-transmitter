@@ -33,6 +33,14 @@
     "react": ">=19",
     "react-dom": ">=19"
   },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@playwright/browser-chromium": "^1.57.0",
     "bun-plugin-tailwind": "^0.1.2",
