@@ -108,6 +108,7 @@ const formatFileSize = (bytes: number): string => {
 if (process.argv.includes("--lib")) {
   // Library build:
   // - index.ts bundled as a browser-targeted ES module for browser-safe exports
+  // - index.agent.ts: side-effect-free Agent API only (no React UI, no Node IPC)
   // - index.node.ts bundled as a node-targeted ES module for server-side exports
   const outdir = path.join(process.cwd(), "dist");
 
@@ -145,6 +146,32 @@ if (process.argv.includes("--lib")) {
     console.log(`\n✅ Browser library build completed in ${(browserEnd - browserStart).toFixed(2)}ms\n`);
   }
 
+  console.log("\n📦 Building library (agent API, side-effect free)...\n");
+  const agentStart = performance.now();
+
+  const agentResult = await Bun.build({
+    entrypoints: [path.resolve("index.agent.ts")],
+    outdir,
+    target: "node",
+    format: "esm",
+    packages: "external",
+  });
+
+  const agentEnd = performance.now();
+
+  const agentOutputTable = agentResult.outputs.map(output => ({
+    File: path.relative(process.cwd(), output.path),
+    Type: output.kind,
+    Size: formatFileSize(output.size),
+  }));
+
+  console.table(agentOutputTable);
+  if (!agentResult.success) {
+    console.error(`\n❌ Agent library build failed\n`);
+  } else {
+    console.log(`\n✅ Agent library build completed in ${(agentEnd - agentStart).toFixed(2)}ms\n`);
+  }
+
   console.log("\n📦 Building library (node)...\n");
   const nodeStart = performance.now();
 
@@ -171,7 +198,7 @@ if (process.argv.includes("--lib")) {
     console.log(`\n✅ Node library build completed in ${(nodeEnd - nodeStart).toFixed(2)}ms\n`);
   }
 
-  process.exit(browserResult.success && nodeResult.success ? 0 : 1);
+  process.exit(browserResult.success && agentResult.success && nodeResult.success ? 0 : 1);
 }
 
 console.log("\n🚀 Starting build process...\n");

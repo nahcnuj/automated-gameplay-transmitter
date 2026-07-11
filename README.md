@@ -8,6 +8,19 @@ shared React components/contexts.
 - **React UI building blocks** (`components/` and `contexts/`) for displaying stream
   information, comments, speech, etc.
 
+## Package entry points
+
+| Import path | Contents | Notes |
+|-------------|----------|--------|
+| `automated-gameplay-transmitter` | React UI + browser types + Agent API + MarkovModel | Full client bundle (pulls React) |
+| `automated-gameplay-transmitter/agent` | **`createAgentApi` and Agent types only** | Side-effect free: no React UI, no Node IPC |
+| `automated-gameplay-transmitter/server` | Socket `createReceiver` / `createSender`, MarkovModel | Node/IPC only; may bind sockets when used |
+
+```ts
+// Preferred for server hosts that only wrap an AgentLike (e.g. AI VTuber apps):
+import { createAgentApi } from "automated-gameplay-transmitter/agent";
+```
+
 ## Markov Chain Model
 
 The package exports a Markov chain model as `MarkovModel` from both root entry points.
